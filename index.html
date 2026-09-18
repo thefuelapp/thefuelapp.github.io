@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fuel</title>
+<meta name="theme-color" content="#1b1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fuel">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body><div id="statusband" aria-hidden="true"></div>
+<main id="view"></main>
+<nav id="tabs">
+  <button data-tab="plan">Plan</button>
+  <button data-tab="cook">Cook</button>
+  <button data-tab="shop">Shop</button>
+  <button data-tab="recipes">Recipes</button>
+  <button data-tab="pantry">Pantry</button>
+</nav>
+<div id="intro" hidden></div>
+<div id="gate" hidden></div>
+<div id="sheet" hidden><div class="sheet-inner" id="sheet-inner"></div></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
