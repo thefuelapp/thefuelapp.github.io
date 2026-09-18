@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v61';
+const APP_VERSION = 'v62';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -922,9 +922,10 @@ function installCard(force = false) {
 const inAppBrowser = () => /Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Snapchat|Line\//i.test(navigator.userAgent);
 function gateInstallHint() {
   if (isStandalone()) return '';
-  if (inAppBrowser()) return `<div class="gcard ginstall"><b>First, open this in ${isIOS() ? 'Safari' : 'Chrome'}</b><small>You're inside another app's browser, which can't put Fuel on your home screen.</small><ol><li>Tap <b>···</b> at the top right.</li><li>Tap <b>Open in ${isIOS() ? 'external browser' : 'Chrome'}</b>.</li><li>Then follow the steps you see there.</li></ol></div>`;
+  const steps = `<ol><li>Open this page in <b>Safari</b>.${inAppBrowser() ? ' You\'re inside another app right now: tap <b>···</b> at the top, then <b>Open in external browser</b>.' : ''}</li><li>Press <b>Share</b>.</li><li>Scroll down and press <b>Add to Home Screen</b>.</li><li>Press <b>Add</b>, then carry on in the app.</li></ol>`;
+  if (inAppBrowser() && !isIOS()) return `<div class="gcard ginstall"><b>First, open this in Chrome</b><small>You're inside another app's browser, which can't install Fuel. Tap <b>···</b> at the top, then <b>Open in Chrome</b>.</small></div>`;
   if (!isIOS()) return '';
-  return `<details class="gcard ginstall" open><summary><b>On iPhone? Add Fuel to your home screen first</b></summary><small>Fuel isn't on the App Store yet. This takes 10 seconds and gives you the real app: own icon, full screen, works in the shop with no signal.</small><ol><li>In <b>Safari</b>, tap <b>Share</b> (the square with the arrow). On newer iPhones it's inside the <b>···</b> button.</li><li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Close Safari, open <b>Fuel</b> from the new icon and sign in there.</li></ol></details>`;
+  return `<details class="gcard ginstall" open><summary><b>On iPhone? Add Fuel to your home screen</b></summary><small>Fuel isn't on the App Store yet, so it installs from Safari.</small>${steps}</details>`;
 }
 // In-app replacements for confirm/alert/prompt: iOS standalone web apps often don't show the built-in ones at all.
 function ask(text, okLabel = 'Yes', danger = false) {
