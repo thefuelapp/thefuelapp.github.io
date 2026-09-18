@@ -237,6 +237,7 @@ html { scroll-behavior: auto; }
 /* access screen */
 #gate .gate-access h1 { font-size: 44px; }
 #gate .who { font-size: 15px; opacity: .85; margin: -4px 0 18px; }
+#gate .ginstall { font-size: 15px; } #gate .ginstall summary { cursor: pointer; list-style: none; } #gate .ginstall summary::-webkit-details-marker { display: none; } #gate .ginstall small { display: block; opacity: .85; margin-top: 4px; } #gate .ginstall ol { margin: 10px 0 2px; padding-left: 20px; } #gate .ginstall li { margin: 6px 0; }
 #gate .gcard { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); border-radius: 20px; padding: 14px 16px; margin-bottom: 12px; backdrop-filter: blur(8px); }
 #gate .perk { display: flex; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.14); }
 #gate .perk:last-child { border-bottom: 0; }

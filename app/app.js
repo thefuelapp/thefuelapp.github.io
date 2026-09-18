@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v60';
+const APP_VERSION = 'v61';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -802,7 +802,7 @@ function gateScreen() {
   if (!cloud.user) {
     const mode = S.authMode || 'signin';
     el.innerHTML = `<div class="wrap"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>${mode === 'signup' ? 'Create your account.' : 'Sign in.'}</h1><p>Batch-cook Sunday, sorted till Saturday, priced at the cheapest shop.</p>
-      <form id="signin-form" data-mode="${mode}"><input class="big" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:20px;text-align:left"><input class="big" name="password" type="password" required minlength="8" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:20px;text-align:left;margin-top:10px"><button class="go" type="submit">${mode === 'signup' ? 'Create account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
+      ${gateInstallHint()}<form id="signin-form" data-mode="${mode}"><input class="big" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:20px;text-align:left"><input class="big" name="password" type="password" required minlength="8" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:20px;text-align:left;margin-top:10px"><button class="go" type="submit">${mode === 'signup' ? 'Create account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
       <p class="small" style="margin-top:14px">${mode === 'signup' ? `Already have an account? <a href="#" data-action="auth-mode" data-mode="signin" style="color:#fff;font-weight:600">Sign in</a>` : `New here? <a href="#" data-action="auth-mode" data-mode="signup" style="color:#fff;font-weight:600">Create an account</a> · <a href="#" data-action="auth-forgot" style="color:#fff">Forgot password?</a>`}</p>
       <p class="small" style="opacity:.85;margin-top:16px"><a href="terms.html" style="color:#fff">Terms</a> · <a href="privacy.html" style="color:#fff">Privacy</a></p></div>`;
   } else {
@@ -916,6 +916,15 @@ function installCard(force = false) {
   if (!force && S.tips && S.tips.install) return '';
   if (installEvt || !isIOS()) return `<div class="card tipcard" id="install-card" ${installEvt || force ? '' : 'hidden'}><h3>Put Fuel on your phone</h3><p class="small">One tap, no app store. It opens full screen like any other app and works offline in the shop.</p><div class="row" style="gap:8px"><button class="btn small" data-action="install">Install Fuel</button>${force ? '' : '<button class="btn ghost small" data-action="tip-done" data-tip="install">Not now</button>'}</div></div>`;
   return `<div class="card tipcard" id="install-card"><h3>Put Fuel on your home screen</h3><p class="small">iPhone doesn't let websites install themselves, so it's two taps in Safari:</p><ol class="tips"><li>Tap the <b>Share</b> button (the square with the arrow, bottom of the screen).</li><li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li></ol><p class="small muted">It then opens full screen, works offline in the shop and keeps you signed in.</p>${force ? '' : '<button class="btn ghost small" data-action="tip-done" data-tip="install">Not now</button>'}</div>`;
+}
+// Sign-in screen hint. iPhone keeps a home-screen app's sign-in separate from Safari's, so the icon goes on first;
+// Instagram/TikTok/Facebook open links in their own browser, which has no Add to Home Screen at all.
+const inAppBrowser = () => /Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Snapchat|Line\//i.test(navigator.userAgent);
+function gateInstallHint() {
+  if (isStandalone()) return '';
+  if (inAppBrowser()) return `<div class="gcard ginstall"><b>First, open this in ${isIOS() ? 'Safari' : 'Chrome'}</b><small>You're inside another app's browser, which can't put Fuel on your home screen.</small><ol><li>Tap <b>···</b> at the top right.</li><li>Tap <b>Open in ${isIOS() ? 'external browser' : 'Chrome'}</b>.</li><li>Then follow the steps you see there.</li></ol></div>`;
+  if (!isIOS()) return '';
+  return `<details class="gcard ginstall" open><summary><b>On iPhone? Add Fuel to your home screen first</b></summary><small>Fuel isn't on the App Store yet. This takes 10 seconds and gives you the real app: own icon, full screen, works in the shop with no signal.</small><ol><li>In <b>Safari</b>, tap <b>Share</b> (the square with the arrow). On newer iPhones it's inside the <b>···</b> button.</li><li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Close Safari, open <b>Fuel</b> from the new icon and sign in there.</li></ol></details>`;
 }
 // In-app replacements for confirm/alert/prompt: iOS standalone web apps often don't show the built-in ones at all.
 function ask(text, okLabel = 'Yes', danger = false) {
