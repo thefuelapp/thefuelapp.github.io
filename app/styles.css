@@ -362,6 +362,7 @@ details.pantry-group > .card { border-radius: 0 0 14px 14px; margin-top: 0; }
 .line .cost.over { color: var(--bad); }
 .line .cost.muted { color: var(--muted); }
 .shophead .sub { display: block; margin-top: 6px; font-size: 14px; line-height: 1.35; }
+.shophead .stockline { margin: 10px 0 8px; padding: 10px 12px; border-radius: 14px; background: var(--panel-2); font-size: 14px; line-height: 1.35; } .shophead .stockline b { font-weight: 800; } .shophead .stockline span { display: block; margin-top: 4px; opacity: .8; } .shophead .stockline a { color: inherit; font-weight: 700; }
 .bigtotal { font-size: 34px; }
 /* the meal picker: a clear start and a clear end */
 .pickhead { background: linear-gradient(135deg, var(--sun), #ffdf7a); color: var(--sun-ink); margin-top: 22px; box-shadow: 0 10px 30px rgba(255, 197, 49, .35); }

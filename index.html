@@ -603,7 +603,7 @@ html,body{overflow:hidden} *{animation:none!important;transition:none!important}
 
 &lt;/body&gt;&lt;/html&gt;"></iframe></div></div></div></header>
 
-<section id="how"><div class="wrap"><div class="sec-head rv"><div class="eyebrow">One Sunday, sorted till Saturday</div><h2>Three screens do the whole week.</h2><p>Every screen here is the real app, not a mock-up.</p></div>
+<section id="how"><div class="wrap"><div class="sec-head rv"><div class="eyebrow">One Sunday, sorted till Saturday</div><h2>Plan. Shop. Cook.</h2><p>Three screens do the whole week. Every screen here is the real app, not a mock-up.</p></div>
 <div class="steps">
 <div class="step rv"><div class="phone"><iframe class="scr" tabindex="-1" loading="lazy" title="Fuel screen" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en-GB&quot;&gt;&lt;head&gt;
 &lt;meta charset=&quot;utf-8&quot;&gt;
@@ -1076,7 +1076,468 @@ html,body{overflow:hidden} *{animation:none!important;transition:none!important}
 
 
 
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><h3><span>1</span>Pick</h3><p>Tap the meals you want and how many. Fuel fills a week grid, keeps fridge-only meals early and freezer ones late, and shows protein and calories per day against your targets.</p></div>
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><h3><span>1</span>Plan.</h3><p><b>High-protein meals.</b> Tap the meals you want and how many. Fuel fills a week grid, keeps fridge-only meals early and freezer ones late, and shows protein and calories per day against your targets.</p></div>
+<div class="step rv"><div class="phone"><iframe class="scr" tabindex="-1" loading="lazy" title="Fuel screen" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en-GB&quot;&gt;&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1, viewport-fit=cover&quot;&gt;
+&lt;title&gt;Fuel&lt;/title&gt;
+&lt;meta name=&quot;theme-color&quot; content=&quot;#1b1a2e&quot;&gt;
+&lt;meta name=&quot;apple-mobile-web-app-capable&quot; content=&quot;yes&quot;&gt;
+&lt;meta name=&quot;apple-mobile-web-app-status-bar-style&quot; content=&quot;black-translucent&quot;&gt;
+&lt;meta name=&quot;apple-mobile-web-app-title&quot; content=&quot;Fuel&quot;&gt;
+
+&lt;link rel=&quot;apple-touch-icon&quot; href=&quot;apple-touch-icon.png&quot;&gt;
+&lt;link rel=&quot;icon&quot; href=&quot;icon-192.png&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;amp;family=Inter:wght@400;500;600;700&amp;amp;display=swap&quot;&gt;
+
+&lt;style&gt;:root {
+  --bg: #fffbf2; --panel: #ffffff; --panel-2: #fff3d6; --line: #ffe3a3;
+  --text: #1b1a2e; --muted: #6b6785;
+  --accent: #ff4f7b; --accent-ink: #ffffff;
+  --sun: #ffc531; --sun-ink: #4a3300;
+  --lime: #7be34a; --lime-ink: #163d00;
+  --sky: #38c6ff; --sky-ink: #003a52;
+  --grape: #9b5cff; --grape-ink: #ffffff;
+  --coral: #ff7a45; --coral-ink: #ffffff;
+  --warn: #ff9f1c; --bad: #ff3b5c; --ok: #12b76a;
+  --tab-h: 64px; --radius: 18px; --lbl: 50px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font: 16px/1.45 &quot;Inter&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif; font-feature-settings: &quot;cv11&quot;, &quot;ss03&quot;; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
+body { display: flex; flex-direction: column; height: 100%; height: 100dvh; background: linear-gradient(180deg, #fff1c2 0, var(--bg) 220px); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+input, select, label { -webkit-tap-highlight-color: transparent; }
+.btn:active, .stepper button:active, #tabs button:active, .cell:active { transform: scale(.96); }
+.btn, .stepper button, .cell, .chip, .day-pick button { transition: transform .08s ease, background-color .12s ease, opacity .12s ease; }
+#view { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 14px 14px 40px; }
+#view &gt; * { max-width: 720px; margin-left: auto; margin-right: auto; }
+#tabs { flex: none; height: calc(var(--tab-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); display: flex; background: #1b1a2e; z-index: 10; }
+#tabs button { flex: 1; background: none; border: 0; color: #b9b5d6; font-size: 13px; font-weight: 600; letter-spacing: .02em; position: relative; }
+#tabs button.active { color: #fff; }
+#tabs button.active::after { content: &quot;&quot;; position: absolute; left: 22%; right: 22%; bottom: 8px; height: 4px; border-radius: 4px; background: var(--accent); }
+#tabs button[data-tab=plan].active::after { background: var(--sun); }
+#tabs button[data-tab=cook].active::after { background: var(--coral); }
+#tabs button[data-tab=shop].active::after { background: var(--lime); }
+#tabs button[data-tab=recipes].active::after { background: var(--grape); }
+#tabs button[data-tab=pantry].active::after { background: var(--sky); }
+h1 { font-size: 28px; margin: 6px 0 14px; letter-spacing: -.02em; font-weight: 700; }
+h2 { font-size: 13px; margin: 26px 0 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 700; }
+h3 { font-size: 17px; margin: 0 0 6px; font-weight: 600; letter-spacing: -.01em; }
+p { margin: 6px 0; }
+.muted { color: var(--muted); }
+.small { font-size: 14px; }
+.card { background: var(--panel); border: 0; border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: 0 6px 24px rgba(74, 51, 0, .08); }
+.card.flat { background: transparent; box-shadow: none; padding: 4px 0; }
+.row { display: flex; align-items: center; gap: 10px; }
+.row .grow, .grow { flex: 1; min-width: 0; }
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stat { border-radius: 14px; padding: 12px; }
+.stat:nth-child(1) { background: var(--sun); color: var(--sun-ink); }
+.stat:nth-child(2) { background: var(--grape); color: var(--grape-ink); }
+.stat:nth-child(3) { background: var(--lime); color: var(--lime-ink); }
+.stat b { display: block; font-size: 26px; font-weight: 700; line-height: 1.1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; opacity: .85; font-weight: 600; }
+.stat b span { font-size: 13px; opacity: .7; }
+.bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; align-items: end; height: 76px; }
+.bar { position: relative; background: var(--panel-2); border-radius: 8px 8px 4px 4px; height: 100%; display: flex; align-items: flex-end; }
+.bar i { display: block; width: 100%; background: linear-gradient(180deg, var(--lime), #22c55e); border-radius: 8px 8px 4px 4px; }
+.bar.low i { background: linear-gradient(180deg, var(--sun), var(--warn)); }
+.bar b { position: absolute; top: -18px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--muted); font-weight: 600; }
+.bars-labels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 11px; color: var(--muted); text-align: center; margin-top: 4px; font-weight: 700; }
+.recipe-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #f3ecdc; }
+.recipe-row:last-child { border-bottom: 0; }
+.recipe-row .name { font-weight: 600; }
+.recipe-row .meta { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.stepper { display: flex; align-items: center; background: var(--panel-2); border-radius: 12px; overflow: hidden; }
+.stepper button { width: 42px; height: 40px; background: none; border: 0; font-size: 22px; color: var(--accent); font-weight: 700; }
+.stepper b { min-width: 28px; text-align: center; font-size: 17px; font-weight: 700; }
+.stepper:not(.zero) { background: var(--accent); }
+.stepper:not(.zero) button, .stepper:not(.zero) b { color: #fff; }
+.stepper.zero b { color: var(--muted); }
+.badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #efe9ff; color: #5b3fb8; margin-right: 4px; vertical-align: middle; }
+.badge.ok { background: #dcfce7; color: #15803d; }
+.badge.warn { background: #fff1d6; color: #b45309; }
+.badge.bad { background: #ffe0e6; color: #be123c; }
+.grid { display: grid; grid-template-columns: 46px repeat(3, 1fr); gap: 6px; font-size: 12px; }
+.grid .hd { color: var(--muted); text-align: center; font-weight: 600; font-size: 12px; padding: 2px 0 4px; }
+.grid .lbl { color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 12px; }
+.grid .lbl .dname { font-weight: 700; }
+.grid .lbl .dnum { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.grid .lbl .dayx { margin-top: 3px; }
+.grid .lbl.off .dname, .grid .lbl.off .dnum { text-decoration: line-through; opacity: .5; }
+.grid .lbl.off .dayx { background: var(--lime); color: var(--lime-ink); }
+.cell { min-height: 68px; border-radius: 10px; background: var(--panel-2); border: 0; padding: 7px 6px; text-align: left; line-height: 1.2; font-size: 12.5px; font-weight: 600; color: var(--text); display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; overflow: hidden; touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.cell .cname { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.cell .ctag { font-size: 10px; font-weight: 600; opacity: .8; }
+.cell .cmeta { font-size: 10.5px; font-weight: 500; opacity: .75; }
+.cell.lifted { opacity: .35; }
+.cell.over { outline: 3px solid var(--accent); outline-offset: -3px; transform: scale(1.04); }
+.cell.ghost { position: fixed; left: 0; top: 0; z-index: 50; pointer-events: none; box-shadow: 0 12px 30px rgba(27,26,46,.3); transform: translate(-999px, -999px); }
+@media (min-width: 560px) { .cell { min-height: 76px; font-size: 13.5px; } .cell .cmeta { font-size: 11.5px; } .grid { grid-template-columns: 56px repeat(3, 1fr); gap: 8px; } }
+.cell.empty { color: #b5a67a; font-weight: 500; font-size: 18px; background: #fff8e4; border: 2px dashed #ffe3a3; align-items: center; gap: 0; }
+.cell.empty .cadd { font-size: 11px; }
+
+.cell.late { outline: 3px solid var(--warn); outline-offset: -3px; }
+.btn { display: inline-block; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 12px; padding: 12px 18px; font-weight: 700; }
+.btn.ghost { background: var(--panel-2); color: var(--text); }
+.btn.small { padding: 8px 12px; font-size: 13px; }
+.btn.block { display: block; width: 100%; text-align: center; }
+.btn.danger { background: #ffe0e6; color: var(--bad); }
+.warn-box { border-left: 5px solid var(--warn); padding: 10px 12px; background: #fff4de; border-radius: 0 12px 12px 0; font-size: 14px; margin: 8px 0; }
+.bad-box { border-left: 5px solid var(--bad); padding: 10px 12px; background: #ffe6ec; border-radius: 0 12px 12px 0; font-size: 14px; margin: 8px 0; }
+ul.clean { list-style: none; padding: 0; margin: 0; }
+ul.clean li { padding: 7px 0; border-bottom: 1px solid #f3ecdc; }
+ul.clean li:last-child { border-bottom: 0; }
+ol.steps { padding-left: 20px; margin: 6px 0; }
+ol.steps li { margin: 6px 0; }
+ol.steps li::marker { color: var(--accent); font-weight: 700; }
+.ing-list { display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; font-size: 14px; }
+.ing-list b { text-align: right; white-space: nowrap; color: #5b3fb8; }
+.tub { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.tub div { border-radius: 12px; padding: 10px 8px; text-align: center; }
+.tub div:nth-child(1) { background: var(--sun); color: var(--sun-ink); }
+.tub div:nth-child(2) { background: var(--lime); color: var(--lime-ink); }
+.tub div:nth-child(3) { background: var(--sky); color: var(--sky-ink); }
+.tub b { font-size: 24px; display: block; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.tub span { font-size: 11px; font-weight: 700; opacity: .85; }
+.shop-rank { display: flex; flex-direction: column; gap: 10px; }
+.shop-card { background: var(--panel); border-radius: var(--radius); padding: 12px 14px; box-shadow: 0 6px 24px rgba(74, 51, 0, .08); border: 3px solid transparent; }
+.shop-card.best { border-color: var(--lime); }
+.shop-card summary { list-style: none; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.shop-card summary::-webkit-details-marker { display: none; }
+.shop-card .total { font-size: 22px; font-weight: 700; margin-left: auto; font-variant-numeric: tabular-nums; }
+.line { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f3ecdc; font-size: 14px; }
+.line:last-child { border-bottom: 0; }
+.line input[type=checkbox] { width: 24px; height: 24px; accent-color: var(--ok); flex: none; }
+.line.done .name { text-decoration: line-through; color: var(--muted); }
+.line .cost { margin-left: auto; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.line .sub { display: block; font-size: 13px; color: var(--muted); }
+.budget { height: 14px; background: var(--panel-2); border-radius: 999px; overflow: hidden; margin: 10px 0 4px; }
+.budget i { display: block; height: 100%; background: linear-gradient(90deg, var(--lime), var(--sky)); }
+.budget.over i { background: var(--bad); }
+label.field { display: block; margin: 10px 0; font-size: 14px; color: var(--muted); font-weight: 700; }
+label.field input, label.field select, label.field textarea { display: block; width: 100%; margin-top: 4px; background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 10px; color: var(--text); font-weight: 500; }
+label.field textarea { min-height: 120px; }
+.check { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f3ecdc; font-size: 15px; }
+.check:last-child { border-bottom: 0; }
+.check input { width: 24px; height: 24px; accent-color: var(--sky); flex: none; }
+.check .sub { font-size: 12px; color: var(--muted); display: block; }
+.search { width: 100%; background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 12px; color: var(--text); margin-bottom: 10px; }
+#sheet[hidden] { display: none; }
+#sheet { position: fixed; inset: 0; background: rgba(27,26,46,.45); z-index: 20; display: flex; align-items: flex-end; }
+.sheet-inner { background: var(--panel); border-radius: 22px 22px 0 0; width: 100%; max-width: 720px; margin: 0 auto; padding: 18px 16px calc(20px + env(safe-area-inset-bottom)); max-height: 85vh; overflow: auto; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.chip { background: var(--panel-2); border: 2px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; }
+.chip.on { background: var(--grape); color: #fff; border-color: var(--grape); }
+.ing-row { display: grid; grid-template-columns: 1fr 80px 34px; gap: 6px; margin: 6px 0; }
+.ing-row select, .ing-row input { background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 8px; color: var(--text); min-width: 0; }
+.ing-row button { background: none; border: 0; color: var(--bad); font-size: 18px; }
+hr { border: 0; border-top: 1px solid #f3ecdc; margin: 14px 0; }
+.day-pick { display: flex; gap: 6px; margin: 8px 0; }
+.day-pick button { flex: 1; background: var(--panel-2); border: 0; border-radius: 10px; padding: 8px 0; font-size: 12px; color: var(--muted); font-weight: 600; }
+.day-pick button.on { background: var(--coral); color: #fff; }
+a { color: var(--accent); font-weight: 700; }
+/* pick list, week switch, comparison tables */
+.chip.meal { border: 0; font-weight: 600; }
+.recipe-row.pick .tick { width: 26px; height: 26px; accent-color: var(--accent); flex: none; }
+.recipe-row.pick.on { background: #fff7fa; border-radius: 12px; padding-left: 6px; padding-right: 6px; }
+.recipe-row.pick .stepper button { width: 36px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 6px 6px 6px 0; border-bottom: 2px solid var(--line); }
+.tbl td { padding: 8px 6px 8px 0; border-bottom: 1px solid #f3ecdc; vertical-align: top; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl .r { text-align: right; white-space: nowrap; }
+.tbl tr.best td { background: #f0fbe8; }
+.tbl td.min { color: #15803d; font-weight: 700; background: #ecfdf3; }
+.tbl .sub { display: block; font-size: 11px; color: var(--muted); }
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -6px; padding: 0 6px; }
+.tbl.cmp { min-width: 560px; }
+.tbl.cmp th:first-child, .tbl.cmp td:first-child { position: sticky; left: 0; background: var(--panel); z-index: 1; min-width: 130px; }
+.tbl.cmp tr.best td:first-child { background: #f0fbe8; }
+
+.grid .dayx { border: 0; background: #fff3d6; color: var(--muted); width: 22px; height: 22px; border-radius: 999px; font-size: 14px; line-height: 1; padding: 0; font-weight: 700; }
+.cell.off { background: repeating-linear-gradient(135deg, #f6f1e4 0 6px, #fff 6px 12px); border: 0; }
+.check .qty { width: 84px; background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 6px 8px; font-size: 14px; }
+
+.recipe-row.pick.full { opacity: .45; }
+.recipe-row.pick.full .tick { cursor: not-allowed; }
+.stepper button:disabled { opacity: .35; }
+
+.cell.lifted { outline: 3px solid var(--accent); outline-offset: -3px; transform: scale(1.06); box-shadow: 0 8px 20px rgba(255,79,123,.35); z-index: 2; }
+#hint { position: fixed; left: 50%; top: calc(12px + env(safe-area-inset-top)); transform: translate(-50%, -20px); background: #1b1a2e; color: #fff; padding: 10px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; z-index: 30; white-space: nowrap; }
+#hint.on { opacity: 1; transform: translate(-50%, 0); }
+@keyframes sheetUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.sheet-inner { animation: sheetUp .18s ease-out; }
+html { scroll-behavior: auto; }
+
+.cell.out { background: #ecebf3; color: var(--muted); }
+.bar.off { opacity: .35; }
+.cell.tubcell { outline: 2px dashed rgba(27,26,46,.35); outline-offset: -2px; }
+.cell { position: relative; }
+.chip[data-action] { cursor: pointer; }
+.btn.block .sub { display: block; font-weight: 500; font-size: 12px; }
+
+/* ---- intro ---- */
+#gate { position: fixed; inset: 0; z-index: 40; background: linear-gradient(160deg, #1b1a2e 0%, #4b2a8a 60%, #ff4f7b 130%); color: #fff; display: flex; flex-direction: column; overflow-y: auto; }
+#gate[hidden] { display: none; }
+#gate .wrap, #gate h1, #gate p, #gate .go, #gate .back, #gate .logo, #gate input.big { }
+#intro { position: fixed; inset: 0; z-index: 30; background: linear-gradient(160deg, #ffc531 0%, #ff4f7b 55%, #9b5cff 100%); color: #fff; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#intro[hidden] { display: none; }
+#gate .wrap, #intro .wrap { margin: auto; width: 100%; max-width: 560px; padding: 28px 22px calc(28px + env(safe-area-inset-bottom)); animation: introIn .45s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes introIn { from { opacity: 0; transform: translateY(28px) scale(.98); } to { opacity: 1; transform: none; } }
+#intro .dots { display: flex; gap: 8px; margin-bottom: 26px; }
+#intro .dots i { flex: 1; height: 6px; border-radius: 6px; background: rgba(255,255,255,.35); }
+#intro .dots i.on { background: #fff; }
+#gate h1, #intro h1 { font-size: 34px; line-height: 1.08; margin: 0 0 10px; letter-spacing: -.025em; font-weight: 700; }
+#gate p, #intro p { font-size: 17px; opacity: .92; margin: 0 0 22px; }
+#intro .opt { display: block; width: 100%; text-align: left; background: rgba(255,255,255,.16); border: 2px solid rgba(255,255,255,.35); color: #fff; border-radius: 18px; padding: 16px 18px; margin: 10px 0; font-size: 18px; font-weight: 600; backdrop-filter: blur(6px); transition: transform .12s, background .12s; }
+#intro .opt small { display: block; font-weight: 500; font-size: 14px; opacity: .88; margin-top: 3px; }
+#intro .opt:active { transform: scale(.98); }
+#intro .opt.on { background: #fff; color: #1b1a2e; border-color: #fff; }
+#intro .chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 16px; }
+#intro .chips .opt { width: auto; display: inline-block; padding: 12px 18px; margin: 0; font-size: 18px; }
+#gate input.big, #intro input.big { width: 100%; font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; padding: 14px 18px; border-radius: 18px; border: 0; background: #fff; color: #1b1a2e; text-align: center; margin: 6px 0 14px; }
+#gate .go, #intro .go { display: block; width: 100%; background: #1b1a2e; color: #fff; border: 0; border-radius: 18px; padding: 18px; font-size: 18px; font-weight: 600; margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+#gate .back, #intro .back { background: none; border: 0; color: #fff; opacity: .85; font-weight: 600; padding: 12px 0; font-size: 15px; }
+#intro .stat-row { display: flex; gap: 10px; margin: 8px 0 18px; }
+#intro .stat-row div { flex: 1; background: rgba(255,255,255,.18); border-radius: 16px; padding: 12px; text-align: center; }
+#intro .stat-row b { display: block; font-size: 28px; }
+#intro .stat-row span { font-size: 12px; opacity: .9; font-weight: 600; }
+#gate .logo, #intro .logo { font-family: &quot;Bricolage Grotesque&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif; font-weight: 600; font-size: 26px; letter-spacing: .01em; line-height: 1; margin-bottom: 22px; color: #fff; }
+#gate .logo b, #intro .logo b { color: #ff4f7b; font-weight: 600; }
+.range { width: 100%; accent-color: var(--accent); }
+.badge.snack { background: #fff1d6; color: #b45309; }
+
+.snackbar { margin-top: 10px; background: #fff7e0; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.snackbar.empty { color: var(--muted); }
+.macro { background: var(--panel-2); border-radius: 12px; padding: 12px; margin: 6px 0 12px; font-size: 14px; }
+.macro .lbl { width: 64px; font-weight: 700; color: var(--muted); font-size: 12px; }
+.macro .val { min-width: 54px; text-align: right; }
+.macro .budget.kcal i { background: linear-gradient(90deg, var(--sun), var(--coral)); }
+.budget.low i { background: linear-gradient(90deg, var(--sun), var(--warn)); }
+.macro .budget.kcal.low i { background: linear-gradient(90deg, var(--sun), var(--warn)); }
+.seg { display: flex; background: var(--panel-2); border-radius: 12px; padding: 3px; margin: 6px 0 10px; }
+.seg button { flex: 1; border: 0; background: none; border-radius: 10px; padding: 8px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.seg button.on { background: #fff; color: var(--text); box-shadow: 0 2px 8px rgba(74,51,0,.12); }
+#gate ul.clean li { border-color: rgba(255,255,255,.25); }
+.signin-msg { margin-top: 12px; padding: 12px 14px; border-radius: 14px; font-size: 15px; font-weight: 600; background: rgba(255,255,255,.18); }
+.signin-msg.ok { background: rgba(124,255,178,.25); }
+.signin-msg.bad { background: rgba(255,80,80,.35); }
+
+/* access screen */
+#gate .gate-access h1 { font-size: 44px; }
+#gate .who { font-size: 15px; opacity: .85; margin: -4px 0 18px; }
+#gate .ginstall { font-size: 15px; } #gate .ginstall summary { cursor: pointer; list-style: none; } #gate .ginstall summary::-webkit-details-marker { display: none; } #gate .ginstall small { display: block; opacity: .85; margin-top: 4px; } #gate .ginstall ol { margin: 10px 0 2px; padding-left: 20px; } #gate .ginstall li { margin: 6px 0; }
+#gate .gcard { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); border-radius: 20px; padding: 14px 16px; margin-bottom: 12px; backdrop-filter: blur(8px); }
+#gate .perk { display: flex; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.14); }
+#gate .perk:last-child { border-bottom: 0; }
+#gate .perk .ico { font-size: 26px; width: 36px; text-align: center; flex: none; }
+#gate .perk b { display: block; font-size: 16px; }
+#gate .perk small, #gate .price small, #gate .codecard small { display: block; font-size: 13px; opacity: .85; font-weight: 500; margin-top: 2px; }
+#gate .price { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(255,255,255,.92); color: #1b1a2e; }
+#gate .price b { font-size: 18px; }
+#gate .price .go { width: auto; margin: 0; padding: 14px 20px; text-decoration: none; text-align: center; background: #ff4f7b; }
+#gate .codecard label { display: block; margin-bottom: 10px; }
+#gate .codecard .row { gap: 8px; }
+#gate .codecard input.big { font-size: 20px; letter-spacing: .08em; text-align: left; padding: 14px 16px; margin: 0; }
+#gate .codecard .go { width: auto; margin: 0; padding: 0 18px; height: 56px; white-space: nowrap; }
+#gate .gfoot { display: flex; align-items: center; gap: 12px; justify-content: center; margin-top: 8px; opacity: .9; }
+#gate .gfoot .back { padding: 8px 0; }
+
+/* wordmark inside the app */
+.brandbar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 2px 0 0; margin-bottom: -22px; position: relative; z-index: 2; }
+.brandbar .gear { border: 0; background: var(--panel); color: var(--text); width: 32px; height: 32px; border-radius: 999px; padding: 0; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(74,51,0,.1); }
+.brandbar .gear svg { display: block; }
+.brandbar .wordmark { font-family: &quot;Bricolage Grotesque&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif; font-weight: 600; font-size: 17px; letter-spacing: .01em; color: var(--text); opacity: .9; }
+.brandbar .wordmark b { color: var(--accent); }
+
+/* Shop, phone-first */
+.bigtotal { font-size: 26px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.shopchips { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.shopchip { background: var(--panel); border: 2px solid var(--line); border-radius: 14px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; min-width: 0; }
+.shopchip span { font-size: 11px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.shopchip b { font-size: 13px; font-weight: 700; }
+.shopchip i { font-style: normal; font-size: 9px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.shopchip.on { border-color: var(--accent); background: #fff5f8; }
+.shopchip.on i { color: var(--accent); }
+.shopchip.dead { opacity: .55; }
+/* the shop list is read standing in an aisle with a basket: big names, one line per item, aisle headings, ticked lines fade */
+.card.list { padding: 10px 14px 14px; }
+.card.list .line { align-items: flex-start; padding: 12px 0; gap: 12px; }
+.card.list .line input[type=checkbox] { margin-top: 1px; width: 28px; height: 28px; }
+.card.list .line .name { font-size: 17px; font-weight: 700; line-height: 1.25; color: var(--text); }
+.card.list .line .name .n { color: var(--accent); }
+.card.list .line .sub { font-size: 13px; margin-top: 3px; }
+.card.list .line .cost { font-size: 15px; margin-top: 3px; }
+.card.list .line.done { opacity: .45; }
+.card.list .line.done .name { text-decoration: line-through; }
+.card.list h4.aisle { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; margin: 18px 0 2px; padding-bottom: 4px; border-bottom: 2px solid var(--line); color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 700; }
+.card.list h4.aisle:first-child { margin-top: 4px; }
+.card.list h4.aisle span { font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; font-weight: 600; }
+.breakdown { margin-top: 4px; }
+.line .name { display: block; font-weight: 700; line-height: 1.25; }
+.line .sub.alt { color: #15803d; font-weight: 700; }
+.line .find { flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--panel-2); display: grid; place-items: center; text-decoration: none; font-weight: 700; color: var(--text); }
+.fold { background: var(--panel); border-radius: var(--radius); padding: 12px 14px; margin: 10px 0; box-shadow: 0 6px 24px rgba(74, 51, 0, .08); }
+.fold summary { list-style: none; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+.fold summary::-webkit-details-marker { display: none; }
+.fold[open] summary { margin-bottom: 8px; }
+@media (max-width: 420px) { .shopchips { grid-template-columns: repeat(5, 1fr); } .shopchip { padding: 7px 2px; } .shopchip b { font-size: 12px; } }
+
+/* Plan/Cook clarity */
+.tipcard { background: #1b1a2e; color: #fff; }
+.tipcard h3 { color: #fff; }
+.tipcard ol.tips { padding-left: 20px; margin: 4px 0 12px; }
+.tipcard ol.tips li { margin: 6px 0; font-size: 14.5px; line-height: 1.4; }
+.tipcard ol.tips li::marker { color: var(--sun); font-weight: 700; }
+.tipcard .btn { background: var(--sun); color: var(--sun-ink); }
+h4.sub { font-size: 12px; margin: 16px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
+ol.cooklist li { margin: 8px 0; }
+ol.cooklist li b { display: block; font-size: 15px; }
+ol.cooklist li span, ul.clean li span.small { display: block; margin-top: 1px; }
+ul.store { list-style: none; padding: 0; margin: 0; }
+ul.store li { padding: 8px 0; border-bottom: 1px solid #f3ecdc; font-size: 14px; line-height: 1.4; }
+ul.store li:last-child { border-bottom: 0; }
+ul.store li b { display: inline-block; min-width: 64px; color: #5b3fb8; }
+.gridcard { padding: 12px; }
+
+
+#view.dragging { touch-action: none; }
+.cell.ghost { transition: none; opacity: .96; transform-origin: center; }
+.cell.over { background: #fff; }
+
+/* Week switcher: one segmented control, dates spelled out */
+.wtabs { display: flex; background: var(--panel); border-radius: 14px; padding: 4px; margin: -2px 0 14px; box-shadow: 0 6px 24px rgba(74,51,0,.08); }
+.wtabs button { flex: 1; border: 0; background: none; border-radius: 11px; padding: 9px 6px; font-weight: 600; color: var(--muted); font-size: 14px; line-height: 1.2; transition: background-color .12s ease, color .12s ease; }
+.wtabs button.on { background: #1b1a2e; color: #fff; }
+.wtabs button small { display: block; font-size: 11px; font-weight: 500; opacity: .8; margin-top: 2px; }
+.sheet-inner input:not([type=checkbox]):not([type=range]), .sheet-inner select { font: inherit; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; min-width: 0; }
+
+.chip.useup { padding: 5px 10px; font-size: 12px; margin-left: 6px; flex: none; }
+.swaprow { padding: 0 0 8px 36px; margin-top: -4px; border-bottom: 1px solid #f3ecdc; }
+.swaprow .chip { padding: 5px 10px; font-size: 12px; }
+
+/* Settings screen */
+.settings-head { display: flex; align-items: center; gap: 10px; margin: 4px 0 6px; }
+.settings-head h1 { margin: 0; }
+.setgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.acct { display: flex; align-items: center; gap: 12px; }
+.acct .avatar { width: 44px; height: 44px; border-radius: 999px; background: var(--grape); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex: none; }
+.acct b { display: block; word-break: break-all; }
+.acct .sub { display: block; font-size: 12.5px; margin-top: 2px; }
+#tabs button.active { color: #fff; }
+
+/* pantry groups are buttons you can see: a filled bar with a chevron that turns when open */
+details.pantry-group { margin-top: 10px; }
+details.pantry-group summary { list-style: none; display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 12px 14px; background: var(--panel); border-radius: 14px; box-shadow: 0 4px 16px rgba(74, 51, 0, .06); border-left: 5px solid var(--sky); }
+details.pantry-group[open] summary { border-radius: 14px 14px 0 0; border-left-color: var(--accent); }
+details.pantry-group summary::-webkit-details-marker { display: none; }
+details.pantry-group summary h2 { margin: 0; font-size: 15px; color: var(--text); text-transform: none; letter-spacing: 0; font-weight: 700; }
+details.pantry-group summary h2::before { content: &quot;▸&quot;; display: inline-block; width: 18px; color: var(--accent); font-size: 16px; transition: transform .15s; }
+details.pantry-group[open] summary h2::before { transform: rotate(90deg); }
+details.pantry-group summary .small { font-weight: 600; }
+details.pantry-group summary .small::after { content: &quot; · tap to open&quot;; color: var(--muted); font-weight: 500; }
+details.pantry-group[open] summary .small::after { content: &quot;&quot;; }
+details.pantry-group &gt; .card { border-radius: 0 0 14px 14px; margin-top: 0; }
+/* days already gone: eaten, not planned */
+.cell.past { background: var(--panel-2); color: var(--muted); opacity: .7; }
+.cell.past .cname { text-decoration: line-through; }
+.cell.past .ctag { color: #15803d; font-weight: 700; }
+.dayx.gone { color: #15803d; font-weight: 700; background: none; border: 0; }
+/* shop extras + done */
+.btn.big { font-size: 17px; padding: 16px 18px; }
+.done-box { background: #e7f8ec; color: #14532d; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; font-size: 15px; }
+.stack { display: flex; flex-direction: column; gap: 8px; }
+.stack .btn .sub { display: block; font-weight: 500; font-size: 12.5px; opacity: .8; }
+.line .cost.over { color: var(--bad); }
+.line .cost.muted { color: var(--muted); }
+.shophead .sub { display: block; margin-top: 6px; font-size: 14px; line-height: 1.35; }
+.bigtotal { font-size: 34px; }
+/* the meal picker: a clear start and a clear end */
+.pickhead { background: linear-gradient(135deg, var(--sun), #ffdf7a); color: var(--sun-ink); margin-top: 22px; box-shadow: 0 10px 30px rgba(255, 197, 49, .35); }
+.pickhead h3 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.pickhead .search { margin-top: 10px; width: 100%; background: #fff; }
+.endcard { text-align: center; background: var(--panel-2); box-shadow: none; }
+/* the meal picker rows: each meal is its own card with a colour bar for its type */
+.pickfilters { margin: 12px 0 0; }
+.pickfilters .chip { background: rgba(255,255,255,.75); border-color: rgba(255,255,255,.9); color: var(--sun-ink); }
+.pickfilters .chip.on { background: #1b1a2e; border-color: #1b1a2e; color: #fff; }
+h2.pickgroup { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text); margin: 22px 0 8px; }
+h2.pickgroup::before { content: &quot;&quot;; width: 12px; height: 12px; border-radius: 4px; background: var(--sun); }
+h2.pickgroup.mains::before { background: var(--coral); }
+h2.pickgroup.snack::before { background: var(--grape); }
+h2.pickgroup span { font-weight: 600; color: var(--muted); font-size: 12px; }
+.card.pickcard { background: transparent; box-shadow: none; padding: 0; }
+.card.pickcard .recipe-row.pick { background: var(--panel); border-radius: 14px; border-bottom: 0; margin-bottom: 8px; padding: 12px 10px 12px 12px; border-left: 5px solid var(--sun); box-shadow: 0 4px 16px rgba(74, 51, 0, .06); }
+.card.pickcard .recipe-row.pick.mains { border-left-color: var(--coral); }
+.card.pickcard .recipe-row.pick.snack { border-left-color: var(--grape); }
+.card.pickcard .recipe-row.pick.on { background: #fff7fa; outline: 2px solid var(--accent); }
+.card.pickcard .recipe-row.pick .name { font-size: 16px; }
+/* iPhone home-screen app: the status bar area is painted the same dark as the tab bar (black-translucent + a fixed band) */
+#statusband { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: #1b1a2e; z-index: 60; }
+#view { padding-top: calc(14px + env(safe-area-inset-top)); }
+#intro &gt; *, #gate &gt; * { padding-top: env(safe-area-inset-top); }
+
+/* compare by item: one row per ingredient, four shop cells that fit a phone */
+.cmp-row { padding: 10px 0; border-bottom: 1px solid #f3ecdc; }
+.cmp-row:last-child { border-bottom: 0; }
+.cmp-name { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+.cmp-name .sub { display: inline; font-weight: 500; color: var(--muted); font-size: 13px; margin-left: 6px; }
+.cmp-shops { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.cmp-cell { display: flex; flex-direction: column; align-items: center; padding: 6px 4px; border-radius: 10px; background: var(--panel-2); font-variant-numeric: tabular-nums; }
+.cmp-cell i { font-style: normal; font-size: 11px; color: var(--muted); font-weight: 600; }
+.cmp-cell b { font-size: 14px; }
+.cmp-cell.min { background: #dcfce7; color: #15803d; }
+.cmp-cell.here { outline: 2px solid var(--accent); outline-offset: -2px; }
+.fold summary b { font-size: 16px; }
+.fold h4.sub { margin: 16px 0 4px; }
+.line .cost.alt { color: #15803d; }
+
+html,body{overflow:hidden} *{animation:none!important;transition:none!important}&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;&lt;div id=&quot;statusband&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;
+&lt;main id=&quot;view&quot;&gt;&lt;div class=&quot;brandbar&quot;&gt;&lt;button class=&quot;gear&quot; data-action=&quot;settings&quot; aria-label=&quot;Settings&quot; title=&quot;Settings&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; width=&quot;18&quot; height=&quot;18&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;&gt;&lt;/circle&gt;&lt;path d=&quot;M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/button&gt;&lt;span class=&quot;wordmark&quot; aria-label=&quot;Fuel&quot;&gt;FU&lt;b&gt;£&lt;/b&gt;L&lt;/span&gt;&lt;/div&gt;&lt;h1&gt;Shop&lt;/h1&gt;&lt;div class=&quot;wtabs&quot; role=&quot;tablist&quot;&gt;&lt;button role=&quot;tab&quot; aria-selected=&quot;true&quot; class=&quot;on&quot; data-action=&quot;week&quot; data-week=&quot;2026-09-21&quot;&gt;This week&lt;small&gt;Mon 21 Sept – Sun 27 Sept&lt;/small&gt;&lt;/button&gt;&lt;button role=&quot;tab&quot; aria-selected=&quot;false&quot; class=&quot;&quot; data-action=&quot;week&quot; data-week=&quot;2026-09-28&quot;&gt;Next week&lt;small&gt;Mon 28 Sept – Sun 4 Oct&lt;/small&gt;&lt;/button&gt;&lt;/div&gt;
+  &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;small muted&quot; style=&quot;margin-bottom:6px&quot;&gt;&lt;b&gt;Frozen fruit for skyr bowls (your pick)&lt;/b&gt; · pick one or more; the amount is split between them&lt;/div&gt;&lt;div class=&quot;chip-row&quot;&gt;&lt;button class=&quot;chip on&quot; data-action=&quot;choice-toggle&quot; data-choice=&quot;frozen_fruit&quot; data-val=&quot;frozen_mango&quot;&gt;mango chunks&lt;/button&gt;&lt;button class=&quot;chip &quot; data-action=&quot;choice-toggle&quot; data-choice=&quot;frozen_fruit&quot; data-val=&quot;frozen_blueberries&quot;&gt;blueberries&lt;/button&gt;&lt;button class=&quot;chip &quot; data-action=&quot;choice-toggle&quot; data-choice=&quot;frozen_fruit&quot; data-val=&quot;frozen_raspberries&quot;&gt;raspberries&lt;/button&gt;&lt;button class=&quot;chip &quot; data-action=&quot;choice-toggle&quot; data-choice=&quot;frozen_fruit&quot; data-val=&quot;frozen_strawberries&quot;&gt;strawberries&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
+  
+  &lt;div class=&quot;card shophead&quot;&gt;&lt;div class=&quot;row&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;b class=&quot;bigtotal&quot;&gt;£40.55&lt;/b&gt; &lt;span class=&quot;muted&quot;&gt;at Aldi&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;muted small&quot;&gt;budget £45.00&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;budget &quot;&gt;&lt;i style=&quot;width:90%&quot;&gt;&lt;/i&gt;&lt;/div&gt;
+    &lt;p class=&quot;small muted&quot;&gt;£4.45 of your £45.00 budget left.&lt;/p&gt;
+    &lt;p class=&quot;small muted breakdown&quot;&gt;Meat £22.99 · Dairy £6.57 · Veg £3.73 · Bread £0.99 · Tins £2.74 · Frozen £3.53&lt;/p&gt;
+    &lt;div class=&quot;row&quot; style=&quot;gap:8px;margin-top:6px&quot;&gt;&lt;button class=&quot;btn small grow&quot; data-action=&quot;share-list&quot;&gt;Share list&lt;/button&gt;&lt;button class=&quot;btn ghost small grow&quot; data-action=&quot;copy-list&quot;&gt;Copy&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;button class=&quot;btn block big&quot; data-action=&quot;extra-add&quot; style=&quot;margin:2px 0 6px&quot;&gt;+ Add something to this shop&lt;/button&gt;
+  &lt;h2&gt;Where to shop&lt;/h2&gt;&lt;div class=&quot;shopchips&quot;&gt;&lt;button class=&quot;shopchip on &quot; data-action=&quot;pick-shop&quot; data-shop=&quot;aldi&quot;&gt;&lt;span&gt;Aldi&lt;/span&gt;&lt;b&gt;£40.55&lt;/b&gt;&lt;i&gt;cheapest&lt;/i&gt;&lt;/button&gt;&lt;button class=&quot;shopchip  &quot; data-action=&quot;pick-shop&quot; data-shop=&quot;tesco&quot;&gt;&lt;span&gt;Tesco&lt;/span&gt;&lt;b&gt;£51.08&lt;/b&gt;&lt;i&gt;&amp;nbsp;&lt;/i&gt;&lt;/button&gt;&lt;button class=&quot;shopchip  &quot; data-action=&quot;pick-shop&quot; data-shop=&quot;sainsburys&quot;&gt;&lt;span&gt;Sainsbury&#x27;s&lt;/span&gt;&lt;b&gt;£53.22&lt;/b&gt;&lt;i&gt;&amp;nbsp;&lt;/i&gt;&lt;/button&gt;&lt;button class=&quot;shopchip  &quot; data-action=&quot;pick-shop&quot; data-shop=&quot;asda&quot;&gt;&lt;span&gt;ASDA&lt;/span&gt;&lt;b&gt;£53.23&lt;/b&gt;&lt;i&gt;&amp;nbsp;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;
+  &lt;h2&gt;Aldi list &lt;span class=&quot;muted&quot; style=&quot;text-transform:none;letter-spacing:0;font-weight:600&quot;&gt;0/17 ticked&lt;/span&gt;&lt;/h2&gt;
+  &lt;div class=&quot;card list&quot;&gt;&lt;h4 class=&quot;aisle&quot;&gt;Meat, fish &amp;amp; eggs&lt;span&gt;£22.99&lt;/span&gt;&lt;/h4&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:chicken_breast&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;&lt;b class=&quot;n&quot;&gt;2 ×&lt;/b&gt; Everyday Essentials Chicken Breast Fillets 1kg&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Bang bang ×3, Red curry ×2, Fajitas ×1, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£8.50&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:beef_mince_5&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Ashfields British Lean Beef Steak Mince 5% Fat 750g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Chilli ×4&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£7.09&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:tuna&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;&lt;b class=&quot;n&quot;&gt;7 ×&lt;/b&gt; The Fishmonger Tuna Chunks In Spring Water 102g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£4.55&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:egg&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Merevale British Free Range Mixed Weight Eggs 15 Pack&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Eggs ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£2.85&lt;/span&gt;&lt;/label&gt;&lt;h4 class=&quot;aisle&quot;&gt;Dairy&lt;span&gt;£6.57&lt;/span&gt;&lt;/h4&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:skyr&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;&lt;b class=&quot;n&quot;&gt;2 ×&lt;/b&gt; Brooklea Fat Free Greek Style Yogurt 1kg&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Skyr ×4, Bang bang ×3, Fajitas ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£2.98&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:cheddar&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Emporium Grated Mature Cheddar 250g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Chilli ×4, Tuna pasta ×3, Fajitas ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£1.89&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:cottage_cheese&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;&lt;b class=&quot;n&quot;&gt;2 ×&lt;/b&gt; Everyday Essentials Low Fat Cottage Cheese 300g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£1.70&lt;/span&gt;&lt;/label&gt;&lt;h4 class=&quot;aisle&quot;&gt;Veg &amp;amp; herbs&lt;span&gt;£3.73&lt;/span&gt;&lt;/h4&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:pepper&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Nature&#x27;s Pick Mixed Peppers 3 Pack&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Red curry ×2, Fajitas ×1&lt;/span&gt;&lt;span class=&quot;sub alt&quot;&gt;£0.99 at Tesco&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£1.79&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:cucumber&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Nature&#x27;s Pick Cucumber 1 Pack&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Bang bang ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£0.99&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:onion&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Nature&#x27;s Pick Brown Onions 1kg&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Chilli ×4, Red curry ×2, Fajitas ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£0.95&lt;/span&gt;&lt;/label&gt;&lt;h4 class=&quot;aisle&quot;&gt;Bread, rice &amp;amp; pasta&lt;span&gt;£0.99&lt;/span&gt;&lt;/h4&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:wrap&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Village Bakery White Tortilla Wraps 8 Pack&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Fajitas ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£0.99&lt;/span&gt;&lt;/label&gt;&lt;h4 class=&quot;aisle&quot;&gt;Tins &amp;amp; jars&lt;span&gt;£2.74&lt;/span&gt;&lt;/h4&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:chopped_tomatoes&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;&lt;b class=&quot;n&quot;&gt;3 ×&lt;/b&gt; Everyday Essentials Chopped Tomatoes in Tomato Juice 400g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Chilli ×4, Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£1.29&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:coconut_milk&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Asia Green Garden Coconut Milk 400ml Full Fat&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Red curry ×2&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£0.75&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:kidney_beans&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;&lt;b class=&quot;n&quot;&gt;2 ×&lt;/b&gt; Everyday Essentials Red Kidney Beans 400g (260g drained)&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Chilli ×4&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£0.70&lt;/span&gt;&lt;/label&gt;&lt;h4 class=&quot;aisle&quot;&gt;Frozen&lt;span&gt;£3.53&lt;/span&gt;&lt;/h4&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:frozen_mango&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Four Seasons Frozen Mango Chunks 500g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Skyr ×4&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£1.79&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:broccoli&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Four Seasons Broccoli Florets 1kg&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£1.19&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:bread&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Everyday Essentials Medium Sliced Wholemeal Bread 800g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Eggs ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£0.55&lt;/span&gt;&lt;/label&gt;&lt;/div&gt;
+  
+  &lt;h2&gt;Extras&lt;/h2&gt;&lt;div class=&quot;card&quot;&gt;&lt;p class=&quot;small muted&quot;&gt;Nothing extra yet. Anything you add here is priced into the list and the total above.&lt;/p&gt;&lt;button class=&quot;btn block big&quot; data-action=&quot;extra-add&quot; style=&quot;margin-top:6px&quot;&gt;+ Add something to this shop&lt;/button&gt;&lt;/div&gt;
+  &lt;details class=&quot;fold&quot;&gt;&lt;summary&gt;&lt;b&gt;Why £40.55? Where can I save?&lt;/b&gt;&lt;span class=&quot;muted small&quot;&gt;what costs the most, and the cheaper options&lt;/span&gt;&lt;/summary&gt;
+    &lt;h4 class=&quot;sub&quot;&gt;Dearest meals this week&lt;/h4&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Chilli con carne&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;4 portions · £2.47 each&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£9.88&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Skyr protein bowl&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;4 portions · £1.59 each&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£6.36&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Tuna pasta, cottage cheese tomato sauce&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;3 portions · £2.10 each&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£6.30&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Bang bang crispy rice chicken salad&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;3 portions · £1.62 each&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£4.86&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Coconut chicken red curry&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;2 portions · £1.95 each&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£3.90&lt;/span&gt;&lt;/div&gt;
+    &lt;h4 class=&quot;sub&quot;&gt;Dearest items on the list&lt;/h4&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;2 × Everyday Essentials Chicken Breast Fillets 1kg&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Bang bang ×3, Red curry ×2, Fajitas ×1, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£8.50&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Ashfields British Lean Beef Steak Mince 5% Fat 750g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Chilli ×4&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£7.09&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;7 × The Fishmonger Tuna Chunks In Spring Water 102g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£4.55&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;2 × Brooklea Fat Free Greek Style Yogurt 1kg&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Skyr ×4, Bang bang ×3, Fajitas ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£2.98&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Merevale British Free Range Mixed Weight Eggs 15 Pack&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Eggs ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£2.85&lt;/span&gt;&lt;/div&gt;
+    &lt;h4 class=&quot;sub&quot;&gt;Ways to save&lt;/h4&gt;
+    &lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Swap Chilli con carne for Egg fried rice&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;£1.15 a portion instead of £2.47, 40g protein&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost alt&quot;&gt;−£5.28&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Swap Tuna pasta, cottage cheese tomato sauce for Egg fried rice&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;£1.15 a portion instead of £2.10, 40g protein&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost alt&quot;&gt;−£2.85&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Swap Chicken fajitas for Egg fried rice&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;£1.15 a portion instead of £2.08, 40g protein&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost alt&quot;&gt;−£0.93&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Shop at Aldi and Sainsbury&#x27;s&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Aldi £36.58: 14 items · Sainsbury&#x27;s £2.76: 3 items. Only worth it if you pass both.&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost alt&quot;&gt;−£1.21&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;1 line is cheaper at another shop&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Pepper (red/mixed) £0.99 at Tesco&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost alt&quot;&gt;−£0.80&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Thigh fillets instead of breast&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Usually cheaper per kilo. Switch it under ⚙ Settings → Shopping.&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;
+    
+    &lt;/details&gt;&lt;details class=&quot;fold&quot;&gt;&lt;summary&gt;&lt;b&gt;Compare item by item&lt;/b&gt;&lt;span class=&quot;muted small&quot;&gt;every line at every shop&lt;/span&gt;&lt;/summary&gt;&lt;div class=&quot;cmp&quot;&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Eggs&lt;span class=&quot;sub&quot;&gt;12.1&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£2.85&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£2.87&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£2.85&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£3.55&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Wholemeal bread (slices)&lt;span class=&quot;sub&quot;&gt;8.1&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£0.55&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£0.75&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.55&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.75&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Lean beef mince 5%&lt;span class=&quot;sub&quot;&gt;675g&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£7.09&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£9.53&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£7.09&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£7.09&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Onions&lt;span class=&quot;sub&quot;&gt;4.1&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£0.95&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£0.98&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£1.90&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.95&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Red kidney beans (drained weight)&lt;span class=&quot;sub&quot;&gt;324g&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£0.70&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£0.78&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.70&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.78&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Chopped tomatoes (tin)&lt;span class=&quot;sub&quot;&gt;1.07kg&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£1.29&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£1.95&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£1.29&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£1.29&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Mature cheddar&lt;span class=&quot;sub&quot;&gt;229.5g&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£1.89&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£2.45&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£2.45&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£3.67&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Skyr natural 0%&lt;span class=&quot;sub&quot;&gt;1.57kg&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£2.98&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£6.40&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£7.00&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£7.00&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Tuna chunks in spring water (145g tin)&lt;span class=&quot;sub&quot;&gt;6.1&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£4.55&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£4.55&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£4.55&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£4.55&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Cottage cheese low fat&lt;span class=&quot;sub&quot;&gt;303.8g&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£1.70&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£3.16&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£1.70&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£3.30&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Chicken breast fillets&lt;span class=&quot;sub&quot;&gt;1.52kg&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£8.50&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£10.65&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£13.38&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£12.29&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Cucumber&lt;span class=&quot;sub&quot;&gt;1&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell  here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell min &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.70&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Coconut milk&lt;span class=&quot;sub&quot;&gt;270ml&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£0.75&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£0.85&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.75&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.75&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Pepper (red/mixed)&lt;span class=&quot;sub&quot;&gt;2.7&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell  here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£1.79&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£1.60&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell min &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Tortilla wraps&lt;span class=&quot;sub&quot;&gt;2.7&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£1.32&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Frozen broccoli florets&lt;span class=&quot;sub&quot;&gt;162g&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell  here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£1.19&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£1.44&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell min &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.90&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£1.07&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Frozen mango chunks&lt;span class=&quot;sub&quot;&gt;432g&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£1.79&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£2.96&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£3.00&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£3.50&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/details&gt;
+  
+  &lt;h2&gt;Already in your pantry&lt;/h2&gt;&lt;div class=&quot;card&quot;&gt;&lt;p class=&quot;small muted&quot;&gt;Left off the list because it&#x27;s ticked in Pantry. Tap &quot;Need it&quot; to put it back. Buying everything would be £90.29 at Sainsbury&#x27;s.&lt;/p&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Butter&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Eggs ×3&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;butter&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Tomato purée&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4, Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;tomato_puree&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Chicken stock cube&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4, Red curry ×2&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;stock_cube&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Garlic paste&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4, Tuna pasta ×3, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;garlic_paste&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Ground cumin&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;cumin&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Paprika&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4, Tuna pasta ×3, Bang bang ×3&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;paprika&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Hot chilli powder&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4, Bang bang ×3&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;chilli_powder&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Basmati rice (dry)&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4, Bang bang ×3, Red curry ×2, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;basmati&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Whey protein powder&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Skyr ×4&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;protein_powder&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Honey&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Skyr ×4, Red curry ×2, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;honey&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Penne (dry)&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;penne&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Sriracha&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Bang bang ×3, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;sriracha&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Sweet chilli sauce&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Bang bang ×3&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;sweet_chilli&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Light soy sauce&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Bang bang ×3, Red curry ×2, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;soy_sauce&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Sesame oil&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Bang bang ×3, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;sesame_oil&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Thai red curry paste&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Red curry ×2&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;curry_paste&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Ginger &amp;amp; garlic paste&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Red curry ×2&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;ginger_garlic_paste&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Fajita seasoning&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Fajitas ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;fajita_seasoning&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;p class=&quot;small muted&quot;&gt;Aldi, ASDA and Sainsbury&#x27;s prices were read from each supermarket&#x27;s own website on 14 Sep 2026; Tesco prices on the date shown (big-store prices; Tesco Express and Sainsbury&#x27;s Local charge more). Lidl publishes no prices for its core range anywhere online, so Lidl can&#x27;t be compared. &#x27;Not stocked&#x27; means that shop&#x27;s website doesn&#x27;t list the item.&lt;/p&gt;&lt;/main&gt;
+&lt;nav id=&quot;tabs&quot;&gt;
+  &lt;button data-tab=&quot;plan&quot; class=&quot;&quot;&gt;Plan&lt;/button&gt;
+  &lt;button data-tab=&quot;cook&quot;&gt;Cook&lt;/button&gt;
+  &lt;button data-tab=&quot;shop&quot; class=&quot;active&quot;&gt;Shop&lt;/button&gt;
+  &lt;button data-tab=&quot;recipes&quot;&gt;Recipes&lt;/button&gt;
+  &lt;button data-tab=&quot;pantry&quot;&gt;Pantry&lt;/button&gt;
+&lt;/nav&gt;
+&lt;div id=&quot;intro&quot; hidden=&quot;&quot;&gt;&lt;/div&gt;
+&lt;div id=&quot;gate&quot; hidden=&quot;&quot;&gt;&lt;/div&gt;
+&lt;div id=&quot;sheet&quot; hidden=&quot;&quot;&gt;&lt;div class=&quot;sheet-inner&quot; id=&quot;sheet-inner&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+
+
+
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><h3><span>2</span>Shop.</h3><p><b>At the cheapest price.</b> Everything added up, rounded to real packs, priced at every supermarket. Tick what you already have and the total drops. Tick things off in the aisle.</p></div>
 <div class="step rv"><div class="phone"><iframe class="scr" tabindex="-1" loading="lazy" title="Fuel screen" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en-GB&quot;&gt;&lt;head&gt;
 &lt;meta charset=&quot;utf-8&quot;&gt;
 &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1, viewport-fit=cover&quot;&gt;
@@ -1589,468 +2050,7 @@ html,body{overflow:hidden} *{animation:none!important;transition:none!important}
 
 
 
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><h3><span>2</span>Cook</h3><p>A run sheet for Sunday, longest cook first. Each recipe scaled to your portions, with how many tubs go in the fridge, how many in the freezer, and the eat-by day.</p></div>
-<div class="step rv"><div class="phone"><iframe class="scr" tabindex="-1" loading="lazy" title="Fuel screen" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en-GB&quot;&gt;&lt;head&gt;
-&lt;meta charset=&quot;utf-8&quot;&gt;
-&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1, viewport-fit=cover&quot;&gt;
-&lt;title&gt;Fuel&lt;/title&gt;
-&lt;meta name=&quot;theme-color&quot; content=&quot;#1b1a2e&quot;&gt;
-&lt;meta name=&quot;apple-mobile-web-app-capable&quot; content=&quot;yes&quot;&gt;
-&lt;meta name=&quot;apple-mobile-web-app-status-bar-style&quot; content=&quot;black-translucent&quot;&gt;
-&lt;meta name=&quot;apple-mobile-web-app-title&quot; content=&quot;Fuel&quot;&gt;
-
-&lt;link rel=&quot;apple-touch-icon&quot; href=&quot;apple-touch-icon.png&quot;&gt;
-&lt;link rel=&quot;icon&quot; href=&quot;icon-192.png&quot;&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;amp;family=Inter:wght@400;500;600;700&amp;amp;display=swap&quot;&gt;
-
-&lt;style&gt;:root {
-  --bg: #fffbf2; --panel: #ffffff; --panel-2: #fff3d6; --line: #ffe3a3;
-  --text: #1b1a2e; --muted: #6b6785;
-  --accent: #ff4f7b; --accent-ink: #ffffff;
-  --sun: #ffc531; --sun-ink: #4a3300;
-  --lime: #7be34a; --lime-ink: #163d00;
-  --sky: #38c6ff; --sky-ink: #003a52;
-  --grape: #9b5cff; --grape-ink: #ffffff;
-  --coral: #ff7a45; --coral-ink: #ffffff;
-  --warn: #ff9f1c; --bad: #ff3b5c; --ok: #12b76a;
-  --tab-h: 64px; --radius: 18px; --lbl: 50px;
-  color-scheme: light;
-}
-* { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font: 16px/1.45 &quot;Inter&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif; font-feature-settings: &quot;cv11&quot;, &quot;ss03&quot;; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
-body { display: flex; flex-direction: column; height: 100%; height: 100dvh; background: linear-gradient(180deg, #fff1c2 0, var(--bg) 220px); }
-button, input, select, textarea { font: inherit; color: inherit; }
-button { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-input, select, label { -webkit-tap-highlight-color: transparent; }
-.btn:active, .stepper button:active, #tabs button:active, .cell:active { transform: scale(.96); }
-.btn, .stepper button, .cell, .chip, .day-pick button { transition: transform .08s ease, background-color .12s ease, opacity .12s ease; }
-#view { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 14px 14px 40px; }
-#view &gt; * { max-width: 720px; margin-left: auto; margin-right: auto; }
-#tabs { flex: none; height: calc(var(--tab-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); display: flex; background: #1b1a2e; z-index: 10; }
-#tabs button { flex: 1; background: none; border: 0; color: #b9b5d6; font-size: 13px; font-weight: 600; letter-spacing: .02em; position: relative; }
-#tabs button.active { color: #fff; }
-#tabs button.active::after { content: &quot;&quot;; position: absolute; left: 22%; right: 22%; bottom: 8px; height: 4px; border-radius: 4px; background: var(--accent); }
-#tabs button[data-tab=plan].active::after { background: var(--sun); }
-#tabs button[data-tab=cook].active::after { background: var(--coral); }
-#tabs button[data-tab=shop].active::after { background: var(--lime); }
-#tabs button[data-tab=recipes].active::after { background: var(--grape); }
-#tabs button[data-tab=pantry].active::after { background: var(--sky); }
-h1 { font-size: 28px; margin: 6px 0 14px; letter-spacing: -.02em; font-weight: 700; }
-h2 { font-size: 13px; margin: 26px 0 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 700; }
-h3 { font-size: 17px; margin: 0 0 6px; font-weight: 600; letter-spacing: -.01em; }
-p { margin: 6px 0; }
-.muted { color: var(--muted); }
-.small { font-size: 14px; }
-.card { background: var(--panel); border: 0; border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: 0 6px 24px rgba(74, 51, 0, .08); }
-.card.flat { background: transparent; box-shadow: none; padding: 4px 0; }
-.row { display: flex; align-items: center; gap: 10px; }
-.row .grow, .grow { flex: 1; min-width: 0; }
-.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.stat { border-radius: 14px; padding: 12px; }
-.stat:nth-child(1) { background: var(--sun); color: var(--sun-ink); }
-.stat:nth-child(2) { background: var(--grape); color: var(--grape-ink); }
-.stat:nth-child(3) { background: var(--lime); color: var(--lime-ink); }
-.stat b { display: block; font-size: 26px; font-weight: 700; line-height: 1.1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-.stat span { font-size: 12px; opacity: .85; font-weight: 600; }
-.stat b span { font-size: 13px; opacity: .7; }
-.bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; align-items: end; height: 76px; }
-.bar { position: relative; background: var(--panel-2); border-radius: 8px 8px 4px 4px; height: 100%; display: flex; align-items: flex-end; }
-.bar i { display: block; width: 100%; background: linear-gradient(180deg, var(--lime), #22c55e); border-radius: 8px 8px 4px 4px; }
-.bar.low i { background: linear-gradient(180deg, var(--sun), var(--warn)); }
-.bar b { position: absolute; top: -18px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--muted); font-weight: 600; }
-.bars-labels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 11px; color: var(--muted); text-align: center; margin-top: 4px; font-weight: 700; }
-.recipe-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #f3ecdc; }
-.recipe-row:last-child { border-bottom: 0; }
-.recipe-row .name { font-weight: 600; }
-.recipe-row .meta { font-size: 13px; color: var(--muted); margin-top: 3px; }
-.stepper { display: flex; align-items: center; background: var(--panel-2); border-radius: 12px; overflow: hidden; }
-.stepper button { width: 42px; height: 40px; background: none; border: 0; font-size: 22px; color: var(--accent); font-weight: 700; }
-.stepper b { min-width: 28px; text-align: center; font-size: 17px; font-weight: 700; }
-.stepper:not(.zero) { background: var(--accent); }
-.stepper:not(.zero) button, .stepper:not(.zero) b { color: #fff; }
-.stepper.zero b { color: var(--muted); }
-.badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #efe9ff; color: #5b3fb8; margin-right: 4px; vertical-align: middle; }
-.badge.ok { background: #dcfce7; color: #15803d; }
-.badge.warn { background: #fff1d6; color: #b45309; }
-.badge.bad { background: #ffe0e6; color: #be123c; }
-.grid { display: grid; grid-template-columns: 46px repeat(3, 1fr); gap: 6px; font-size: 12px; }
-.grid .hd { color: var(--muted); text-align: center; font-weight: 600; font-size: 12px; padding: 2px 0 4px; }
-.grid .lbl { color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 12px; }
-.grid .lbl .dname { font-weight: 700; }
-.grid .lbl .dnum { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.grid .lbl .dayx { margin-top: 3px; }
-.grid .lbl.off .dname, .grid .lbl.off .dnum { text-decoration: line-through; opacity: .5; }
-.grid .lbl.off .dayx { background: var(--lime); color: var(--lime-ink); }
-.cell { min-height: 68px; border-radius: 10px; background: var(--panel-2); border: 0; padding: 7px 6px; text-align: left; line-height: 1.2; font-size: 12.5px; font-weight: 600; color: var(--text); display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; overflow: hidden; touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-.cell .cname { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.cell .ctag { font-size: 10px; font-weight: 600; opacity: .8; }
-.cell .cmeta { font-size: 10.5px; font-weight: 500; opacity: .75; }
-.cell.lifted { opacity: .35; }
-.cell.over { outline: 3px solid var(--accent); outline-offset: -3px; transform: scale(1.04); }
-.cell.ghost { position: fixed; left: 0; top: 0; z-index: 50; pointer-events: none; box-shadow: 0 12px 30px rgba(27,26,46,.3); transform: translate(-999px, -999px); }
-@media (min-width: 560px) { .cell { min-height: 76px; font-size: 13.5px; } .cell .cmeta { font-size: 11.5px; } .grid { grid-template-columns: 56px repeat(3, 1fr); gap: 8px; } }
-.cell.empty { color: #b5a67a; font-weight: 500; font-size: 18px; background: #fff8e4; border: 2px dashed #ffe3a3; align-items: center; gap: 0; }
-.cell.empty .cadd { font-size: 11px; }
-
-.cell.late { outline: 3px solid var(--warn); outline-offset: -3px; }
-.btn { display: inline-block; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 12px; padding: 12px 18px; font-weight: 700; }
-.btn.ghost { background: var(--panel-2); color: var(--text); }
-.btn.small { padding: 8px 12px; font-size: 13px; }
-.btn.block { display: block; width: 100%; text-align: center; }
-.btn.danger { background: #ffe0e6; color: var(--bad); }
-.warn-box { border-left: 5px solid var(--warn); padding: 10px 12px; background: #fff4de; border-radius: 0 12px 12px 0; font-size: 14px; margin: 8px 0; }
-.bad-box { border-left: 5px solid var(--bad); padding: 10px 12px; background: #ffe6ec; border-radius: 0 12px 12px 0; font-size: 14px; margin: 8px 0; }
-ul.clean { list-style: none; padding: 0; margin: 0; }
-ul.clean li { padding: 7px 0; border-bottom: 1px solid #f3ecdc; }
-ul.clean li:last-child { border-bottom: 0; }
-ol.steps { padding-left: 20px; margin: 6px 0; }
-ol.steps li { margin: 6px 0; }
-ol.steps li::marker { color: var(--accent); font-weight: 700; }
-.ing-list { display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; font-size: 14px; }
-.ing-list b { text-align: right; white-space: nowrap; color: #5b3fb8; }
-.tub { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
-.tub div { border-radius: 12px; padding: 10px 8px; text-align: center; }
-.tub div:nth-child(1) { background: var(--sun); color: var(--sun-ink); }
-.tub div:nth-child(2) { background: var(--lime); color: var(--lime-ink); }
-.tub div:nth-child(3) { background: var(--sky); color: var(--sky-ink); }
-.tub b { font-size: 24px; display: block; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-.tub span { font-size: 11px; font-weight: 700; opacity: .85; }
-.shop-rank { display: flex; flex-direction: column; gap: 10px; }
-.shop-card { background: var(--panel); border-radius: var(--radius); padding: 12px 14px; box-shadow: 0 6px 24px rgba(74, 51, 0, .08); border: 3px solid transparent; }
-.shop-card.best { border-color: var(--lime); }
-.shop-card summary { list-style: none; display: flex; align-items: center; gap: 10px; cursor: pointer; }
-.shop-card summary::-webkit-details-marker { display: none; }
-.shop-card .total { font-size: 22px; font-weight: 700; margin-left: auto; font-variant-numeric: tabular-nums; }
-.line { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f3ecdc; font-size: 14px; }
-.line:last-child { border-bottom: 0; }
-.line input[type=checkbox] { width: 24px; height: 24px; accent-color: var(--ok); flex: none; }
-.line.done .name { text-decoration: line-through; color: var(--muted); }
-.line .cost { margin-left: auto; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.line .sub { display: block; font-size: 13px; color: var(--muted); }
-.budget { height: 14px; background: var(--panel-2); border-radius: 999px; overflow: hidden; margin: 10px 0 4px; }
-.budget i { display: block; height: 100%; background: linear-gradient(90deg, var(--lime), var(--sky)); }
-.budget.over i { background: var(--bad); }
-label.field { display: block; margin: 10px 0; font-size: 14px; color: var(--muted); font-weight: 700; }
-label.field input, label.field select, label.field textarea { display: block; width: 100%; margin-top: 4px; background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 10px; color: var(--text); font-weight: 500; }
-label.field textarea { min-height: 120px; }
-.check { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f3ecdc; font-size: 15px; }
-.check:last-child { border-bottom: 0; }
-.check input { width: 24px; height: 24px; accent-color: var(--sky); flex: none; }
-.check .sub { font-size: 12px; color: var(--muted); display: block; }
-.search { width: 100%; background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 12px; color: var(--text); margin-bottom: 10px; }
-#sheet[hidden] { display: none; }
-#sheet { position: fixed; inset: 0; background: rgba(27,26,46,.45); z-index: 20; display: flex; align-items: flex-end; }
-.sheet-inner { background: var(--panel); border-radius: 22px 22px 0 0; width: 100%; max-width: 720px; margin: 0 auto; padding: 18px 16px calc(20px + env(safe-area-inset-bottom)); max-height: 85vh; overflow: auto; }
-.chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-.chip { background: var(--panel-2); border: 2px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; }
-.chip.on { background: var(--grape); color: #fff; border-color: var(--grape); }
-.ing-row { display: grid; grid-template-columns: 1fr 80px 34px; gap: 6px; margin: 6px 0; }
-.ing-row select, .ing-row input { background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 8px; color: var(--text); min-width: 0; }
-.ing-row button { background: none; border: 0; color: var(--bad); font-size: 18px; }
-hr { border: 0; border-top: 1px solid #f3ecdc; margin: 14px 0; }
-.day-pick { display: flex; gap: 6px; margin: 8px 0; }
-.day-pick button { flex: 1; background: var(--panel-2); border: 0; border-radius: 10px; padding: 8px 0; font-size: 12px; color: var(--muted); font-weight: 600; }
-.day-pick button.on { background: var(--coral); color: #fff; }
-a { color: var(--accent); font-weight: 700; }
-/* pick list, week switch, comparison tables */
-.chip.meal { border: 0; font-weight: 600; }
-.recipe-row.pick .tick { width: 26px; height: 26px; accent-color: var(--accent); flex: none; }
-.recipe-row.pick.on { background: #fff7fa; border-radius: 12px; padding-left: 6px; padding-right: 6px; }
-.recipe-row.pick .stepper button { width: 36px; }
-.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
-.tbl th { text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 6px 6px 6px 0; border-bottom: 2px solid var(--line); }
-.tbl td { padding: 8px 6px 8px 0; border-bottom: 1px solid #f3ecdc; vertical-align: top; }
-.tbl tr:last-child td { border-bottom: 0; }
-.tbl .r { text-align: right; white-space: nowrap; }
-.tbl tr.best td { background: #f0fbe8; }
-.tbl td.min { color: #15803d; font-weight: 700; background: #ecfdf3; }
-.tbl .sub { display: block; font-size: 11px; color: var(--muted); }
-.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -6px; padding: 0 6px; }
-.tbl.cmp { min-width: 560px; }
-.tbl.cmp th:first-child, .tbl.cmp td:first-child { position: sticky; left: 0; background: var(--panel); z-index: 1; min-width: 130px; }
-.tbl.cmp tr.best td:first-child { background: #f0fbe8; }
-
-.grid .dayx { border: 0; background: #fff3d6; color: var(--muted); width: 22px; height: 22px; border-radius: 999px; font-size: 14px; line-height: 1; padding: 0; font-weight: 700; }
-.cell.off { background: repeating-linear-gradient(135deg, #f6f1e4 0 6px, #fff 6px 12px); border: 0; }
-.check .qty { width: 84px; background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 6px 8px; font-size: 14px; }
-
-.recipe-row.pick.full { opacity: .45; }
-.recipe-row.pick.full .tick { cursor: not-allowed; }
-.stepper button:disabled { opacity: .35; }
-
-.cell.lifted { outline: 3px solid var(--accent); outline-offset: -3px; transform: scale(1.06); box-shadow: 0 8px 20px rgba(255,79,123,.35); z-index: 2; }
-#hint { position: fixed; left: 50%; top: calc(12px + env(safe-area-inset-top)); transform: translate(-50%, -20px); background: #1b1a2e; color: #fff; padding: 10px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; z-index: 30; white-space: nowrap; }
-#hint.on { opacity: 1; transform: translate(-50%, 0); }
-@keyframes sheetUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
-.sheet-inner { animation: sheetUp .18s ease-out; }
-html { scroll-behavior: auto; }
-
-.cell.out { background: #ecebf3; color: var(--muted); }
-.bar.off { opacity: .35; }
-.cell.tubcell { outline: 2px dashed rgba(27,26,46,.35); outline-offset: -2px; }
-.cell { position: relative; }
-.chip[data-action] { cursor: pointer; }
-.btn.block .sub { display: block; font-weight: 500; font-size: 12px; }
-
-/* ---- intro ---- */
-#gate { position: fixed; inset: 0; z-index: 40; background: linear-gradient(160deg, #1b1a2e 0%, #4b2a8a 60%, #ff4f7b 130%); color: #fff; display: flex; flex-direction: column; overflow-y: auto; }
-#gate[hidden] { display: none; }
-#gate .wrap, #gate h1, #gate p, #gate .go, #gate .back, #gate .logo, #gate input.big { }
-#intro { position: fixed; inset: 0; z-index: 30; background: linear-gradient(160deg, #ffc531 0%, #ff4f7b 55%, #9b5cff 100%); color: #fff; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-#intro[hidden] { display: none; }
-#gate .wrap, #intro .wrap { margin: auto; width: 100%; max-width: 560px; padding: 28px 22px calc(28px + env(safe-area-inset-bottom)); animation: introIn .45s cubic-bezier(.2,.8,.2,1) both; }
-@keyframes introIn { from { opacity: 0; transform: translateY(28px) scale(.98); } to { opacity: 1; transform: none; } }
-#intro .dots { display: flex; gap: 8px; margin-bottom: 26px; }
-#intro .dots i { flex: 1; height: 6px; border-radius: 6px; background: rgba(255,255,255,.35); }
-#intro .dots i.on { background: #fff; }
-#gate h1, #intro h1 { font-size: 34px; line-height: 1.08; margin: 0 0 10px; letter-spacing: -.025em; font-weight: 700; }
-#gate p, #intro p { font-size: 17px; opacity: .92; margin: 0 0 22px; }
-#intro .opt { display: block; width: 100%; text-align: left; background: rgba(255,255,255,.16); border: 2px solid rgba(255,255,255,.35); color: #fff; border-radius: 18px; padding: 16px 18px; margin: 10px 0; font-size: 18px; font-weight: 600; backdrop-filter: blur(6px); transition: transform .12s, background .12s; }
-#intro .opt small { display: block; font-weight: 500; font-size: 14px; opacity: .88; margin-top: 3px; }
-#intro .opt:active { transform: scale(.98); }
-#intro .opt.on { background: #fff; color: #1b1a2e; border-color: #fff; }
-#intro .chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 16px; }
-#intro .chips .opt { width: auto; display: inline-block; padding: 12px 18px; margin: 0; font-size: 18px; }
-#gate input.big, #intro input.big { width: 100%; font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; padding: 14px 18px; border-radius: 18px; border: 0; background: #fff; color: #1b1a2e; text-align: center; margin: 6px 0 14px; }
-#gate .go, #intro .go { display: block; width: 100%; background: #1b1a2e; color: #fff; border: 0; border-radius: 18px; padding: 18px; font-size: 18px; font-weight: 600; margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
-#gate .back, #intro .back { background: none; border: 0; color: #fff; opacity: .85; font-weight: 600; padding: 12px 0; font-size: 15px; }
-#intro .stat-row { display: flex; gap: 10px; margin: 8px 0 18px; }
-#intro .stat-row div { flex: 1; background: rgba(255,255,255,.18); border-radius: 16px; padding: 12px; text-align: center; }
-#intro .stat-row b { display: block; font-size: 28px; }
-#intro .stat-row span { font-size: 12px; opacity: .9; font-weight: 600; }
-#gate .logo, #intro .logo { font-family: &quot;Bricolage Grotesque&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif; font-weight: 600; font-size: 26px; letter-spacing: .01em; line-height: 1; margin-bottom: 22px; color: #fff; }
-#gate .logo b, #intro .logo b { color: #ff4f7b; font-weight: 600; }
-.range { width: 100%; accent-color: var(--accent); }
-.badge.snack { background: #fff1d6; color: #b45309; }
-
-.snackbar { margin-top: 10px; background: #fff7e0; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
-.snackbar.empty { color: var(--muted); }
-.macro { background: var(--panel-2); border-radius: 12px; padding: 12px; margin: 6px 0 12px; font-size: 14px; }
-.macro .lbl { width: 64px; font-weight: 700; color: var(--muted); font-size: 12px; }
-.macro .val { min-width: 54px; text-align: right; }
-.macro .budget.kcal i { background: linear-gradient(90deg, var(--sun), var(--coral)); }
-.budget.low i { background: linear-gradient(90deg, var(--sun), var(--warn)); }
-.macro .budget.kcal.low i { background: linear-gradient(90deg, var(--sun), var(--warn)); }
-.seg { display: flex; background: var(--panel-2); border-radius: 12px; padding: 3px; margin: 6px 0 10px; }
-.seg button { flex: 1; border: 0; background: none; border-radius: 10px; padding: 8px; font-size: 13px; font-weight: 600; color: var(--muted); }
-.seg button.on { background: #fff; color: var(--text); box-shadow: 0 2px 8px rgba(74,51,0,.12); }
-#gate ul.clean li { border-color: rgba(255,255,255,.25); }
-.signin-msg { margin-top: 12px; padding: 12px 14px; border-radius: 14px; font-size: 15px; font-weight: 600; background: rgba(255,255,255,.18); }
-.signin-msg.ok { background: rgba(124,255,178,.25); }
-.signin-msg.bad { background: rgba(255,80,80,.35); }
-
-/* access screen */
-#gate .gate-access h1 { font-size: 44px; }
-#gate .who { font-size: 15px; opacity: .85; margin: -4px 0 18px; }
-#gate .ginstall { font-size: 15px; } #gate .ginstall summary { cursor: pointer; list-style: none; } #gate .ginstall summary::-webkit-details-marker { display: none; } #gate .ginstall small { display: block; opacity: .85; margin-top: 4px; } #gate .ginstall ol { margin: 10px 0 2px; padding-left: 20px; } #gate .ginstall li { margin: 6px 0; }
-#gate .gcard { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); border-radius: 20px; padding: 14px 16px; margin-bottom: 12px; backdrop-filter: blur(8px); }
-#gate .perk { display: flex; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.14); }
-#gate .perk:last-child { border-bottom: 0; }
-#gate .perk .ico { font-size: 26px; width: 36px; text-align: center; flex: none; }
-#gate .perk b { display: block; font-size: 16px; }
-#gate .perk small, #gate .price small, #gate .codecard small { display: block; font-size: 13px; opacity: .85; font-weight: 500; margin-top: 2px; }
-#gate .price { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(255,255,255,.92); color: #1b1a2e; }
-#gate .price b { font-size: 18px; }
-#gate .price .go { width: auto; margin: 0; padding: 14px 20px; text-decoration: none; text-align: center; background: #ff4f7b; }
-#gate .codecard label { display: block; margin-bottom: 10px; }
-#gate .codecard .row { gap: 8px; }
-#gate .codecard input.big { font-size: 20px; letter-spacing: .08em; text-align: left; padding: 14px 16px; margin: 0; }
-#gate .codecard .go { width: auto; margin: 0; padding: 0 18px; height: 56px; white-space: nowrap; }
-#gate .gfoot { display: flex; align-items: center; gap: 12px; justify-content: center; margin-top: 8px; opacity: .9; }
-#gate .gfoot .back { padding: 8px 0; }
-
-/* wordmark inside the app */
-.brandbar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 2px 0 0; margin-bottom: -22px; position: relative; z-index: 2; }
-.brandbar .gear { border: 0; background: var(--panel); color: var(--text); width: 32px; height: 32px; border-radius: 999px; padding: 0; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(74,51,0,.1); }
-.brandbar .gear svg { display: block; }
-.brandbar .wordmark { font-family: &quot;Bricolage Grotesque&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif; font-weight: 600; font-size: 17px; letter-spacing: .01em; color: var(--text); opacity: .9; }
-.brandbar .wordmark b { color: var(--accent); }
-
-/* Shop, phone-first */
-.bigtotal { font-size: 26px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-.shopchips { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-.shopchip { background: var(--panel); border: 2px solid var(--line); border-radius: 14px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; min-width: 0; }
-.shopchip span { font-size: 11px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.shopchip b { font-size: 13px; font-weight: 700; }
-.shopchip i { font-style: normal; font-size: 9px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.shopchip.on { border-color: var(--accent); background: #fff5f8; }
-.shopchip.on i { color: var(--accent); }
-.shopchip.dead { opacity: .55; }
-/* the shop list is read standing in an aisle with a basket: big names, one line per item, aisle headings, ticked lines fade */
-.card.list { padding: 10px 14px 14px; }
-.card.list .line { align-items: flex-start; padding: 12px 0; gap: 12px; }
-.card.list .line input[type=checkbox] { margin-top: 1px; width: 28px; height: 28px; }
-.card.list .line .name { font-size: 17px; font-weight: 700; line-height: 1.25; color: var(--text); }
-.card.list .line .name .n { color: var(--accent); }
-.card.list .line .sub { font-size: 13px; margin-top: 3px; }
-.card.list .line .cost { font-size: 15px; margin-top: 3px; }
-.card.list .line.done { opacity: .45; }
-.card.list .line.done .name { text-decoration: line-through; }
-.card.list h4.aisle { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; margin: 18px 0 2px; padding-bottom: 4px; border-bottom: 2px solid var(--line); color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 700; }
-.card.list h4.aisle:first-child { margin-top: 4px; }
-.card.list h4.aisle span { font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; font-weight: 600; }
-.breakdown { margin-top: 4px; }
-.line .name { display: block; font-weight: 700; line-height: 1.25; }
-.line .sub.alt { color: #15803d; font-weight: 700; }
-.line .find { flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--panel-2); display: grid; place-items: center; text-decoration: none; font-weight: 700; color: var(--text); }
-.fold { background: var(--panel); border-radius: var(--radius); padding: 12px 14px; margin: 10px 0; box-shadow: 0 6px 24px rgba(74, 51, 0, .08); }
-.fold summary { list-style: none; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
-.fold summary::-webkit-details-marker { display: none; }
-.fold[open] summary { margin-bottom: 8px; }
-@media (max-width: 420px) { .shopchips { grid-template-columns: repeat(5, 1fr); } .shopchip { padding: 7px 2px; } .shopchip b { font-size: 12px; } }
-
-/* Plan/Cook clarity */
-.tipcard { background: #1b1a2e; color: #fff; }
-.tipcard h3 { color: #fff; }
-.tipcard ol.tips { padding-left: 20px; margin: 4px 0 12px; }
-.tipcard ol.tips li { margin: 6px 0; font-size: 14.5px; line-height: 1.4; }
-.tipcard ol.tips li::marker { color: var(--sun); font-weight: 700; }
-.tipcard .btn { background: var(--sun); color: var(--sun-ink); }
-h4.sub { font-size: 12px; margin: 16px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
-ol.cooklist li { margin: 8px 0; }
-ol.cooklist li b { display: block; font-size: 15px; }
-ol.cooklist li span, ul.clean li span.small { display: block; margin-top: 1px; }
-ul.store { list-style: none; padding: 0; margin: 0; }
-ul.store li { padding: 8px 0; border-bottom: 1px solid #f3ecdc; font-size: 14px; line-height: 1.4; }
-ul.store li:last-child { border-bottom: 0; }
-ul.store li b { display: inline-block; min-width: 64px; color: #5b3fb8; }
-.gridcard { padding: 12px; }
-
-
-#view.dragging { touch-action: none; }
-.cell.ghost { transition: none; opacity: .96; transform-origin: center; }
-.cell.over { background: #fff; }
-
-/* Week switcher: one segmented control, dates spelled out */
-.wtabs { display: flex; background: var(--panel); border-radius: 14px; padding: 4px; margin: -2px 0 14px; box-shadow: 0 6px 24px rgba(74,51,0,.08); }
-.wtabs button { flex: 1; border: 0; background: none; border-radius: 11px; padding: 9px 6px; font-weight: 600; color: var(--muted); font-size: 14px; line-height: 1.2; transition: background-color .12s ease, color .12s ease; }
-.wtabs button.on { background: #1b1a2e; color: #fff; }
-.wtabs button small { display: block; font-size: 11px; font-weight: 500; opacity: .8; margin-top: 2px; }
-.sheet-inner input:not([type=checkbox]):not([type=range]), .sheet-inner select { font: inherit; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; min-width: 0; }
-
-.chip.useup { padding: 5px 10px; font-size: 12px; margin-left: 6px; flex: none; }
-.swaprow { padding: 0 0 8px 36px; margin-top: -4px; border-bottom: 1px solid #f3ecdc; }
-.swaprow .chip { padding: 5px 10px; font-size: 12px; }
-
-/* Settings screen */
-.settings-head { display: flex; align-items: center; gap: 10px; margin: 4px 0 6px; }
-.settings-head h1 { margin: 0; }
-.setgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
-.acct { display: flex; align-items: center; gap: 12px; }
-.acct .avatar { width: 44px; height: 44px; border-radius: 999px; background: var(--grape); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex: none; }
-.acct b { display: block; word-break: break-all; }
-.acct .sub { display: block; font-size: 12.5px; margin-top: 2px; }
-#tabs button.active { color: #fff; }
-
-/* pantry groups are buttons you can see: a filled bar with a chevron that turns when open */
-details.pantry-group { margin-top: 10px; }
-details.pantry-group summary { list-style: none; display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 12px 14px; background: var(--panel); border-radius: 14px; box-shadow: 0 4px 16px rgba(74, 51, 0, .06); border-left: 5px solid var(--sky); }
-details.pantry-group[open] summary { border-radius: 14px 14px 0 0; border-left-color: var(--accent); }
-details.pantry-group summary::-webkit-details-marker { display: none; }
-details.pantry-group summary h2 { margin: 0; font-size: 15px; color: var(--text); text-transform: none; letter-spacing: 0; font-weight: 700; }
-details.pantry-group summary h2::before { content: &quot;▸&quot;; display: inline-block; width: 18px; color: var(--accent); font-size: 16px; transition: transform .15s; }
-details.pantry-group[open] summary h2::before { transform: rotate(90deg); }
-details.pantry-group summary .small { font-weight: 600; }
-details.pantry-group summary .small::after { content: &quot; · tap to open&quot;; color: var(--muted); font-weight: 500; }
-details.pantry-group[open] summary .small::after { content: &quot;&quot;; }
-details.pantry-group &gt; .card { border-radius: 0 0 14px 14px; margin-top: 0; }
-/* days already gone: eaten, not planned */
-.cell.past { background: var(--panel-2); color: var(--muted); opacity: .7; }
-.cell.past .cname { text-decoration: line-through; }
-.cell.past .ctag { color: #15803d; font-weight: 700; }
-.dayx.gone { color: #15803d; font-weight: 700; background: none; border: 0; }
-/* shop extras + done */
-.btn.big { font-size: 17px; padding: 16px 18px; }
-.done-box { background: #e7f8ec; color: #14532d; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; font-size: 15px; }
-.stack { display: flex; flex-direction: column; gap: 8px; }
-.stack .btn .sub { display: block; font-weight: 500; font-size: 12.5px; opacity: .8; }
-.line .cost.over { color: var(--bad); }
-.line .cost.muted { color: var(--muted); }
-.shophead .sub { display: block; margin-top: 6px; font-size: 14px; line-height: 1.35; }
-.bigtotal { font-size: 34px; }
-/* the meal picker: a clear start and a clear end */
-.pickhead { background: linear-gradient(135deg, var(--sun), #ffdf7a); color: var(--sun-ink); margin-top: 22px; box-shadow: 0 10px 30px rgba(255, 197, 49, .35); }
-.pickhead h3 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.pickhead .search { margin-top: 10px; width: 100%; background: #fff; }
-.endcard { text-align: center; background: var(--panel-2); box-shadow: none; }
-/* the meal picker rows: each meal is its own card with a colour bar for its type */
-.pickfilters { margin: 12px 0 0; }
-.pickfilters .chip { background: rgba(255,255,255,.75); border-color: rgba(255,255,255,.9); color: var(--sun-ink); }
-.pickfilters .chip.on { background: #1b1a2e; border-color: #1b1a2e; color: #fff; }
-h2.pickgroup { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text); margin: 22px 0 8px; }
-h2.pickgroup::before { content: &quot;&quot;; width: 12px; height: 12px; border-radius: 4px; background: var(--sun); }
-h2.pickgroup.mains::before { background: var(--coral); }
-h2.pickgroup.snack::before { background: var(--grape); }
-h2.pickgroup span { font-weight: 600; color: var(--muted); font-size: 12px; }
-.card.pickcard { background: transparent; box-shadow: none; padding: 0; }
-.card.pickcard .recipe-row.pick { background: var(--panel); border-radius: 14px; border-bottom: 0; margin-bottom: 8px; padding: 12px 10px 12px 12px; border-left: 5px solid var(--sun); box-shadow: 0 4px 16px rgba(74, 51, 0, .06); }
-.card.pickcard .recipe-row.pick.mains { border-left-color: var(--coral); }
-.card.pickcard .recipe-row.pick.snack { border-left-color: var(--grape); }
-.card.pickcard .recipe-row.pick.on { background: #fff7fa; outline: 2px solid var(--accent); }
-.card.pickcard .recipe-row.pick .name { font-size: 16px; }
-/* iPhone home-screen app: the status bar area is painted the same dark as the tab bar (black-translucent + a fixed band) */
-#statusband { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: #1b1a2e; z-index: 60; }
-#view { padding-top: calc(14px + env(safe-area-inset-top)); }
-#intro &gt; *, #gate &gt; * { padding-top: env(safe-area-inset-top); }
-
-/* compare by item: one row per ingredient, four shop cells that fit a phone */
-.cmp-row { padding: 10px 0; border-bottom: 1px solid #f3ecdc; }
-.cmp-row:last-child { border-bottom: 0; }
-.cmp-name { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
-.cmp-name .sub { display: inline; font-weight: 500; color: var(--muted); font-size: 13px; margin-left: 6px; }
-.cmp-shops { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.cmp-cell { display: flex; flex-direction: column; align-items: center; padding: 6px 4px; border-radius: 10px; background: var(--panel-2); font-variant-numeric: tabular-nums; }
-.cmp-cell i { font-style: normal; font-size: 11px; color: var(--muted); font-weight: 600; }
-.cmp-cell b { font-size: 14px; }
-.cmp-cell.min { background: #dcfce7; color: #15803d; }
-.cmp-cell.here { outline: 2px solid var(--accent); outline-offset: -2px; }
-.fold summary b { font-size: 16px; }
-.fold h4.sub { margin: 16px 0 4px; }
-.line .cost.alt { color: #15803d; }
-
-html,body{overflow:hidden} *{animation:none!important;transition:none!important}&lt;/style&gt;&lt;/head&gt;
-&lt;body&gt;&lt;div id=&quot;statusband&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;
-&lt;main id=&quot;view&quot;&gt;&lt;div class=&quot;brandbar&quot;&gt;&lt;button class=&quot;gear&quot; data-action=&quot;settings&quot; aria-label=&quot;Settings&quot; title=&quot;Settings&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; width=&quot;18&quot; height=&quot;18&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;&gt;&lt;/circle&gt;&lt;path d=&quot;M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/button&gt;&lt;span class=&quot;wordmark&quot; aria-label=&quot;Fuel&quot;&gt;FU&lt;b&gt;£&lt;/b&gt;L&lt;/span&gt;&lt;/div&gt;&lt;h1&gt;Shop&lt;/h1&gt;&lt;div class=&quot;wtabs&quot; role=&quot;tablist&quot;&gt;&lt;button role=&quot;tab&quot; aria-selected=&quot;true&quot; class=&quot;on&quot; data-action=&quot;week&quot; data-week=&quot;2026-09-21&quot;&gt;This week&lt;small&gt;Mon 21 Sept – Sun 27 Sept&lt;/small&gt;&lt;/button&gt;&lt;button role=&quot;tab&quot; aria-selected=&quot;false&quot; class=&quot;&quot; data-action=&quot;week&quot; data-week=&quot;2026-09-28&quot;&gt;Next week&lt;small&gt;Mon 28 Sept – Sun 4 Oct&lt;/small&gt;&lt;/button&gt;&lt;/div&gt;
-  &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;small muted&quot; style=&quot;margin-bottom:6px&quot;&gt;&lt;b&gt;Frozen fruit for skyr bowls (your pick)&lt;/b&gt; · pick one or more; the amount is split between them&lt;/div&gt;&lt;div class=&quot;chip-row&quot;&gt;&lt;button class=&quot;chip on&quot; data-action=&quot;choice-toggle&quot; data-choice=&quot;frozen_fruit&quot; data-val=&quot;frozen_mango&quot;&gt;mango chunks&lt;/button&gt;&lt;button class=&quot;chip &quot; data-action=&quot;choice-toggle&quot; data-choice=&quot;frozen_fruit&quot; data-val=&quot;frozen_blueberries&quot;&gt;blueberries&lt;/button&gt;&lt;button class=&quot;chip &quot; data-action=&quot;choice-toggle&quot; data-choice=&quot;frozen_fruit&quot; data-val=&quot;frozen_raspberries&quot;&gt;raspberries&lt;/button&gt;&lt;button class=&quot;chip &quot; data-action=&quot;choice-toggle&quot; data-choice=&quot;frozen_fruit&quot; data-val=&quot;frozen_strawberries&quot;&gt;strawberries&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
-  
-  &lt;div class=&quot;card shophead&quot;&gt;&lt;div class=&quot;row&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;b class=&quot;bigtotal&quot;&gt;£40.55&lt;/b&gt; &lt;span class=&quot;muted&quot;&gt;at Aldi&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;muted small&quot;&gt;budget £45.00&lt;/span&gt;&lt;/div&gt;
-    &lt;div class=&quot;budget &quot;&gt;&lt;i style=&quot;width:90%&quot;&gt;&lt;/i&gt;&lt;/div&gt;
-    &lt;p class=&quot;small muted&quot;&gt;£4.45 of your £45.00 budget left.&lt;/p&gt;
-    &lt;p class=&quot;small muted breakdown&quot;&gt;Meat £22.99 · Dairy £6.57 · Veg £3.73 · Bread £0.99 · Tins £2.74 · Frozen £3.53&lt;/p&gt;
-    &lt;div class=&quot;row&quot; style=&quot;gap:8px;margin-top:6px&quot;&gt;&lt;button class=&quot;btn small grow&quot; data-action=&quot;share-list&quot;&gt;Share list&lt;/button&gt;&lt;button class=&quot;btn ghost small grow&quot; data-action=&quot;copy-list&quot;&gt;Copy&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
-  &lt;button class=&quot;btn block big&quot; data-action=&quot;extra-add&quot; style=&quot;margin:2px 0 6px&quot;&gt;+ Add something to this shop&lt;/button&gt;
-  &lt;h2&gt;Where to shop&lt;/h2&gt;&lt;div class=&quot;shopchips&quot;&gt;&lt;button class=&quot;shopchip on &quot; data-action=&quot;pick-shop&quot; data-shop=&quot;aldi&quot;&gt;&lt;span&gt;Aldi&lt;/span&gt;&lt;b&gt;£40.55&lt;/b&gt;&lt;i&gt;cheapest&lt;/i&gt;&lt;/button&gt;&lt;button class=&quot;shopchip  &quot; data-action=&quot;pick-shop&quot; data-shop=&quot;tesco&quot;&gt;&lt;span&gt;Tesco&lt;/span&gt;&lt;b&gt;£51.08&lt;/b&gt;&lt;i&gt;&amp;nbsp;&lt;/i&gt;&lt;/button&gt;&lt;button class=&quot;shopchip  &quot; data-action=&quot;pick-shop&quot; data-shop=&quot;sainsburys&quot;&gt;&lt;span&gt;Sainsbury&#x27;s&lt;/span&gt;&lt;b&gt;£53.22&lt;/b&gt;&lt;i&gt;&amp;nbsp;&lt;/i&gt;&lt;/button&gt;&lt;button class=&quot;shopchip  &quot; data-action=&quot;pick-shop&quot; data-shop=&quot;asda&quot;&gt;&lt;span&gt;ASDA&lt;/span&gt;&lt;b&gt;£53.23&lt;/b&gt;&lt;i&gt;&amp;nbsp;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;
-  &lt;h2&gt;Aldi list &lt;span class=&quot;muted&quot; style=&quot;text-transform:none;letter-spacing:0;font-weight:600&quot;&gt;0/17 ticked&lt;/span&gt;&lt;/h2&gt;
-  &lt;div class=&quot;card list&quot;&gt;&lt;h4 class=&quot;aisle&quot;&gt;Meat, fish &amp;amp; eggs&lt;span&gt;£22.99&lt;/span&gt;&lt;/h4&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:chicken_breast&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;&lt;b class=&quot;n&quot;&gt;2 ×&lt;/b&gt; Everyday Essentials Chicken Breast Fillets 1kg&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Bang bang ×3, Red curry ×2, Fajitas ×1, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£8.50&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:beef_mince_5&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Ashfields British Lean Beef Steak Mince 5% Fat 750g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Chilli ×4&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£7.09&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:tuna&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;&lt;b class=&quot;n&quot;&gt;7 ×&lt;/b&gt; The Fishmonger Tuna Chunks In Spring Water 102g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£4.55&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:egg&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Merevale British Free Range Mixed Weight Eggs 15 Pack&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Eggs ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£2.85&lt;/span&gt;&lt;/label&gt;&lt;h4 class=&quot;aisle&quot;&gt;Dairy&lt;span&gt;£6.57&lt;/span&gt;&lt;/h4&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:skyr&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;&lt;b class=&quot;n&quot;&gt;2 ×&lt;/b&gt; Brooklea Fat Free Greek Style Yogurt 1kg&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Skyr ×4, Bang bang ×3, Fajitas ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£2.98&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:cheddar&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Emporium Grated Mature Cheddar 250g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Chilli ×4, Tuna pasta ×3, Fajitas ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£1.89&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:cottage_cheese&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;&lt;b class=&quot;n&quot;&gt;2 ×&lt;/b&gt; Everyday Essentials Low Fat Cottage Cheese 300g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£1.70&lt;/span&gt;&lt;/label&gt;&lt;h4 class=&quot;aisle&quot;&gt;Veg &amp;amp; herbs&lt;span&gt;£3.73&lt;/span&gt;&lt;/h4&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:pepper&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Nature&#x27;s Pick Mixed Peppers 3 Pack&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Red curry ×2, Fajitas ×1&lt;/span&gt;&lt;span class=&quot;sub alt&quot;&gt;£0.99 at Tesco&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£1.79&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:cucumber&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Nature&#x27;s Pick Cucumber 1 Pack&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Bang bang ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£0.99&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:onion&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Nature&#x27;s Pick Brown Onions 1kg&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Chilli ×4, Red curry ×2, Fajitas ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£0.95&lt;/span&gt;&lt;/label&gt;&lt;h4 class=&quot;aisle&quot;&gt;Bread, rice &amp;amp; pasta&lt;span&gt;£0.99&lt;/span&gt;&lt;/h4&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:wrap&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Village Bakery White Tortilla Wraps 8 Pack&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Fajitas ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£0.99&lt;/span&gt;&lt;/label&gt;&lt;h4 class=&quot;aisle&quot;&gt;Tins &amp;amp; jars&lt;span&gt;£2.74&lt;/span&gt;&lt;/h4&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:chopped_tomatoes&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;&lt;b class=&quot;n&quot;&gt;3 ×&lt;/b&gt; Everyday Essentials Chopped Tomatoes in Tomato Juice 400g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Chilli ×4, Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£1.29&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:coconut_milk&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Asia Green Garden Coconut Milk 400ml Full Fat&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Red curry ×2&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£0.75&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:kidney_beans&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;&lt;b class=&quot;n&quot;&gt;2 ×&lt;/b&gt; Everyday Essentials Red Kidney Beans 400g (260g drained)&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Chilli ×4&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£0.70&lt;/span&gt;&lt;/label&gt;&lt;h4 class=&quot;aisle&quot;&gt;Frozen&lt;span&gt;£3.53&lt;/span&gt;&lt;/h4&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:frozen_mango&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Four Seasons Frozen Mango Chunks 500g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Skyr ×4&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£1.79&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:broccoli&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Four Seasons Broccoli Florets 1kg&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£1.19&lt;/span&gt;&lt;/label&gt;&lt;label class=&quot;line &quot;&gt;&lt;input type=&quot;checkbox&quot; data-tick=&quot;aldi:bread&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Everyday Essentials Medium Sliced Wholemeal Bread 800g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Eggs ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£0.55&lt;/span&gt;&lt;/label&gt;&lt;/div&gt;
-  
-  &lt;h2&gt;Extras&lt;/h2&gt;&lt;div class=&quot;card&quot;&gt;&lt;p class=&quot;small muted&quot;&gt;Nothing extra yet. Anything you add here is priced into the list and the total above.&lt;/p&gt;&lt;button class=&quot;btn block big&quot; data-action=&quot;extra-add&quot; style=&quot;margin-top:6px&quot;&gt;+ Add something to this shop&lt;/button&gt;&lt;/div&gt;
-  &lt;details class=&quot;fold&quot;&gt;&lt;summary&gt;&lt;b&gt;Why £40.55? Where can I save?&lt;/b&gt;&lt;span class=&quot;muted small&quot;&gt;what costs the most, and the cheaper options&lt;/span&gt;&lt;/summary&gt;
-    &lt;h4 class=&quot;sub&quot;&gt;Dearest meals this week&lt;/h4&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Chilli con carne&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;4 portions · £2.47 each&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£9.88&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Skyr protein bowl&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;4 portions · £1.59 each&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£6.36&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Tuna pasta, cottage cheese tomato sauce&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;3 portions · £2.10 each&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£6.30&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Bang bang crispy rice chicken salad&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;3 portions · £1.62 each&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£4.86&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Coconut chicken red curry&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;2 portions · £1.95 each&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£3.90&lt;/span&gt;&lt;/div&gt;
-    &lt;h4 class=&quot;sub&quot;&gt;Dearest items on the list&lt;/h4&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;2 × Everyday Essentials Chicken Breast Fillets 1kg&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Bang bang ×3, Red curry ×2, Fajitas ×1, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£8.50&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Ashfields British Lean Beef Steak Mince 5% Fat 750g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Chilli ×4&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£7.09&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;7 × The Fishmonger Tuna Chunks In Spring Water 102g&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£4.55&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;2 × Brooklea Fat Free Greek Style Yogurt 1kg&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Skyr ×4, Bang bang ×3, Fajitas ×1&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£2.98&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Merevale British Free Range Mixed Weight Eggs 15 Pack&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Eggs ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£2.85&lt;/span&gt;&lt;/div&gt;
-    &lt;h4 class=&quot;sub&quot;&gt;Ways to save&lt;/h4&gt;
-    &lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Swap Chilli con carne for Egg fried rice&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;£1.15 a portion instead of £2.47, 40g protein&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost alt&quot;&gt;−£5.28&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Swap Tuna pasta, cottage cheese tomato sauce for Egg fried rice&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;£1.15 a portion instead of £2.10, 40g protein&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost alt&quot;&gt;−£2.85&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Swap Chicken fajitas for Egg fried rice&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;£1.15 a portion instead of £2.08, 40g protein&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost alt&quot;&gt;−£0.93&lt;/span&gt;&lt;/div&gt;
-    &lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Shop at Aldi and Sainsbury&#x27;s&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Aldi £36.58: 14 items · Sainsbury&#x27;s £2.76: 3 items. Only worth it if you pass both.&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost alt&quot;&gt;−£1.21&lt;/span&gt;&lt;/div&gt;
-    &lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;1 line is cheaper at another shop&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Pepper (red/mixed) £0.99 at Tesco&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost alt&quot;&gt;−£0.80&lt;/span&gt;&lt;/div&gt;
-    &lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Thigh fillets instead of breast&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Usually cheaper per kilo. Switch it under ⚙ Settings → Shopping.&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;
-    
-    &lt;/details&gt;&lt;details class=&quot;fold&quot;&gt;&lt;summary&gt;&lt;b&gt;Compare item by item&lt;/b&gt;&lt;span class=&quot;muted small&quot;&gt;every line at every shop&lt;/span&gt;&lt;/summary&gt;&lt;div class=&quot;cmp&quot;&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Eggs&lt;span class=&quot;sub&quot;&gt;12.1&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£2.85&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£2.87&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£2.85&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£3.55&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Wholemeal bread (slices)&lt;span class=&quot;sub&quot;&gt;8.1&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£0.55&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£0.75&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.55&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.75&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Lean beef mince 5%&lt;span class=&quot;sub&quot;&gt;675g&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£7.09&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£9.53&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£7.09&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£7.09&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Onions&lt;span class=&quot;sub&quot;&gt;4.1&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£0.95&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£0.98&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£1.90&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.95&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Red kidney beans (drained weight)&lt;span class=&quot;sub&quot;&gt;324g&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£0.70&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£0.78&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.70&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.78&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Chopped tomatoes (tin)&lt;span class=&quot;sub&quot;&gt;1.07kg&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£1.29&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£1.95&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£1.29&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£1.29&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Mature cheddar&lt;span class=&quot;sub&quot;&gt;229.5g&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£1.89&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£2.45&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£2.45&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£3.67&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Skyr natural 0%&lt;span class=&quot;sub&quot;&gt;1.57kg&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£2.98&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£6.40&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£7.00&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£7.00&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Tuna chunks in spring water (145g tin)&lt;span class=&quot;sub&quot;&gt;6.1&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£4.55&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£4.55&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£4.55&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£4.55&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Cottage cheese low fat&lt;span class=&quot;sub&quot;&gt;303.8g&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£1.70&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£3.16&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£1.70&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£3.30&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Chicken breast fillets&lt;span class=&quot;sub&quot;&gt;1.52kg&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£8.50&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£10.65&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£13.38&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£12.29&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Cucumber&lt;span class=&quot;sub&quot;&gt;1&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell  here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell min &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.70&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Coconut milk&lt;span class=&quot;sub&quot;&gt;270ml&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£0.75&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£0.85&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.75&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.75&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Pepper (red/mixed)&lt;span class=&quot;sub&quot;&gt;2.7&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell  here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£1.79&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£1.60&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell min &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Tortilla wraps&lt;span class=&quot;sub&quot;&gt;2.7&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£1.32&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£0.99&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Frozen broccoli florets&lt;span class=&quot;sub&quot;&gt;162g&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell  here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£1.19&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£1.44&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell min &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£0.90&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£1.07&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cmp-row&quot;&gt;&lt;div class=&quot;cmp-name&quot;&gt;Frozen mango chunks&lt;span class=&quot;sub&quot;&gt;432g&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;cmp-shops&quot;&gt;&lt;span class=&quot;cmp-cell min here&quot;&gt;&lt;i&gt;Aldi&lt;/i&gt;&lt;b&gt;£1.79&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;ASDA&lt;/i&gt;&lt;b&gt;£2.96&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Tesco&lt;/i&gt;&lt;b&gt;£3.00&lt;/b&gt;&lt;/span&gt;&lt;span class=&quot;cmp-cell  &quot;&gt;&lt;i&gt;Sains&lt;/i&gt;&lt;b&gt;£3.50&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/details&gt;
-  
-  &lt;h2&gt;Already in your pantry&lt;/h2&gt;&lt;div class=&quot;card&quot;&gt;&lt;p class=&quot;small muted&quot;&gt;Left off the list because it&#x27;s ticked in Pantry. Tap &quot;Need it&quot; to put it back. Buying everything would be £90.29 at Sainsbury&#x27;s.&lt;/p&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Butter&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Eggs ×3&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;butter&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Tomato purée&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4, Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;tomato_puree&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Chicken stock cube&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4, Red curry ×2&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;stock_cube&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Garlic paste&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4, Tuna pasta ×3, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;garlic_paste&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Ground cumin&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;cumin&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Paprika&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4, Tuna pasta ×3, Bang bang ×3&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;paprika&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Hot chilli powder&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4, Bang bang ×3&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;chilli_powder&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Basmati rice (dry)&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Chilli ×4, Bang bang ×3, Red curry ×2, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;basmati&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Whey protein powder&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Skyr ×4&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;protein_powder&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Honey&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Skyr ×4, Red curry ×2, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;honey&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Penne (dry)&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;penne&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Sriracha&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Bang bang ×3, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;sriracha&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Sweet chilli sauce&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Bang bang ×3&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;sweet_chilli&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Light soy sauce&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Bang bang ×3, Red curry ×2, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;soy_sauce&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Sesame oil&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Bang bang ×3, Soy honey ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;sesame_oil&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Thai red curry paste&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Red curry ×2&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;curry_paste&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Ginger &amp;amp; garlic paste&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Red curry ×2&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;ginger_garlic_paste&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;Fajita seasoning&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;plenty · Fajitas ×1&lt;/span&gt;&lt;/span&gt;&lt;button class=&quot;btn ghost small&quot; data-action=&quot;need&quot; data-id=&quot;fajita_seasoning&quot;&gt;Need it&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
-  &lt;p class=&quot;small muted&quot;&gt;Aldi, ASDA and Sainsbury&#x27;s prices were read from each supermarket&#x27;s own website on 14 Sep 2026; Tesco prices on the date shown (big-store prices; Tesco Express and Sainsbury&#x27;s Local charge more). Lidl publishes no prices for its core range anywhere online, so Lidl can&#x27;t be compared. &#x27;Not stocked&#x27; means that shop&#x27;s website doesn&#x27;t list the item.&lt;/p&gt;&lt;/main&gt;
-&lt;nav id=&quot;tabs&quot;&gt;
-  &lt;button data-tab=&quot;plan&quot; class=&quot;&quot;&gt;Plan&lt;/button&gt;
-  &lt;button data-tab=&quot;cook&quot;&gt;Cook&lt;/button&gt;
-  &lt;button data-tab=&quot;shop&quot; class=&quot;active&quot;&gt;Shop&lt;/button&gt;
-  &lt;button data-tab=&quot;recipes&quot;&gt;Recipes&lt;/button&gt;
-  &lt;button data-tab=&quot;pantry&quot;&gt;Pantry&lt;/button&gt;
-&lt;/nav&gt;
-&lt;div id=&quot;intro&quot; hidden=&quot;&quot;&gt;&lt;/div&gt;
-&lt;div id=&quot;gate&quot; hidden=&quot;&quot;&gt;&lt;/div&gt;
-&lt;div id=&quot;sheet&quot; hidden=&quot;&quot;&gt;&lt;div class=&quot;sheet-inner&quot; id=&quot;sheet-inner&quot;&gt;&lt;/div&gt;&lt;/div&gt;
-
-
-
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><h3><span>3</span>Shop</h3><p>Everything added up, rounded to real packs, priced at every supermarket. Tick what you already have and the total drops. Tick things off in the aisle.</p></div>
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><h3><span>3</span>Cook.</h3><p><b>All on Sunday, ready for the week.</b> A run sheet for Sunday, longest cook first. Each recipe scaled to your portions, with how many tubs go in the fridge, how many in the freezer, and the eat-by day.</p></div>
 </div></div></section>
 
 
@@ -4398,4 +4398,4 @@ html,body{overflow:hidden} *{animation:none!important;transition:none!important}
 })();
 
 </script>
-<!-- deployed 2026-09-19T10:24:42Z -->
+<!-- deployed 2026-09-19T14:03:21Z -->

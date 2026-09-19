@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v64';
+const APP_VERSION = 'v65';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -538,7 +538,9 @@ function renderShop() {
   const chosen = byShop[w.shop] ? byShop[w.shop] : bestWeek;
   const split = P.cheapestSplit(needs, ing);
   const budget = S.settings.budget;
-  const pct = Math.min(100, Math.round((chosen.comparable / budget) * 100));
+  // The budget is a WEEKLY food budget, so it is judged on the week's food. Stock-ups (oil, spices, rice, whey) are a one-off that lasts weeks:
+  // they stay in the big total, but they don't make a first shop read as "over budget".
+  const pct = Math.min(100, Math.round((chosen.weekly / budget) * 100));
   const oldest = ranked.map((b) => b.oldest).filter(Boolean).sort()[0];
   // shop picker: one chip per shop, total on it
   const chips = ranked.map((b) => {
@@ -598,13 +600,15 @@ function renderShop() {
   return `${head}
   ${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
   ${doneBox}
-  <div class="card shophead"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.comparable)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]}</span>${chosen.stock ? `<span class="sub muted">${P.gbp(chosen.weekly)} of food for the week, ${P.gbp(chosen.stock)} of stock-ups that will last</span>` : ''}${chosen.elsewhere ? `<span class="sub muted">Includes about ${P.gbp(chosen.elsewhere)} for what ${P.SHOP_NAMES[chosen.shop]} doesn't sell, priced at the cheapest other shop.</span>` : ''}</span><span class="muted small">budget ${P.gbp(budget)}</span></div>
-    <div class="budget ${chosen.comparable > budget ? 'over' : ''}"><i style="width:${pct}%"></i></div>
-    <p class="small muted">${chosen.comparable > budget ? `Over your ${P.gbp(budget)} budget by ${P.gbp(chosen.comparable - budget)}.` : `${P.gbp(budget - chosen.comparable)} of your ${P.gbp(budget)} budget left.`}</p>
+  <div class="card shophead"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.stock ? chosen.weekly : chosen.comparable)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]}${chosen.stock ? ' · this week\'s food' : ''}</span></span><span class="muted small">budget ${P.gbp(budget)}</span></div>
+    <div class="budget ${chosen.weekly > budget ? 'over' : ''}"><i style="width:${pct}%"></i></div>
+    <p class="small muted">${chosen.weekly > budget ? `Over your ${P.gbp(budget)} budget by ${P.gbp(chosen.weekly - budget)}. <b>Where can I save?</b> below shows the cheaper swaps.` : `${P.gbp(budget - chosen.weekly)} of your ${P.gbp(budget)} budget left.`}</p>
+    ${chosen.stock ? `<div class="stockline"><b>+ ${P.gbp(chosen.stock)} one-off stock-ups</b> = ${P.gbp(chosen.comparable)} at the till today<span>Oil, spices, rice and the like. They last weeks, so next week is just the food. <a href="#" data-action="go-pantry">Already got some? Tick them in Pantry.</a></span></div>` : ''}
+    ${chosen.elsewhere ? `<p class="small muted">Includes about ${P.gbp(chosen.elsewhere)} for what ${P.SHOP_NAMES[chosen.shop]} doesn't sell, priced at the cheapest other shop.</p>` : ''}
     ${breakdown ? `<p class="small muted breakdown">${breakdown}</p>` : ''}
     <div class="row" style="gap:8px;margin-top:6px"><button class="btn small grow" data-action="share-list">Share list</button><button class="btn ghost small grow" data-action="copy-list">Copy</button>${online[chosen.shop] ? `<a class="btn ghost small grow" style="text-align:center" href="${online[chosen.shop]('')}" target="_blank" rel="noopener">Shop online</a>` : ''}</div></div>
   <button class="btn block big" data-action="extra-add" style="margin:2px 0 6px">+ Add something to this shop</button>
-  <h2>Where to shop</h2><div class="shopchips">${chips}</div>
+  <h2>Where to shop${ranked.some((b) => b.stock) ? ' <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">total at the till</span>' : ''}</h2><div class="shopchips">${chips}</div>
   <h2>${P.SHOP_NAMES[chosen.shop]} list <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">${done}/${weekCount} ticked</span></h2>
   <div class="card list">${missing}${lines || '<p class="muted">Nothing priced at this shop.</p>'}</div>
   ${stockHtml}
@@ -633,7 +637,7 @@ async function pastCell(w, day, slot) {
 // First-time tip cards, one per tab. Dismissed with "Got it" (S.tips[key]); "Show the tips again" in Settings clears them.
 const TIPS = {
   cook: { title: 'How Cook works', items: ['<b>Batch cook</b> lists everything for your cook day with amounts already scaled for your week.', '<b>Box it up</b> tells you what goes in the fridge, what goes in the freezer, and how to reheat it.', 'Tap a meal on the Plan grid and tick <b>make fresh</b> if you\'d rather cook it on the day.'] },
-  shop: { title: 'How Shop works', items: ['The big number is <b>everything on the list</b> at the cheapest shop. Tap another shop to see its list instead. <b>Why this much?</b> shows what costs most and where to save.', 'Tick lines off as you go round. When they\'re all ticked the shop is logged under <b>Settings → Money</b>.', '<b>Stock up</b> is the whey, oils, spices and rice that last weeks: counted this week, in your Pantry next week.', 'Want milk for your coffee or crisps? <b>Add something to this shop</b>, just this week or every week.'] },
+  shop: { title: 'How Shop works', items: ['The big number is <b>this week's food</b> at the cheapest shop, and the budget bar judges that. One-off stock-ups (oil, spices, rice) sit underneath with the total you'd pay at the till. Tap another shop to see its list instead. <b>Why this much?</b> shows what costs most and where to save.', 'Tick lines off as you go round. When they\'re all ticked the shop is logged under <b>Settings → Money</b>.', '<b>Stock up</b> is the whey, oils, spices and rice that last weeks: counted this week, in your Pantry next week.', 'Want milk for your coffee or crisps? <b>Add something to this shop</b>, just this week or every week.'] },
   pantry: { title: 'How Pantry works', items: ['Tick what you already have and it comes off the shop list.', 'Type an amount if you only have some, or leave it blank for "plenty".', 'Stock-ups you\'ve ticked or bought carry into next week on their own.', 'Got leftovers to use? Tap <b>Use up</b> and the Plan tab suggests meals for them.'] },
 };
 function tipCard(key) { if (S.tips && S.tips[key]) return ''; const t = TIPS[key]; return `<div class="card tipcard"><h3>${t.title}</h3><ol class="tips">${t.items.map((i) => `<li>${i}</li>`).join('')}</ol><button class="btn small" data-action="tip-done" data-tip="${key}">Got it</button></div>`; }
@@ -801,7 +805,7 @@ function gateScreen() {
   if (cloud.status === 'error') { el.innerHTML = `<div class="wrap"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>Can't reach the cloud.</h1><p>${esc(cloud.error || '')}</p><button class="go" data-action="gate-retry">Try again</button></div>`; el.hidden = false; return true; }
   if (!cloud.user) {
     const mode = S.authMode || 'signin';
-    el.innerHTML = `<div class="wrap"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>${mode === 'signup' ? 'Create your account.' : 'Sign in.'}</h1><p>Batch-cook Sunday, sorted till Saturday, priced at the cheapest shop.</p>
+    el.innerHTML = `<div class="wrap"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>${mode === 'signup' ? 'Create your account.' : 'Sign in.'}</h1><p><b>Plan. Shop. Cook.</b> High-protein meals, at the cheapest price, all cooked on Sunday ready for the week.</p>
       ${gateInstallHint()}<form id="signin-form" data-mode="${mode}"><input class="big" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:20px;text-align:left"><input class="big" name="password" type="password" required minlength="8" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:20px;text-align:left;margin-top:10px"><button class="go" type="submit">${mode === 'signup' ? 'Create account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
       <p class="small" style="margin-top:14px">${mode === 'signup' ? `Already have an account? <a href="#" data-action="auth-mode" data-mode="signin" style="color:#fff;font-weight:600">Sign in</a>` : `New here? <a href="#" data-action="auth-mode" data-mode="signup" style="color:#fff;font-weight:600">Create an account</a> · <a href="#" data-action="auth-forgot" style="color:#fff">Forgot password?</a>`}</p>
       <p class="small" style="opacity:.85;margin-top:16px"><a href="terms.html" style="color:#fff">Terms</a> · <a href="privacy.html" style="color:#fff">Privacy</a></p></div>`;
@@ -1155,6 +1159,7 @@ function onAction(e) {
   }
   else if (a === 'gate-retry') { location.reload(); }
   else if (a === 'plan-filter') { S.planFilter = el.dataset.filter; save(); render(); const h = document.getElementById('pick-head'); if (h) h.scrollIntoView({ block: 'start' }); }
+  else if (a === 'go-pantry') { e.preventDefault(); S.prevTab = S.tab; S.tab = 'pantry'; save(); render({ top: true }); }
   else if (a === 'go-ideas') { S.tab = 'recipes'; S.ideasOpen = true; save(); render({ top: true }); }
   else if (a === 'ideas-toggle') { S.ideasOpen = !S.ideasOpen; save(); render(); }
   else if (a === 'idea-tag') { S.ideaTag = el.dataset.tag; save(); render(); }
