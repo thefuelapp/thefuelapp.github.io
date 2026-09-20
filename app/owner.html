@@ -18,7 +18,7 @@ h2 { font: 700 13px "JetBrains Mono", monospace; letter-spacing: .14em; text-tra
 .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
 .card { background: var(--panel); border-radius: 20px; padding: 16px 18px; box-shadow: 0 1px 0 var(--line); }
 .stat b { display: block; font: 800 40px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; } .stat span { display: block; margin-top: 6px; font-weight: 600; } .stat small { display: block; color: var(--muted); margin-top: 2px; }
-.stat.sun { background: var(--sun); } .stat.navy { background: var(--navy); color: #fff; } .stat.navy small { color: rgba(255,255,255,.7); } .stat.lime { background: var(--lime); } .stat.grape { background: var(--grape); color: #fff; } .stat.grape small { color: rgba(255,255,255,.8); }
+.stat.sun { background: var(--sun); } .stat.navy { background: var(--navy); color: #fff; } .stat.navy small { color: rgba(255,255,255,.7); } .stat.lime { background: var(--lime); } .stat.lime b { font-size: 32px; line-height: 40px; } .stat.grape { background: var(--grape); color: #fff; } .stat.grape small { color: rgba(255,255,255,.8); }
 .up { color: #0a8a4a; font-weight: 700; } .down { color: #c2264b; font-weight: 700; } .navy .up, .grape .up { color: var(--lime); }
 .chart { display: flex; align-items: flex-end; gap: 3px; height: 150px; padding-top: 8px; } .chart .col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 2px; height: 100%; position: relative; }
 .chart i { display: block; width: 100%; border-radius: 5px 5px 0 0; background: var(--grape); min-height: 2px; } .chart i.paid { background: var(--pink); border-radius: 0; } .chart .col:hover::after { content: attr(data-tip); position: absolute; bottom: 100%; background: var(--navy); color: #fff; font-size: 12px; padding: 4px 8px; border-radius: 8px; white-space: nowrap; z-index: 2; }
@@ -49,18 +49,32 @@ function signInForm(msg) {
   $('f').addEventListener('submit', async (e) => { e.preventDefault(); const fd = new FormData(e.target); const { error } = await db.auth.signInWithPassword({ email: fd.get('email'), password: fd.get('password') }); if (error) signInForm(error.message); else load(); });
 }
 
+// owner.html?demo shows made-up numbers, clearly labelled, so the layout can be seen without signing in
+const DEMO = new URLSearchParams(location.search).has('demo');
+function demoData() {
+  const today = new Date(); const by_day = [...Array(30)].map((_, i) => { const d = new Date(today); d.setDate(d.getDate() - (29 - i)); const s = Math.max(0, Math.round(2 + i / 5 + 3 * Math.sin(i / 2.2))); return { day: d.toISOString().slice(0, 10), signups: s, paid: Math.round(s * 0.4), active: s + 3 }; });
+  const mk = (h, email, plan, source, w, sh, home, device) => ({ email, created_at: new Date(Date.now() - h * 3600e3).toISOString(), last_sign_in_at: new Date(Date.now() - h * 1800e3).toISOString(), last_active: new Date(Date.now() - h * 900e3).toISOString(), plan, source, weeks_planned: w, shops_done: sh, on_home_screen: home, device });
+  return { generated_at: new Date().toISOString(), users: { total: 148, last_24h: 9, last_7d: 41, last_30d: 148, prev_7d: 28 }, access: { with_access: 71, paid: 58, paid_7d: 19, paid_prev_7d: 12, by_code: 11, other: 2, signed_up_no_access: 77 },
+    activity: { active_24h: 23, active_7d: 64, active_30d: 97, planned_a_week: 63, planned_2_plus: 31, finished_a_shop: 38, on_home_screen: 44, iphone: 52, android: 14 }, goals: { build: 39, lean: 18, lose: 9, eatwell: 5 }, by_day,
+    recent: [mk(2, 'sam@example.ac.uk', 'lifetime', 'stripe:cs_x', 1, 0, true, 'ios'), mk(5, 'jess@example.ac.uk', null, null, 0, 0, false, null), mk(9, 'tom@example.com', 'year', 'code:MATES2026', 2, 1, true, 'android'), mk(30, 'ali@example.ac.uk', 'lifetime', 'stripe:cs_y', 3, 2, true, 'ios')],
+    codes: [{ code: 'FOUNDER-CAM', plan: 'founder', uses: 1, max_uses: 1 }, { code: 'MATES2026', plan: 'year', uses: 10, max_uses: 25 }] };
+}
 async function load() {
+  if (DEMO) { $('stamp').textContent = ''; return draw(demoData(), true); }
   const { data: sess } = await db.auth.getSession();
   $('signout').hidden = $('refresh').hidden = !sess.session;
   if (!sess.session) return signInForm();
   main.innerHTML = '<p class="note">Loading…</p>';
   const { data: d, error } = await db.rpc('owner_stats');
   if (error) { main.innerHTML = `<div class="card"><p class="err">${/not allowed/i.test(error.message) ? `This account (${esc(sess.session.user.email)}) isn't set up as the owner.` : /owner_stats|schema cache|function/i.test(error.message) ? 'The dashboard hasn\'t been switched on in the database yet: run supabase/owner-dashboard.sql once in Supabase → SQL Editor.' : esc(error.message)}</p></div>`; return; }
+  draw(d, false);
+}
+function draw(d, demo) {
   const u = d.users, a = d.access, v = d.activity; const days = d.by_day || []; const max = Math.max(1, ...days.map((x) => x.signups));
   $('stamp').textContent = 'Updated ' + new Date(d.generated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   const stat = (cls, n, label, small) => `<div class="card stat ${cls}"><b>${n}</b><span>${label}</span>${small ? `<small>${small}</small>` : ''}</div>`;
   const fr = (label, n, of) => `<div class="row"><span>${label}</span><div class="bar"><i style="width:${Math.max(2, Math.round((n / Math.max(1, of)) * 100))}%"></i></div><span class="n">${n} · ${pct(n, of)}</span></div>`;
-  main.innerHTML = `
+  main.innerHTML = `${demo ? '<p class="err" style="background:#fff3d6;color:#4a3300"><b>Sample data.</b> These numbers are made up to show the layout. Open this page without “?demo” and sign in for the real ones.</p>' : ''}
   <h2 style="margin-top:4px">Right now</h2><div class="grid">
     ${stat('navy', u.total, 'accounts', `${u.last_24h} in the last 24 hours`)}
     ${stat('sun', u.last_7d, 'new this week', `${trend(u.last_7d, u.prev_7d)} vs the week before (${u.prev_7d})`)}
