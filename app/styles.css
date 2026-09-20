@@ -427,3 +427,9 @@ html.is-standalone { background: #1b1a2e; } html.is-standalone body { position: 
 /* v70: on an iPhone home-screen app the height comes from the real screen (see index.html), not from 100dvh / the viewport */
 html.is-ios-app body { position: fixed; top: 0; left: 0; right: 0; bottom: auto; width: 100%; height: var(--app-h, 100vh); }
 html.is-ios-app #sheet, html.is-ios-app #gate, html.is-ios-app #intro { bottom: auto; height: var(--app-h, 100vh); } /* full-screen layers get the real height too */
+
+/* v71 */
+html.ios-short #tabs { height: var(--tab-h); padding-bottom: 0; }                       /* the unpainted strip below is the home-indicator space */
+html.ios-short .sheet-inner { padding-bottom: 20px; } html.ios-short #gate .wrap, html.ios-short #intro .wrap { padding-bottom: 28px; }
+#statusband { background: #fff1c2; }                                                     /* same cream as the top of the page, all the way up */
+body:has(#gate:not([hidden])) #statusband, body:has(#intro:not([hidden])) #statusband { background: transparent; } /* sign-in and setup screens run to the top themselves */

@@ -15,8 +15,10 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body><script>
-/* iPhone home-screen app: with a see-through status bar iOS lays the page out SHORT by the status bar's height, so the tab bar
-   floats above the bottom of the screen. The page really covers the whole screen, so size it from the screen itself. */
+/* iPhone home-screen app. When the page runs UNDER a see-through status bar, iOS draws it SHORT by about the status bar's height:
+   a strip at the bottom of the screen is never painted (only the page background shows there), so anything placed there, like the
+   tab bar's marker line, disappears. So: keep the app inside what is actually drawn, and in that case drop the tab bar's own
+   home-indicator padding, because the unpainted strip (coloured like the tab bar) already is that space. */
 (function () {
   var d = document.documentElement, ios = navigator.standalone === true;
   if (ios || matchMedia('(display-mode: standalone)').matches) d.classList.add('is-standalone');
@@ -24,10 +26,11 @@
   d.classList.add('is-ios-app');
   function fit() {
     var probe = document.createElement('div'); probe.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);width:1px;visibility:hidden'; d.appendChild(probe);
-    var under = probe.offsetHeight > 0; d.removeChild(probe);                       // is the page drawn underneath the status bar?
+    var under = probe.offsetHeight > 0; d.removeChild(probe);
     var portrait = matchMedia('(orientation: portrait)').matches;
     var full = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width);
-    d.style.setProperty('--app-h', (under ? Math.max(window.innerHeight, full) : window.innerHeight) + 'px');
+    d.classList.toggle('ios-short', under && window.innerHeight < full - 20);
+    d.style.setProperty('--app-h', window.innerHeight + 'px');
   }
   fit(); addEventListener('resize', fit); addEventListener('orientationchange', function () { setTimeout(fit, 350); }); addEventListener('pageshow', fit);
 })();
