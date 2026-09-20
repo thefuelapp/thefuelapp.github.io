@@ -811,7 +811,7 @@
    "id": "rice_noodles",
    "name": "Rice noodles (dry)",
    "unit": "g",
-   "protein": 11,
+   "protein": 6.5,
    "category": "carb",
    "store": "cupboard",
    "packs": [
@@ -1732,7 +1732,7 @@
    "unavailable": [
     "aldi"
    ],
-   "kcal": 880
+   "kcal": 825
   },
   {
    "id": "sriracha",
@@ -1993,9 +1993,9 @@
     },
     {
      "shop": "sainsburys",
-     "name": "Knorr 8 x 10g Chicken Stock Cubes",
-     "size": 8,
-     "price": 2.0,
+     "name": "Sainsbury's Stock Cubes, Chicken 10x10g",
+     "size": 10,
+     "price": 1.1,
      "checked": "2026-09-20"
     },
     {
@@ -2060,7 +2060,7 @@
      "checked": "2026-09-20"
     }
    ],
-   "kcal": 880
+   "kcal": 825
   },
   {
    "id": "cumin",
@@ -4037,9 +4037,9 @@
     },
     {
      "shop": "sainsburys",
-     "name": "Sainsbury's Omega 3 Fish Fingers x30 900g",
-     "size": 30,
-     "price": 3.5,
+     "name": "Sainsbury's 10 Breaded Omega 3 Pollock Fillet Fish Fingers 300g",
+     "size": 10,
+     "price": 1.25,
      "checked": "2026-09-20"
     },
     {
@@ -4708,9 +4708,9 @@
     },
     {
      "shop": "asda",
-     "name": "ASDA Basmati Brown Rice 1kg",
-     "size": 1000.0,
-     "price": 3.46,
+     "name": "ASDA Easy Cook Long Grain Brown Rice 1kg",
+     "size": 1000,
+     "price": 2.64,
      "checked": "2026-09-20"
     },
     {
@@ -5191,9 +5191,9 @@
     },
     {
      "shop": "asda",
-     "name": "The BAKERY at ASDA The Bakery 6 Toastie Crumpets 6 Pack",
-     "size": 6,
-     "price": 1.47,
+     "name": "The BAKERY at ASDA The Bakery 9 Crumpets 9 Pack",
+     "size": 9,
+     "price": 0.69,
      "checked": "2026-09-20"
     },
     {
@@ -5657,7 +5657,7 @@
     },
     {
      "shop": "asda",
-     "name": "ASDA Red Chillies (each, about 20g)",
+     "name": "ASDA Red Chillies (each)",
      "size": 1,
      "price": 0.15,
      "checked": "2026-09-20"
@@ -7017,9 +7017,9 @@
     },
     {
      "shop": "asda",
-     "name": "Heinz Baked Beans 415g",
-     "size": 415.0,
-     "price": 1.38,
+     "name": "ASDA Baked Beans Reduced Salt & No Added Sugar 410g",
+     "size": 410,
+     "price": 0.42,
      "checked": "2026-09-20"
     },
     {
@@ -10080,9 +10080,9 @@
     },
     {
      "shop": "asda",
-     "name": "KP Dry Roasted Peanuts 415g",
-     "size": 415.0,
-     "price": 4.5,
+     "name": "ASDA Dry Roasted Peanuts 500g",
+     "size": 500,
+     "price": 2.28,
      "checked": "2026-09-20"
     },
     {
@@ -11366,17 +11366,17 @@
      "checked": "2026-09-20"
     },
     {
-     "shop": "sainsburys",
-     "name": "FUEL10K 330ml On the Go Ready to Drink Breakfast High Protein Milk Shake",
-     "size": 1,
-     "price": 1.15,
-     "checked": "2026-09-20"
-    },
-    {
      "shop": "aldi",
      "name": "Cowbelle Chocolate Flavoured Protein Milkshake 330ml",
      "size": 1,
      "price": 0.99,
+     "checked": "2026-09-20"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "FUEL10K 330ml On the Go Ready to Drink Breakfast High Protein Banana Milk Shake",
+     "size": 1,
+     "price": 1.15,
      "checked": "2026-09-20"
     }
    ]

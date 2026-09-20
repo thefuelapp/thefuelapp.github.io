@@ -17,6 +17,9 @@ body { display: flex; flex-direction: column; height: 100%; height: 100dvh; back
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 input, select, label { -webkit-tap-highlight-color: transparent; }
+/* iPhone zooms the whole page in (and leaves it zoomed) when a text box with text under 16px is tapped: every box is 16px or more. */
+input, select, textarea { font: inherit; font-size: 16px; }
+html { touch-action: manipulation; -webkit-text-size-adjust: 100%; } /* no double-tap zoom */
 .btn:active, .stepper button:active, #tabs button:active, .cell:active { transform: scale(.96); }
 .btn, .stepper button, .cell, .chip, .day-pick button { transition: transform .08s ease, background-color .12s ease, opacity .12s ease; }
 #view { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 14px 14px 40px; }
@@ -167,7 +170,7 @@ a { color: var(--accent); font-weight: 700; }
 
 .grid .dayx { border: 0; background: #fff3d6; color: var(--muted); width: 22px; height: 22px; border-radius: 999px; font-size: 14px; line-height: 1; padding: 0; font-weight: 700; }
 .cell.off { background: repeating-linear-gradient(135deg, #f6f1e4 0 6px, #fff 6px 12px); border: 0; }
-.check .qty { width: 84px; background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 6px 8px; font-size: 14px; }
+.check .qty { width: 84px; background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 6px 8px; font-size: 16px; }
 
 .recipe-row.pick.full { opacity: .45; }
 .recipe-row.pick.full .tick { cursor: not-allowed; }
@@ -409,3 +412,6 @@ h2.pickgroup span { font-weight: 600; color: var(--muted); font-size: 12px; }
 .cellquick { display: flex; gap: 10px; margin: 4px 0 14px; } .cellquick .btn { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px 14px; border-radius: 16px; text-align: left; } .cellquick .btn b { font-size: 16px; } .cellquick .btn span { font-size: 12.5px; font-weight: 500; opacity: .75; }
 .cell.out { background: repeating-linear-gradient(135deg, #ecebf3 0 7px, #f7f6fb 7px 14px); color: var(--muted); } .cell.out .cname { text-decoration: line-through; text-decoration-thickness: 2px; }
 .picking .cell:not(.lifted):not(.off):not(.past) { outline: 2px dashed var(--accent); outline-offset: -2px; animation: pickpulse 1.1s ease-in-out infinite; } @keyframes pickpulse { 50% { outline-color: rgba(255,79,123,.35); } }
+/* v68: boxes inside pop-up sheets inherit the sheet's 14px text; keep them at 16px so iPhone doesn't zoom the page */
+.sheet-inner input:not([type=checkbox]):not([type=radio]):not([type=range]), .sheet-inner select, .sheet-inner textarea, #gate input, #intro input { font-size: 16px; }
+#gate input.big, #intro input.big { font-size: 28px; } #gate .codecard input.big { font-size: 20px; } #gate #signin-form input.big { font-size: 20px; }

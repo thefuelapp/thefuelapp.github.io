@@ -277,10 +277,11 @@ export function gridStats(grid, recipes, ingredients, extra = { protein: 0, kcal
     for (const s of SLOTS) { const v = d[s]; const rid = isTub(v) ? tubRecipe(v) : v; if (rid && rec[rid]) { p += proteinPerPortion(rec[rid], ingredients); k += kcalPerPortion(rec[rid], ingredients); } }
     perDay.push(Math.round(p)); kcalPerDay.push(Math.round(k));
   });
-  const filled = grid.reduce((n, d) => n + SLOTS.filter((s) => d[s]).length, 0);
+  const filled = grid.reduce((n, d, i) => n + (days[i] ? SLOTS.filter((s) => d[s] && !isOut(d[s])).length : 0), 0); // skipped slots aren't planned meals
+  const skipped = grid.reduce((n, d, i) => n + (days[i] ? SLOTS.filter((s) => isOut(d[s])).length : 0), 0);
   const distinct = new Set(grid.flatMap((d) => SLOTS.map((s) => (isTub(d[s]) ? tubRecipe(d[s]) : d[s])).filter((v) => v && v !== 'out'))).size;
   const active = days.filter(Boolean).length || 1;
-  return { perDay, kcalPerDay, filled, distinct, slots: active * 3, activeDays: active, avg: Math.round(perDay.reduce((a, b) => a + b, 0) / active), avgKcal: Math.round(kcalPerDay.reduce((a, b) => a + b, 0) / active) };
+  return { perDay, kcalPerDay, filled, distinct, skipped, slots: active * 3 - skipped, activeDays: active, avg: Math.round(perDay.reduce((a, b) => a + b, 0) / active), avgKcal: Math.round(kcalPerDay.reduce((a, b) => a + b, 0) / active) };
 }
 
 // ---------- storage ----------

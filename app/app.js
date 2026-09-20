@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v67';
+const APP_VERSION = 'v68';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -54,7 +54,10 @@ function mealsKcalAt1x(w) {
   const raw = RAW(); const ing = ING(); const rec = Object.fromEntries(raw.map((r) => [r.id, r]));
   const active = (w.days || []).filter(Boolean).length || 1;
   let meals = 0, snacks = 0;
-  (w.grid || []).forEach((d, i) => { if (!w.days[i]) return; for (const sl of P.SLOTS) { const v = d[sl]; const rid = P.isTub(v) ? P.tubRecipe(v) : v; if (rid && rec[rid]) meals += P.kcalPerPortion(rec[rid], ing); } });
+  let cells = 0, skipped = 0;
+  (w.grid || []).forEach((d, i) => { if (!w.days[i]) return; for (const sl of P.SLOTS) { const v = d[sl]; if (P.isOut(v)) { skipped += 1; continue; } const rid = P.isTub(v) ? P.tubRecipe(v) : v; if (rid && rec[rid]) { meals += P.kcalPerPortion(rec[rid], ing); cells += 1; } } });
+  // A skipped slot is a meal eaten somewhere else, not a reason to make every other portion bigger: count it as an average meal.
+  if (cells && skipped) meals += (meals / cells) * skipped;
   for (const [id, n] of Object.entries(w.snacks || {})) if (rec[id] && n) snacks += P.kcalPerPortion(rec[id], ing) * n;
   return { meals: meals / active, snacks: snacks / active };
 }
