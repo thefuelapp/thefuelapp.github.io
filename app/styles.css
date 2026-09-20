@@ -418,11 +418,9 @@ h2.pickgroup span { font-weight: 600; color: var(--muted); font-size: 12px; }
 /* v69: iPhone home-screen apps (black-translucent status bar) measure 100dvh as the screen MINUS the status bar, so the app stopped
    short and a strip of page background showed under the tab bar. Pin the app to all four edges of the screen instead of trusting
    that height, and make anything that could ever show behind it the tab bar's colour. Safari tabs keep the old sizing. */
-@media (display-mode: standalone) {
-  html { background: #1b1a2e; }
-  body { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: auto; }
+@media (display-mode: standalone) { body { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: auto; } }
 }
-html.is-standalone { background: #1b1a2e; } html.is-standalone body { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: auto; }
+html.is-standalone body { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: auto; }
 
 /* v70: on an iPhone home-screen app the height comes from the real screen (see index.html), not from 100dvh / the viewport */
 html.is-ios-app body { position: fixed; top: 0; left: 0; right: 0; bottom: auto; width: 100%; height: var(--app-h, 100vh); }
@@ -433,3 +431,13 @@ html.ios-short #tabs { height: var(--tab-h); padding-bottom: 0; }               
 html.ios-short .sheet-inner { padding-bottom: 20px; } html.ios-short #gate .wrap, html.ios-short #intro .wrap { padding-bottom: 28px; }
 #statusband { background: #fff1c2; }                                                     /* same cream as the top of the page, all the way up */
 body:has(#gate:not([hidden])) #statusband, body:has(#intro:not([hidden])) #statusband { background: transparent; } /* sign-in and setup screens run to the top themselves */
+
+/* v72. iPhone fills the status-bar area (and anything it doesn't draw) with the PAGE background colour, and picks dark or light clock
+   text to suit it. Fresh installs: cream, like the top of the app. Old see-through-status-bar installs keep navy, because there the
+   undrawn strip is at the bottom, under the tab bar. */
+html.is-ios-app { background: #fff1c2; }
+html.is-ios-app.ios-under { background: #1b1a2e; }
+/* the tab bar sits lower, like a native one: a slimmer bar, and only as much home-bar clearance as the home bar needs */
+#tabs { height: calc(56px + max(env(safe-area-inset-bottom) - 14px, 0px)); padding-bottom: max(env(safe-area-inset-bottom) - 14px, 0px); }
+#tabs button.active::after { bottom: 5px; }
+html.ios-short #tabs { height: 56px; padding-bottom: 0; }

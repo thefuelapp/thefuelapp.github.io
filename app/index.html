@@ -29,6 +29,7 @@
     var under = probe.offsetHeight > 0; d.removeChild(probe);
     var portrait = matchMedia('(orientation: portrait)').matches;
     var full = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width);
+    d.classList.toggle('ios-under', under);
     d.classList.toggle('ios-short', under && window.innerHeight < full - 20);
     d.style.setProperty('--app-h', window.innerHeight + 'px');
   }
