@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v74';
+const APP_VERSION = 'v75';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -205,7 +205,7 @@ async function boot() {
     return;
   }
   setupWeeks();
-  document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.tab = b.dataset.tab; save(); render({ top: true }); } });
+  document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { if (b.dataset.tab !== S.tab) pantryBase = null; S.tab = b.dataset.tab; save(); render({ top: true }); } });
   const v = document.getElementById('view');
   v.addEventListener('click', onAction); v.addEventListener('change', onChange); v.addEventListener('input', onInput);
   v.addEventListener('pointerdown', onDragStart);
@@ -839,6 +839,26 @@ function gateScreen() {
   }
   el.hidden = false; return true;
 }
+// What the chosen (or cheapest) shop comes to at the till right now, worked out the way the Shop tab does it (things that shop doesn't sell
+// are priced at the cheapest other shop). Pantry shows it live, so ticking something visibly takes it off the bill.
+function tillNow(w) {
+  const { needs, needsAll } = shopNeeds(w, REC()); if (!Object.keys(needsAll).length) return null;
+  const notSoldAt = (b, m) => (ingById(m.id)?.unavailable || []).includes(b.shop);
+  const ranked = P.compareShops(needs, ING()).map((b) => ({ ...b, notSold: b.missing.filter((m) => notSoldAt(b, m)), unpriced: b.missing.filter((m) => !notSoldAt(b, m)) }));
+  const byShop = Object.fromEntries(ranked.map((b) => [b.shop, b]));
+  const elsewhere = (id, not) => { let m = null; for (const sh of P.SHOPS) { if (sh === not) continue; const l = byShop[sh]?.lines.find((x) => x.id === id); if (l && (m === null || l.cost < m)) m = l.cost; } return m || 0; };
+  for (const b of ranked) b.comparable = P.round2(b.total + b.notSold.reduce((t, m) => t + elsewhere(m.id, b.shop), 0));
+  ranked.sort((x, y) => (x.unpriced.length - y.unpriced.length) || (x.comparable - y.comparable));
+  const chosen = byShop[w.shop] || ranked[0]; return chosen ? { shop: chosen.shop, total: chosen.comparable } : null;
+}
+let pantryBase = null; // the bill when Pantry was opened, so the bar can say how much this visit has taken off
+function pantryPriceHtml(w) {
+  const now = tillNow(w); if (!now) return '';
+  if (!pantryBase || pantryBase.week !== S.activeWeek || pantryBase.shop !== now.shop) pantryBase = { week: S.activeWeek, shop: now.shop, total: now.total };
+  const off = P.round2(pantryBase.total - now.total);
+  return `<span>${weekLabel(S.activeWeek)}'s shop at ${P.SHOP_NAMES[now.shop]}</span><b>${P.gbp(now.total)}</b>${off > 0.004 ? `<i>${P.gbp(off)} off</i>` : ''}`;
+}
+function refreshPantryPrice() { const el = document.getElementById('pantryprice'); if (el) el.innerHTML = pantryPriceHtml(W()); }
 function renderPantry() {
   const groups = {};
   const w = W(); w.useUp ||= {};
@@ -858,7 +878,7 @@ function renderPantry() {
     return `<details class="pantry-group" ${open ? 'open' : ''}><summary><h2>${LABEL[g] || g}</h2><span class="small muted">${ticked ? `${ticked} ticked · ` : ''}${groups[g].length}</span></summary><div class="card">${items.map(row).join('')}</div></details>`;
   }).join('');
   const ticked = Object.keys(w.pantry).length;
-  return `<h1>Pantry</h1>${weekSwitch()}${tipCard('pantry')}<p class="muted" style="margin:0 0 10px">Tick what you already have and it comes off the shop list. <b>${ticked} ticked.</b></p>
+  return `<h1>Pantry</h1>${weekSwitch()}${tipCard('pantry')}<p class="muted" style="margin:0 0 10px">Tick what you already have and it comes off the shop list. <b>${ticked} ticked.</b></p><div class="pantryprice" id="pantryprice">${pantryPriceHtml(w)}</div>
   <div class="row" style="margin-bottom:12px"><input class="search grow" placeholder="Search the cupboard" value="${esc(S.pantrySearch || '')}" data-pantry-search><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}`;
 }
 
@@ -1172,7 +1192,7 @@ function onAction(e) {
   }
   else if (a === 'gate-retry') { location.reload(); }
   else if (a === 'plan-filter') { S.planFilter = el.dataset.filter; save(); render(); const h = document.getElementById('pick-head'); if (h) h.scrollIntoView({ block: 'start' }); }
-  else if (a === 'go-pantry') { e.preventDefault(); S.prevTab = S.tab; S.tab = 'pantry'; save(); render({ top: true }); }
+  else if (a === 'go-pantry') { e.preventDefault(); pantryBase = null; S.prevTab = S.tab; S.tab = 'pantry'; save(); render({ top: true }); }
   else if (a === 'go-ideas') { S.tab = 'recipes'; S.ideasOpen = true; save(); render({ top: true }); }
   else if (a === 'ideas-toggle') { S.ideasOpen = !S.ideasOpen; save(); render(); }
   else if (a === 'idea-tag') { S.ideaTag = el.dataset.tag; save(); render(); }
@@ -1271,8 +1291,9 @@ function onChange(e) {
     if (t.checked && !it.staple && !q) rowEl.insertAdjacentHTML('beforeend', `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${id}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>`);
     if (!t.checked) { q?.nextElementSibling?.remove(); q?.remove(); rowEl.querySelector('.useup')?.remove(); rowEl.querySelector('.sub')?.remove(); }
     else if (!rowEl.querySelector('.useup')) rowEl.querySelector('.grow').insertAdjacentHTML('afterend', `<button class="chip small useup" data-action="useup" data-id="${id}" title="Plan meals that use this up">Use up</button>`);
+    refreshPantryPrice();
   }
-  else if (t.dataset.pantryQty !== undefined) { const v = parseFloat(t.value); w.pantry[t.dataset.pantryQty] = Number.isFinite(v) && v > 0 ? v : true; save(); }
+  else if (t.dataset.pantryQty !== undefined) { const v = parseFloat(t.value); w.pantry[t.dataset.pantryQty] = Number.isFinite(v) && v > 0 ? v : true; save(); refreshPantryPrice(); }
   else if (t.dataset.setting) { S.settings[t.dataset.setting] = +t.value || 0; save(); META.clear(); const mp = document.getElementById('macro-preview'); if (mp) mp.innerHTML = macroPreview(S.settings.kcalTarget, S.settings.proteinTarget); }
 }
 function onInput(e) {

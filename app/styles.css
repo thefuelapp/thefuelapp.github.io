@@ -449,3 +449,10 @@ html.is-ios-app:not(.ios-under) #tabs { background: #fff1c2; border-top: 1px sol
 html.is-ios-app:not(.ios-under) #tabs button { color: #8a84a8; }
 html.is-ios-app:not(.ios-under) #tabs button.active { color: #1b1a2e; font-weight: 800; }
 html.is-ios-app:not(.ios-under) #tabs button.active::after, html.is-ios-app:not(.ios-under) #tabs button[data-tab].active::after { background: #1b1a2e; bottom: 3px; height: 3px; }
+
+/* v75 Pantry: the shop's price, live. Sticks to the top while you tick, so you watch the bill fall. */
+.pantryprice { position: sticky; top: 8px; z-index: 6; display: flex; align-items: baseline; gap: 10px; background: #1b1a2e; color: #fff; border-radius: 16px; padding: 12px 16px; margin: 0 0 12px; box-shadow: 0 8px 22px rgba(27, 26, 46, .22); }
+.pantryprice:empty { display: none; }
+.pantryprice span { flex: 1; font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, .78); }
+.pantryprice b { font-size: 24px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.pantryprice i { font-style: normal; font-size: 13px; font-weight: 800; background: #7cf0b5; color: #0b3a23; border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
