@@ -18,11 +18,18 @@ h2 { font: 700 13px "JetBrains Mono", monospace; letter-spacing: .14em; text-tra
 .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
 .card { background: var(--panel); border-radius: 20px; padding: 16px 18px; box-shadow: 0 1px 0 var(--line); }
 .stat b { display: block; font: 800 40px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; } .stat span { display: block; margin-top: 6px; font-weight: 600; } .stat small { display: block; color: var(--muted); margin-top: 2px; }
+.grid.big { grid-template-columns: repeat(3, 1fr); gap: 14px; } .grid.big .card { padding: 24px 26px; border-radius: 26px; } .grid.big .stat b { font-size: 76px; } .grid.big .stat span { font-size: 21px; margin-top: 10px; } .grid.big .stat small { font-size: 16px; margin-top: 6px; line-height: 1.4; } .grid.big .stat.lime b { font-size: 58px; line-height: 76px; }
+@media (max-width: 900px) { .grid.big { grid-template-columns: repeat(2, 1fr); } .grid.big .stat b { font-size: 56px; } .grid.big .stat.lime b { font-size: 42px; line-height: 56px; } .grid.big .stat span { font-size: 18px; } } @media (max-width: 520px) { .grid.big { grid-template-columns: 1fr 1fr; gap: 10px; } .grid.big .card { padding: 16px; } .grid.big .stat b { font-size: 44px; } .grid.big .stat.lime b { font-size: 32px; line-height: 44px; } .grid.big .stat span { font-size: 16px; } .grid.big .stat small { font-size: 13px; } }
 .stat.sun { background: var(--sun); } .stat.navy { background: var(--navy); color: #fff; } .stat.navy small { color: rgba(255,255,255,.7); } .stat.lime { background: var(--lime); } .stat.lime b { font-size: 32px; line-height: 40px; } .stat.grape { background: var(--grape); color: #fff; } .stat.grape small { color: rgba(255,255,255,.8); }
 .up { color: #0a8a4a; font-weight: 700; } .down { color: #c2264b; font-weight: 700; } .navy .up, .grape .up { color: var(--lime); }
-.chart { display: flex; align-items: flex-end; gap: 3px; height: 150px; padding-top: 8px; } .chart .col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 2px; height: 100%; position: relative; }
-.chart i { display: block; width: 100%; border-radius: 5px 5px 0 0; background: var(--grape); min-height: 2px; } .chart i.paid { background: var(--pink); border-radius: 0; } .chart .col:hover::after { content: attr(data-tip); position: absolute; bottom: 100%; background: var(--navy); color: #fff; font-size: 12px; padding: 4px 8px; border-radius: 8px; white-space: nowrap; z-index: 2; }
-.axis { display: flex; justify-content: space-between; font: 500 11px "JetBrains Mono", monospace; color: var(--muted); margin-top: 6px; } .legend { font-size: 13px; color: var(--muted); margin: 0 0 4px; } .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin: 0 5px 0 12px; }
+.chartcard .top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-bottom: 14px; } .chartcard .sum { font-size: 17px; font-weight: 600; } .chartcard .sum b { font: 800 26px "Bricolage Grotesque", sans-serif; margin-right: 4px; } .chartcard .sum.p b { color: var(--pink); } .chartcard .sum.n b { color: var(--grape); }
+.seg { margin-left: auto; display: inline-flex; background: #fff3d6; border-radius: 999px; padding: 4px; } .seg button { background: transparent; color: var(--text); padding: 7px 14px; } .seg button.on { background: var(--navy); color: #fff; }
+.plot { position: relative; height: 300px; margin: 6px 0 0 34px; border-bottom: 2px solid var(--text); } .plot .gl { position: absolute; left: 0; right: 0; border-top: 1px dashed #e6dcc0; } .plot .gl span { position: absolute; left: -34px; top: -9px; width: 28px; text-align: right; font: 500 12px "JetBrains Mono", monospace; color: var(--muted); }
+.bars { position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 6px; padding: 0 4px; } .bars .col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; min-width: 0; } .bars .bar { flex: none; }
+.bars .v { font: 700 13px "JetBrains Mono", monospace; margin-bottom: 4px; } .bars .v.zero { color: #c9bfa4; } .bars .bar { width: 100%; max-width: 46px; border-radius: 8px 8px 0 0; background: var(--grape); display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; min-height: 3px; } .bars .bar i { display: block; background: var(--pink); } .bars .col.today .bar { outline: 3px solid var(--sun); outline-offset: 2px; }
+.bars .col:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 4px); background: var(--navy); color: #fff; font-size: 13px; padding: 6px 10px; border-radius: 10px; white-space: nowrap; z-index: 3; }
+.xl { display: flex; gap: 6px; padding: 8px 4px 0; margin-left: 34px; } .xl span { flex: 1; min-width: 0; text-align: center; font: 500 11.5px "JetBrains Mono", monospace; color: var(--muted); line-height: 1.25; } .xl span b { display: block; color: var(--text); font-weight: 700; } .xl span.wk { color: var(--pink); }
+.legend { font-size: 14px; color: var(--muted); margin: 0; } .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin: 0 6px 0 0; vertical-align: -1px; } .legend span { margin-right: 16px; }
 .funnel .row { display: grid; grid-template-columns: 190px 1fr 90px; gap: 10px; align-items: center; margin: 8px 0; font-weight: 600; } .funnel .bar { height: 26px; border-radius: 8px; background: #fff3d6; overflow: hidden; } .funnel .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--sun), var(--pink)); border-radius: 8px; } .funnel .n { text-align: right; font-family: "JetBrains Mono", monospace; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; } th { text-align: left; font: 700 11px "JetBrains Mono", monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; } td { padding: 10px; border-top: 1px solid #f4ead0; vertical-align: top; } .tablewrap { overflow-x: auto; }
 .pill { display: inline-block; font: 700 11px "JetBrains Mono", monospace; letter-spacing: .04em; padding: 3px 8px; border-radius: 999px; background: #eee; } .pill.paid { background: var(--pink); color: #fff; } .pill.code { background: var(--sky); } .pill.none { background: #f1ecdf; color: var(--muted); } .pill.home { background: var(--lime); }
@@ -75,7 +82,7 @@ function draw(d, demo) {
   const stat = (cls, n, label, small) => `<div class="card stat ${cls}"><b>${n}</b><span>${label}</span>${small ? `<small>${small}</small>` : ''}</div>`;
   const fr = (label, n, of) => `<div class="row"><span>${label}</span><div class="bar"><i style="width:${Math.max(2, Math.round((n / Math.max(1, of)) * 100))}%"></i></div><span class="n">${n} · ${pct(n, of)}</span></div>`;
   main.innerHTML = `${demo ? '<p class="err" style="background:#fff3d6;color:#4a3300"><b>Sample data.</b> These numbers are made up to show the layout. Open this page without “?demo” and sign in for the real ones.</p>' : ''}
-  <h2 style="margin-top:4px">Right now</h2><div class="grid">
+  <h2 style="margin-top:4px">Right now</h2><div class="grid big">
     ${stat('navy', u.total, 'accounts', `${u.last_24h} in the last 24 hours`)}
     ${stat('sun', u.last_7d, 'new this week', `${trend(u.last_7d, u.prev_7d)} vs the week before (${u.prev_7d})`)}
     ${stat('', a.paid, 'paid', `${a.paid_7d} this week ${trend(a.paid_7d, a.paid_prev_7d)}`)}
@@ -83,9 +90,7 @@ function draw(d, demo) {
     ${stat('grape', v.active_7d, 'active this week', `${v.active_24h} today · ${v.active_30d} this month`)}
     ${stat('', pct(a.paid, u.total), 'sign-up → paid', `${a.signed_up_no_access} signed up and haven't paid or used a code`)}
   </div>
-  <h2>Last 30 days</h2><div class="card"><p class="legend"><i style="background:var(--grape)"></i>new accounts<i style="background:var(--pink)"></i>of which paid that day</p>
-    <div class="chart">${days.map((x) => `<div class="col" data-tip="${new Date(x.day).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}: ${x.signups} new, ${x.paid} paid, ${x.active} active"><i class="paid" style="height:${(x.paid / max) * 100}%"></i><i style="height:${(Math.max(0, x.signups - x.paid) / max) * 100}%"></i></div>`).join('')}</div>
-    <div class="axis"><span>${days[0] ? new Date(days[0].day).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}</span><span>today</span></div></div>
+  <h2>New accounts and sales, day by day</h2><div class="card chartcard" id="chartcard"></div>
   <h2>Where people drop off</h2><div class="card funnel">
     ${fr('Made an account', u.total, u.total)}${fr('Got access (paid or code)', a.with_access, u.total)}${fr('Planned a week', v.planned_a_week, u.total)}${fr('Finished a shop', v.finished_a_shop, u.total)}${fr('Planned a 2nd week', v.planned_2_plus, u.total)}
     <p class="note" style="margin:10px 0 0">The biggest gap between two bars is the thing to fix next.</p></div>
@@ -98,6 +103,21 @@ function draw(d, demo) {
     ${(d.recent || []).map((r) => `<tr><td>${esc(r.email)}</td><td>${ago(r.created_at)}</td><td>${/^stripe:/.test(r.source || '') ? '<span class="pill paid">paid</span>' : /^code:/.test(r.source || '') ? `<span class="pill code">${esc(r.source.slice(5))}</span>` : r.plan ? `<span class="pill">${esc(r.plan)}</span>` : '<span class="pill none">not yet</span>'}</td><td>${ago(r.last_active || r.last_sign_in_at)}</td><td>${r.weeks_planned}</td><td>${r.shops_done}</td><td>${r.on_home_screen ? `<span class="pill home">${esc(r.device || 'home screen')}</span>` : ''}</td></tr>`).join('') || '<tr><td colspan="7" class="note">Nobody yet.</td></tr>'}
   </tbody></table></div>
   <p class="note" style="margin-top:18px">Not counted here: visits to the website and money after Stripe's fees. Stripe's own dashboard has the exact payouts.</p>`;
+  DAYS = days; chart();
+}
+let RANGE = 14, DAYS = [];
+function chart() {
+  const days = DAYS.slice(-RANGE); const top = Math.max(1, ...days.map((x) => x.signups)); const step = top <= 5 ? 1 : top <= 10 ? 2 : top <= 25 ? 5 : top <= 50 ? 10 : Math.ceil(top / 5 / 10) * 10; const max = Math.ceil((top * 1.12) / step) * step;   // headroom, so the number above the tallest bar stays inside the plot
+  const lines = []; for (let v = 0; v <= max; v += step) lines.push(v);
+  const sumN = days.reduce((t, x) => t + x.signups, 0), sumP = days.reduce((t, x) => t + x.paid, 0);
+  const fmt = (iso, o) => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', o);
+  $('chartcard').innerHTML = `<div class="top"><span class="sum n"><b>${sumN}</b>new accounts</span><span class="sum p"><b>${sumP}</b>paid</span><span class="sum"><b>${sumN ? Math.round(sumP / sumN * 100) : 0}%</b>of new accounts paid</span>
+      <span class="seg"><button data-r="7" class="${RANGE === 7 ? 'on' : ''}">7 days</button><button data-r="14" class="${RANGE === 14 ? 'on' : ''}">14 days</button><button data-r="30" class="${RANGE === 30 ? 'on' : ''}">30 days</button></span></div>
+    <p class="legend"><span><i style="background:var(--grape)"></i>new accounts that day (the number on top)</span><span><i style="background:var(--pink)"></i>how many of them paid</span><span><i style="background:var(--sun)"></i>today</span></p>
+    <div class="plot">${lines.map((v) => `<div class="gl" style="bottom:${(v / max) * 100}%"><span>${v}</span></div>`).join('')}
+      <div class="bars">${days.map((x, i) => `<div class="col ${i === days.length - 1 ? 'today' : ''}" data-tip="${fmt(x.day, { weekday: 'long', day: 'numeric', month: 'short' })}: ${x.signups} new · ${x.paid} paid · ${x.active} active"><span class="v ${x.signups ? '' : 'zero'}">${x.signups}</span><div class="bar" style="height:${(x.signups / max) * 100}%"><i style="height:${x.signups ? (x.paid / x.signups) * 100 : 0}%"></i></div></div>`).join('')}</div></div>
+    <div class="xl">${days.map((x, i) => { const d = new Date(x.day + 'T12:00:00'); const show = RANGE <= 14 || i === days.length - 1 || d.getDay() === 1; const wk = d.getDay() === 0 || d.getDay() === 6; return `<span class="${wk ? 'wk' : ''}">${show ? `<b>${d.getDate()}</b>${RANGE <= 14 ? fmt(x.day, { weekday: 'short' }) : fmt(x.day, { month: 'short' })}` : ''}</span>`; }).join('')}</div>`;
+  $('chartcard').querySelectorAll('[data-r]').forEach((b) => { b.onclick = () => { RANGE = +b.dataset.r; chart(); }; });
 }
 $('refresh').onclick = load; $('signout').onclick = async () => { await db.auth.signOut(); load(); };
 load();
