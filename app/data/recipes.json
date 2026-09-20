@@ -140,11 +140,15 @@
     {
      "id": "chilli_powder",
      "qty": 1
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
     }
    ],
    "method": [
     "Dressing: whisk skyr, sriracha and sweet chilli. Set half aside for serving.",
-    "Dice the chicken, toss with paprika, chilli powder and half the dressing. Bake at 200°C fan (or air-fry) 20 minutes.",
+    "Dice the chicken, toss with the garlic paste, paprika, chilli powder and half the dressing. Bake at 200°C fan (or air-fry) 20 minutes.",
     "Cook the rice, toss with soy and sesame oil, spread on a tray and bake alongside 20–25 minutes, turning once, until crisp.",
     "Tub: chicken and rice in the tub, diced cucumber and the reserved dressing in a small pot on top. Combine when eating."
    ],
@@ -396,11 +400,19 @@
     {
      "id": "cucumber",
      "qty": 0.2
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
     "Sauce: loosen peanut butter with soy, sriracha, honey and a splash of hot water until it drips off a spoon.",
-    "Air-fry or pan-fry sliced chicken, toss in half the sauce.",
+    "Rub the sliced chicken with the garlic paste, then air-fry or pan-fry it, toss in half the sauce.",
     "Wrap: chicken, cucumber ribbons, rest of the sauce. Roll tight in foil."
    ],
    "notes": "Cold lunch. Make the morning of, or the night before at most.",
@@ -582,6 +594,10 @@
     {
      "id": "cheddar",
      "qty": 20
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -649,6 +665,10 @@
     {
      "id": "cheddar",
      "qty": 20
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -720,6 +740,10 @@
     {
      "id": "basmati",
      "qty": 75
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -988,10 +1012,18 @@
     {
      "id": "cucumber",
      "qty": 0.25
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
-    "Sauce: whisk peanut butter, coconut milk, soy, honey, curry powder and chilli powder until smooth.",
+    "Sauce: whisk peanut butter, coconut milk, garlic paste, soy, honey, curry powder and chilli powder until smooth.",
     "Coat chunks of chicken in a quarter of the sauce, air-fry 200°C 14 minutes or pan-fry.",
     "Warm the rest of the sauce in a pan. Tub rice, chicken, sauce over. Cucumber in a pot."
    ],
@@ -1054,6 +1086,10 @@
     {
      "id": "paprika",
      "qty": 2
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -1113,11 +1149,19 @@
     {
      "id": "skyr",
      "qty": 40
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
     "Slice the onion and fry it with the peppers.",
-    "Slice chicken, toss in seasoning, fry hard with the peppers.",
+    "Slice chicken, toss in the garlic paste and seasoning, fry hard with the peppers.",
     "Tub the filling. Wraps stay in the packet; cheese and a spoon of skyr when serving."
    ],
    "notes": "Filling freezes. Assemble the wraps fresh: 2 minutes.",
@@ -1227,6 +1271,10 @@
     {
      "id": "garlic_paste",
      "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -1307,6 +1355,14 @@
     {
      "id": "cucumber",
      "qty": 0.25
+    },
+    {
+     "id": "lime",
+     "qty": 0.25
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -1541,6 +1597,10 @@
     {
      "id": "skyr",
      "qty": 30
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -1609,6 +1669,10 @@
     {
      "id": "basmati",
      "qty": 75
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -1680,6 +1744,10 @@
     {
      "id": "basmati",
      "qty": 60
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -1894,10 +1962,18 @@
     {
      "id": "lemon",
      "qty": 0.25
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
-    "Toss diced chicken in fajita seasoning, fry or air-fry until charred at the edges.",
+    "Toss diced chicken in the garlic paste and fajita seasoning, fry or air-fry until charred at the edges.",
     "Rice cooked and cooled. Warm the beans with the chopped tomatoes and a pinch of the seasoning for a quick salsa.",
     "Tub in layers: rice, beans and salsa, chicken, pepper strips. Cheese and a spoon of skyr with lemon juice on top when eating."
    ],
@@ -1961,11 +2037,19 @@
     {
      "id": "pepper",
      "qty": 0.25
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
     "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
-    "Brown the mince with the seasoning, add beans, tomatoes and pepper, simmer 10 minutes until dry-ish.",
+    "Brown the mince with the garlic paste and seasoning, add beans, tomatoes and pepper, simmer 10 minutes until dry-ish.",
     "Rice cooked. Lay a wrap out, rice then beef then cheese, fold the sides in and roll tight.",
     "Wrap each in foil. Fridge 3 days, or freeze and microwave from frozen for 3 minutes."
    ],
@@ -2134,6 +2218,10 @@
     {
      "id": "pepper",
      "qty": 0.25
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -2630,10 +2718,18 @@
     {
      "id": "pepper",
      "qty": 0.25
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 3
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
-    "Boil the penne. Fry the chicken with the pepper strips.",
+    "Boil the penne. Fry the chicken with the garlic paste and pepper strips.",
     "Blend pesto and cottage cheese until smooth, stir through the drained pasta and chicken. Parmesan on top."
    ],
    "notes": "Creamy pesto without cream: cottage cheese does the job and adds protein.",
@@ -2687,6 +2783,10 @@
     },
     {
      "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
      "qty": 5
     }
    ],
@@ -2807,6 +2907,10 @@
     {
      "id": "garlic_paste",
      "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -2866,11 +2970,15 @@
     {
      "id": "olive_oil",
      "qty": 5
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 3
     }
    ],
    "method": [
     "Dice the onion and fry it with the peppers for the last 8 minutes.",
-    "Halve the baby potatoes, air-fry or roast with paprika and oil 20 minutes. Peppers in for the last 8.",
+    "Halve the baby potatoes, toss in the garlic paste, paprika and oil, then air-fry or roast 20 minutes. Peppers in for the last 8.",
     "Make wells, crack the eggs in, cheese over, back in until the whites set."
    ],
    "notes": "Weekend breakfast or a lunch. Eat hot.",
@@ -2933,6 +3041,10 @@
     {
      "id": "bread",
      "qty": 2
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -3056,6 +3168,10 @@
     {
      "id": "basmati",
      "qty": 60
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -3173,10 +3289,14 @@
     {
      "id": "skyr",
      "qty": 30
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 3
     }
    ],
    "method": [
-    "Mash the drained beans with the seasoning and diced pepper. Spread on a wrap, cheese over, second wrap on top.",
+    "Mash the drained beans with the garlic paste, seasoning and diced pepper. Spread on a wrap, cheese over, second wrap on top.",
     "Dry-fry 3 minutes a side until crisp and melted. Cut into quarters, skyr to dip."
    ],
    "notes": "Meat-free and about £1.10. Eats cold in a lunchbox.",
@@ -3341,10 +3461,18 @@
     {
      "id": "broccoli",
      "qty": 100
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
-    "Mix pork, breadcrumbs and egg; roll into balls, air-fry 200°C 12 minutes or pan-fry.",
+    "Mix pork, garlic paste, breadcrumbs and egg; roll into balls, air-fry 200°C 12 minutes or pan-fry.",
     "Warm sweet chilli and soy in a pan, toss the balls through. Rice and broccoli alongside."
    ],
    "notes": "Cheap pork mince, sticky and quick. Freezes.",
@@ -3463,11 +3591,19 @@
     {
      "id": "broccoli",
      "qty": 80
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
     "Whisk peanut butter, coconut milk, soy, sriracha and honey with a splash of hot water.",
-    "Fry the chicken, add broccoli, then the sauce and soaked noodles; toss 2 minutes."
+    "Fry the chicken with the garlic paste, add broccoli, then the sauce and soaked noodles; toss 2 minutes."
    ],
    "notes": "The satay sauce on noodles instead of rice.",
    "tags": [
@@ -3719,10 +3855,14 @@
     {
      "id": "butter",
      "qty": 5
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 3
     }
    ],
    "method": [
-    "Fry the mushrooms in butter until browned. Pour over the beaten eggs, cheese on, fold when just set."
+    "Fry the mushrooms in butter with the garlic paste until browned. Pour over the beaten eggs, cheese on, fold when just set."
    ],
    "notes": "Made fresh, 10 minutes.",
    "tags": [
@@ -3812,6 +3952,10 @@
     {
      "id": "paprika",
      "qty": 2
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -3926,6 +4070,10 @@
     {
      "id": "parmesan",
      "qty": 10
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -3985,6 +4133,10 @@
     {
      "id": "garlic_paste",
      "qty": 4
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -4050,6 +4202,10 @@
     {
      "id": "basmati",
      "qty": 60
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -4108,10 +4264,18 @@
     {
      "id": "skyr",
      "qty": 30
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
-    "Chicken tossed in fajita seasoning, fried with pepper strips. Rice cooked and cooled.",
+    "Chicken tossed in the garlic paste and fajita seasoning, fried with pepper strips. Rice cooked and cooled.",
     "Tub rice, beans, sweetcorn, chicken. Skyr on top when eating."
    ],
    "notes": "Eats cold. Mexican bowl without the wrap.",
@@ -4228,6 +4392,10 @@
     {
      "id": "ginger_garlic_paste",
      "qty": 4
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -4337,6 +4505,10 @@
     {
      "id": "cheddar",
      "qty": 20
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -4396,10 +4568,18 @@
     {
      "id": "spinach",
      "qty": 40
+    },
+    {
+     "id": "ginger_garlic_paste",
+     "qty": 8
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
-    "Fry the curry paste, add coconut milk and 300ml stock, simmer the chicken 10 minutes.",
+    "Fry the curry paste with the ginger and garlic paste, add coconut milk and 300ml stock, simmer the chicken 10 minutes.",
     "Mushrooms, noodles and spinach in for the last 4 minutes."
    ],
    "notes": "Laksa-ish. Keep the noodles separate if freezing.",
@@ -4518,10 +4698,18 @@
     {
      "id": "carrots",
      "qty": 40
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 3
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
-    "Chicken fried and tossed in sweet chilli. Wrap with skyr, cucumber and grated carrot. Roll in foil."
+    "Chicken fried with the garlic paste and tossed in sweet chilli. Wrap with skyr, cucumber and grated carrot. Roll in foil."
    ],
    "notes": "Cold lunch, 35g protein.",
    "tags": [
@@ -4586,6 +4774,10 @@
     {
      "id": "basmati",
      "qty": 70
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -4645,10 +4837,18 @@
     {
      "id": "paprika",
      "qty": 2
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 3
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
-    "Mix turkey, breadcrumbs, egg and paprika; shape two patties per portion. Fry or air-fry 12 minutes.",
+    "Mix turkey, garlic paste, breadcrumbs, egg and paprika; shape two patties per portion. Fry or air-fry 12 minutes.",
     "Into a pitta with tomatoes and skyr."
    ],
    "notes": "Burgers without the bun cost.",
@@ -4710,6 +4910,10 @@
     {
      "id": "egg",
      "qty": 1
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -4772,6 +4976,10 @@
     {
      "id": "garlic_paste",
      "qty": 4
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -4835,6 +5043,10 @@
     {
      "id": "garlic_paste",
      "qty": 4
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -4902,11 +5114,19 @@
     {
      "id": "skyr",
      "qty": 30
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
     "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
-    "Quick chilli: brown the mince, add beans, tomatoes and spices, simmer 15 minutes.",
+    "Quick chilli: brown the mince with the garlic paste, add beans, tomatoes and spices, simmer 15 minutes.",
     "Bake or air-fry the sweet potato. Split, chilli on, cheese and skyr."
    ],
    "notes": "Uses half a chilli batch per jacket.",
@@ -4965,6 +5185,10 @@
     {
      "id": "parmesan",
      "qty": 10
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -5028,6 +5252,10 @@
     {
      "id": "basmati",
      "qty": 75
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -5202,6 +5430,10 @@
     {
      "id": "basmati",
      "qty": 70
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -5303,6 +5535,10 @@
     {
      "id": "cottage_cheese",
      "qty": 50
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -5365,6 +5601,10 @@
     {
      "id": "lemon",
      "qty": 0.2
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -5474,10 +5714,14 @@
     {
      "id": "cheddar",
      "qty": 25
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
     }
    ],
    "method": [
-    "Blend cottage cheese with the tomatoes. Mix with cooked pasta, tuna and sweetcorn in a dish, cheese on top, bake 200°C 20 minutes."
+    "Blend cottage cheese with the tomatoes and garlic paste. Mix with cooked pasta, tuna and sweetcorn in a dish, cheese on top, bake 200°C 20 minutes."
    ],
    "notes": "The school-dinner one, 50g protein.",
    "tags": [
@@ -5528,10 +5772,14 @@
     {
      "id": "pitta",
      "qty": 1
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 3
     }
    ],
    "method": [
-    "Everything in a tub: drained tuna and chickpeas, halved tomatoes, cucumber, lemon juice, oil, pepper. Pitta on the side."
+    "Everything in a tub: drained tuna and chickpeas, halved tomatoes, cucumber, lemon juice, oil, garlic paste, pepper. Pitta on the side."
    ],
    "notes": "No cooking at all. 45g protein.",
    "tags": [
@@ -5584,6 +5832,10 @@
     {
      "id": "ginger_garlic_paste",
      "qty": 4
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -5646,6 +5898,10 @@
     {
      "id": "basmati",
      "qty": 60
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -5704,11 +5960,19 @@
     {
      "id": "fajita_seasoning",
      "qty": 6
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
     "Dice the onion and soften it in a little oil first, then add the beans.",
-    "Warm the beans with the seasoning and sweetcorn, mash a little. Rice, beans, cheese in a wrap; roll and toast the seam.",
+    "Warm the beans with the garlic paste, seasoning and sweetcorn, mash a little. Rice, beans, cheese in a wrap; roll and toast the seam.",
     "Foil, then freezer. Microwave 3 minutes from frozen."
    ],
    "notes": "Cheapest freezer lunch in the app.",
@@ -5767,6 +6031,10 @@
     {
      "id": "basmati",
      "qty": 60
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -5833,6 +6101,10 @@
     {
      "id": "parmesan",
      "qty": 10
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -5936,10 +6208,14 @@
     {
      "id": "paprika",
      "qty": 2
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 3
     }
    ],
    "method": [
-    "Mash the beans with purée and paprika, spread inside the pittas with cheese, toast in a dry pan or air-fryer until melted."
+    "Mash the beans with the garlic paste, purée and paprika, spread inside the pittas with cheese, toast in a dry pan or air-fryer until melted."
    ],
    "notes": "Ten minutes, under £1.",
    "tags": [
@@ -6000,10 +6276,14 @@
     {
      "id": "lemon",
      "qty": 0.2
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
     }
    ],
    "method": [
-    "Whisk peanut butter with soy, sriracha, lemon and hot water. Toss with soaked noodles, carrot ribbons, pepper and cucumber. Boiled eggs halved on top."
+    "Whisk peanut butter with garlic paste, soy, sriracha, lemon and hot water. Toss with soaked noodles, carrot ribbons, pepper and cucumber. Boiled eggs halved on top."
    ],
    "notes": "Cold lunch, meat-free, 25g protein.",
    "tags": [
@@ -6054,6 +6334,10 @@
     {
      "id": "parmesan",
      "qty": 10
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -6128,6 +6412,10 @@
     {
      "id": "basmati",
      "qty": 60
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -6186,6 +6474,10 @@
     {
      "id": "ginger_garlic_paste",
      "qty": 4
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -6244,6 +6536,10 @@
     {
      "id": "garlic_paste",
      "qty": 3
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [
@@ -6437,6 +6733,10 @@
     {
      "id": "egg",
      "qty": 1
+    },
+    {
+     "id": "vegetable_oil",
+     "qty": 5
     }
    ],
    "method": [

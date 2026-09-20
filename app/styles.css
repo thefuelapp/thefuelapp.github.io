@@ -403,3 +403,9 @@ h2.pickgroup span { font-weight: 600; color: var(--muted); font-size: 12px; }
 .fold summary b { font-size: 16px; }
 .fold h4.sub { margin: 16px 0 4px; }
 .line .cost.alt { color: #15803d; }
+
+/* v67: moving and skipping meals */
+.gridhelp { margin: 0 0 12px; padding: 10px 12px 10px 28px; background: var(--panel-2); border-radius: 14px; font-size: 13.5px; line-height: 1.4; color: var(--text); } .gridhelp li { margin: 3px 0; } .gridhelp b { font-weight: 700; }
+.cellquick { display: flex; gap: 10px; margin: 4px 0 14px; } .cellquick .btn { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px 14px; border-radius: 16px; text-align: left; } .cellquick .btn b { font-size: 16px; } .cellquick .btn span { font-size: 12.5px; font-weight: 500; opacity: .75; }
+.cell.out { background: repeating-linear-gradient(135deg, #ecebf3 0 7px, #f7f6fb 7px 14px); color: var(--muted); } .cell.out .cname { text-decoration: line-through; text-decoration-thickness: 2px; }
+.picking .cell:not(.lifted):not(.off):not(.past) { outline: 2px dashed var(--accent); outline-offset: -2px; animation: pickpulse 1.1s ease-in-out infinite; } @keyframes pickpulse { 50% { outline-color: rgba(255,79,123,.35); } }

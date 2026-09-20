@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v66';
+const APP_VERSION = 'v67';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -320,7 +320,7 @@ function planTop(w) {
     if (!w.days[i]) return `<div class="cell off"></div>`;
     if (isPast(i)) { const r = v && !P.isOut(v) ? recById(P.isTub(v) ? P.tubRecipe(v) : v) : null; return `<button class="cell past" data-action="cell" data-day="${i}" data-slot="${s}"><span class="cname">${r ? esc(r.name) : P.isOut(v) ? 'Not eaten' : '—'}</span><span class="ctag">${r ? '✓ eaten · tap if not' : ''}</span></button>`; }
     if (!v) return `<button class="cell empty" data-action="cell" data-day="${i}" data-slot="${s}"><span>+</span><span class="cadd">add</span></button>`;
-    if (P.isOut(v)) return `<button class="cell out" data-action="cell" data-day="${i}" data-slot="${s}"><span class="cname">Eating out</span><span class="cmeta">or skipping</span></button>`;
+    if (P.isOut(v)) return `<button class="cell out" data-action="cell" data-day="${i}" data-slot="${s}"><span class="cname">Skipped</span><span class="cmeta">nothing bought</span></button>`;
     if (P.isTub(v)) { const r = recById(P.tubRecipe(v)); return `<button class="cell tubcell" style="${cellStyle(P.tubRecipe(v))}" data-action="cell" data-day="${i}" data-slot="${s}"><span class="cname">${esc(r?.name || '')}</span><span class="cmeta">${r ? metaFor(r).pp : 0}g protein</span><span class="ctag">from the freezer</span></button>`; }
     const r = recById(v); if (!r) return `<button class="cell empty" data-action="cell" data-day="${i}" data-slot="${s}"><span>+</span><span class="cadd">add</span></button>`;
     const isFresh = !!fm[`${i}-${s}`];
@@ -348,7 +348,7 @@ function planTop(w) {
     : `<p>Nothing planned yet.</p><p class="small muted">Tick the meals you want from the list below. They're placed into your week for you.</p><button class="btn block" style="margin-top:10px" data-action="scroll-pick">Choose meals</button>`) + `${tubHtml}</div>`;
   const nudge = S.activeWeek === S.thisMon && (todayIdx() >= 5 || !liveDays(w).some(Boolean)) ? `<div class="card tipcard"><h3>${todayIdx() >= 6 ? 'This week is done' : 'This week is nearly done'}</h3><p class="small">Plan next week now so Sunday's cook and shop are sorted.</p><button class="btn small" data-action="week" data-week="${S.nextMon}">Plan next week</button></div>` : '';
   return `${tips}${installCard()}${nudge}${head}
-  ${hasGrid ? `<div class="card gridcard"><h3>Your week</h3><p class="small muted" style="margin:0 0 10px">Tap a meal to change it. Hold and drag to move it.</p>${gridHtml}
+  ${hasGrid ? `<div class="card gridcard"><h3>Your week</h3><ul class="gridhelp"><li><b>Tap</b> any slot to change it, move it or skip it.</li><li><b>Move:</b> tap a meal, press <b>Move it</b>, then tap where it should go. Or press and hold a meal and drag it.</li><li><b>Skip:</b> tap a slot, then <b>Skip this meal</b>. Nothing is bought for it. The ✕ under a day skips the whole day.</li></ul>${gridHtml}
     ${snackBar(w)}
     <p class="small muted" style="margin:12px 0 4px">Which day do you batch cook?</p>
     <div class="day-pick">${P.DAYS.map((d, i) => `<button data-action="cookday" data-day="${i}" class="${w.cookDay === i ? 'on' : ''}">${d}</button>`).join('')}</div>
@@ -1001,12 +1001,12 @@ function cellAt(d, s) { return document.querySelector(`.cell[data-day="${d}"][da
 function pickUp(cell) {
   picked = { d: +cell.dataset.day, s: cell.dataset.slot };
   document.querySelectorAll('.cell.lifted').forEach((c) => c.classList.remove('lifted'));
-  cell.classList.add('lifted');
+  cell.classList.add('lifted'); document.getElementById('view').classList.add('picking');
   navigator.vibrate?.(15);
-  showHint('Tap another cell to swap, or tap this one to cancel.');
+  showHint('Now tap the slot it should move to. They swap places. Tap it again to cancel.');
 }
 function dropPicked(target) {
-  const from = picked; picked = null; hideHint();
+  const from = picked; picked = null; hideHint(); document.getElementById('view').classList.remove('picking');
   document.querySelectorAll('.cell.lifted').forEach((c) => c.classList.remove('lifted'));
   if (!target || target.classList.contains('off')) return;
   const to = { d: +target.dataset.day, s: target.dataset.slot };
@@ -1025,7 +1025,7 @@ function onDragStart(e) {
   if (drag.touch) {
     // Hold still for a moment and the meal lifts under your finger; move before that and it's just a scroll.
     clearTimeout(drag.timer);
-    drag.timer = setTimeout(() => { if (drag.src === cell && !drag.active) { drag.active = true; startGhost({ clientX: drag.lx, clientY: drag.ly }); navigator.vibrate?.(12); showHint('Drag it onto another meal to swap, or onto an empty slot.'); } }, 280);
+    drag.timer = setTimeout(() => { if (drag.src === cell && !drag.active) { drag.active = true; startGhost({ clientX: drag.lx, clientY: drag.ly }); navigator.vibrate?.(12); showHint('Drag it onto another meal to swap, or onto an empty slot.'); } }, 220);
   }
   cell.addEventListener('pointermove', onDragMove); cell.addEventListener('pointerup', onDragEnd); cell.addEventListener('pointercancel', onDragEnd);
 }
@@ -1190,7 +1190,13 @@ function onAction(e) {
     const tubOpts = tubs.map(([id, n]) => `<option value="tub:${id}" ${cur === 'tub:' + id ? 'selected' : ''}>${esc(recById(id)?.name || id)} · freezer tub (${n} left)</option>`).join('');
     const r = P.isRecipeCell(cur) ? recById(cur) : null;
     const freshRow = r && r.cookMinutes > 0 ? `<label class="check"><input type="checkbox" id="cell-fresh" ${w.fresh[`${day}-${slot}`] ? 'checked' : ''}><span>Make this one fresh on the day<span class="sub">Left out of the batch cook; still on the shop list.</span></span></label>` : '';
-    openSheet(`<h3>${P.DAYS[day]} ${slot}</h3><label class="field">Meal<select id="cell-pick"><option value="" ${!cur ? 'selected' : ''}>— empty —</option><option value="out" ${P.isOut(cur) ? 'selected' : ''}>Eating out / skip this meal</option>${tubOpts ? `<optgroup label="From the freezer">${tubOpts}</optgroup>` : ''}<optgroup label="Picked this week">${planned.map(opt).join('')}</optgroup><optgroup label="Everything else">${others.map(opt).join('')}</optgroup></select></label>${freshRow}<button class="btn block" data-action="cell-set" data-day="${day}" data-slot="${slot}">Set</button>`);
+    const has = P.isRecipeCell(cur) || P.isTub(cur);
+    const quick = `<div class="cellquick">${has ? `<button class="btn ghost" data-action="cell-move" data-day="${day}" data-slot="${slot}"><b>↔ Move it</b><span>then tap its new slot</span></button>` : ''}${P.isOut(cur) ? `<button class="btn ghost" data-action="cell-unskip" data-day="${day}" data-slot="${slot}"><b>↩ Un-skip</b><span>make this slot free again</span></button>` : `<button class="btn ghost" data-action="cell-skip" data-day="${day}" data-slot="${slot}"><b>✕ Skip this meal</b><span>nothing is bought for it</span></button>`}</div>`;
+    openSheet(`<h3>${P.DAYS[day]} ${slot}</h3>${quick}<label class="field">${has ? 'Or swap it for' : 'Or put a meal here'}<select id="cell-pick"><option value="" ${!cur ? 'selected' : ''}>— empty —</option><option value="out" ${P.isOut(cur) ? 'selected' : ''}>Skip this meal (or eating out)</option>${tubOpts ? `<optgroup label="From the freezer">${tubOpts}</optgroup>` : ''}<optgroup label="Picked this week">${planned.map(opt).join('')}</optgroup><optgroup label="Everything else">${others.map(opt).join('')}</optgroup></select></label>${freshRow}<button class="btn block" data-action="cell-set" data-day="${day}" data-slot="${slot}">Set</button>`);
+  } else if (a === 'cell-move') { // same as press-and-hold: lift it, then the next tap on the grid is where it goes
+    const c = cellAt(+el.dataset.day, el.dataset.slot); closeSheet(); if (c) { pickUp(c); c.scrollIntoView({ block: 'nearest' }); }
+  } else if (a === 'cell-skip') { document.getElementById('cell-pick').value = 'out'; document.querySelector('#sheet [data-action="cell-set"]').click();
+  } else if (a === 'cell-unskip') { document.getElementById('cell-pick').value = ''; document.querySelector('#sheet [data-action="cell-set"]').click();
   } else if (a === 'cell-set') {
     const day = +el.dataset.day, slot = el.dataset.slot, val = document.getElementById('cell-pick').value || null;
     const key = `${day}-${slot}`; const cur = w.grid[day][slot];
