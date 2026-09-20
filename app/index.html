@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fuel</title>
-<meta name="theme-color" content="#1b1a2e">
+<meta name="theme-color" content="#fff1c2">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Fuel">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -14,7 +14,24 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body><script>if (navigator.standalone === true || matchMedia("(display-mode: standalone)").matches) document.documentElement.classList.add("is-standalone");</script><div id="statusband" aria-hidden="true"></div>
+<body><script>
+/* iPhone home-screen app: with a see-through status bar iOS lays the page out SHORT by the status bar's height, so the tab bar
+   floats above the bottom of the screen. The page really covers the whole screen, so size it from the screen itself. */
+(function () {
+  var d = document.documentElement, ios = navigator.standalone === true;
+  if (ios || matchMedia('(display-mode: standalone)').matches) d.classList.add('is-standalone');
+  if (!ios) return;
+  d.classList.add('is-ios-app');
+  function fit() {
+    var probe = document.createElement('div'); probe.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);width:1px;visibility:hidden'; d.appendChild(probe);
+    var under = probe.offsetHeight > 0; d.removeChild(probe);                       // is the page drawn underneath the status bar?
+    var portrait = matchMedia('(orientation: portrait)').matches;
+    var full = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width);
+    d.style.setProperty('--app-h', (under ? Math.max(window.innerHeight, full) : window.innerHeight) + 'px');
+  }
+  fit(); addEventListener('resize', fit); addEventListener('orientationchange', function () { setTimeout(fit, 350); }); addEventListener('pageshow', fit);
+})();
+</script><div id="statusband" aria-hidden="true"></div>
 <main id="view"></main>
 <nav id="tabs">
   <button data-tab="plan">Plan</button>
