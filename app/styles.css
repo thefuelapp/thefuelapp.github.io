@@ -415,3 +415,11 @@ h2.pickgroup span { font-weight: 600; color: var(--muted); font-size: 12px; }
 /* v68: boxes inside pop-up sheets inherit the sheet's 14px text; keep them at 16px so iPhone doesn't zoom the page */
 .sheet-inner input:not([type=checkbox]):not([type=radio]):not([type=range]), .sheet-inner select, .sheet-inner textarea, #gate input, #intro input { font-size: 16px; }
 #gate input.big, #intro input.big { font-size: 28px; } #gate .codecard input.big { font-size: 20px; } #gate #signin-form input.big { font-size: 20px; }
+/* v69: iPhone home-screen apps (black-translucent status bar) measure 100dvh as the screen MINUS the status bar, so the app stopped
+   short and a strip of page background showed under the tab bar. Pin the app to all four edges of the screen instead of trusting
+   that height, and make anything that could ever show behind it the tab bar's colour. Safari tabs keep the old sizing. */
+@media (display-mode: standalone) {
+  html { background: #1b1a2e; }
+  body { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: auto; }
+}
+html.is-standalone { background: #1b1a2e; } html.is-standalone body { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: auto; }
