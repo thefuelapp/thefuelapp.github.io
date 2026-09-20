@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>FU£L · owner</title>
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<!-- The owner's private numbers. The page is public but holds nothing: every figure comes from the owner_stats() database function
+     (supabase/owner-dashboard.sql), which only answers the signed-in email listed in app_owners. Anyone else gets "not allowed". -->
+<style>
+:root { --bg:#fffbf2; --panel:#fff; --line:#ffe3a3; --text:#1b1a2e; --muted:#6b6785; --pink:#ff4f7b; --sun:#ffc531; --lime:#7be34a; --sky:#38c6ff; --grape:#9b5cff; --navy:#1b1a2e; }
+* { box-sizing: border-box; } html, body { margin: 0; background: linear-gradient(180deg, #fff1c2 0, var(--bg) 320px); color: var(--text); font: 16px/1.45 Inter, -apple-system, sans-serif; min-height: 100%; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 22px 18px 60px; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; } .mark { font: 800 28px "Bricolage Grotesque", sans-serif; letter-spacing: .02em; } .mark b { color: var(--pink); }
+header .tag { font: 700 12px "JetBrains Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--grape); } header .grow { flex: 1; }
+button, .btn { font: 600 14px Inter, sans-serif; border: 0; border-radius: 999px; padding: 10px 16px; background: var(--navy); color: #fff; cursor: pointer; } button.ghost { background: #fff3d6; color: var(--text); }
+h2 { font: 700 13px "JetBrains Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 28px 0 10px; }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.card { background: var(--panel); border-radius: 20px; padding: 16px 18px; box-shadow: 0 1px 0 var(--line); }
+.stat b { display: block; font: 800 40px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; } .stat span { display: block; margin-top: 6px; font-weight: 600; } .stat small { display: block; color: var(--muted); margin-top: 2px; }
+.stat.sun { background: var(--sun); } .stat.navy { background: var(--navy); color: #fff; } .stat.navy small { color: rgba(255,255,255,.7); } .stat.lime { background: var(--lime); } .stat.grape { background: var(--grape); color: #fff; } .stat.grape small { color: rgba(255,255,255,.8); }
+.up { color: #0a8a4a; font-weight: 700; } .down { color: #c2264b; font-weight: 700; } .navy .up, .grape .up { color: var(--lime); }
+.chart { display: flex; align-items: flex-end; gap: 3px; height: 150px; padding-top: 8px; } .chart .col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 2px; height: 100%; position: relative; }
+.chart i { display: block; width: 100%; border-radius: 5px 5px 0 0; background: var(--grape); min-height: 2px; } .chart i.paid { background: var(--pink); border-radius: 0; } .chart .col:hover::after { content: attr(data-tip); position: absolute; bottom: 100%; background: var(--navy); color: #fff; font-size: 12px; padding: 4px 8px; border-radius: 8px; white-space: nowrap; z-index: 2; }
+.axis { display: flex; justify-content: space-between; font: 500 11px "JetBrains Mono", monospace; color: var(--muted); margin-top: 6px; } .legend { font-size: 13px; color: var(--muted); margin: 0 0 4px; } .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin: 0 5px 0 12px; }
+.funnel .row { display: grid; grid-template-columns: 190px 1fr 90px; gap: 10px; align-items: center; margin: 8px 0; font-weight: 600; } .funnel .bar { height: 26px; border-radius: 8px; background: #fff3d6; overflow: hidden; } .funnel .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--sun), var(--pink)); border-radius: 8px; } .funnel .n { text-align: right; font-family: "JetBrains Mono", monospace; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; } th { text-align: left; font: 700 11px "JetBrains Mono", monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; } td { padding: 10px; border-top: 1px solid #f4ead0; vertical-align: top; } .tablewrap { overflow-x: auto; }
+.pill { display: inline-block; font: 700 11px "JetBrains Mono", monospace; letter-spacing: .04em; padding: 3px 8px; border-radius: 999px; background: #eee; } .pill.paid { background: var(--pink); color: #fff; } .pill.code { background: var(--sky); } .pill.none { background: #f1ecdf; color: var(--muted); } .pill.home { background: var(--lime); }
+.note { color: var(--muted); font-size: 14px; } form { display: grid; gap: 10px; max-width: 340px; } input { font: 500 16px Inter, sans-serif; padding: 12px 14px; border-radius: 14px; border: 2px solid var(--line); background: #fff; }
+.err { background: #ffe1e8; color: #8a1230; border-radius: 14px; padding: 12px 14px; } @media (max-width: 600px) { .funnel .row { grid-template-columns: 120px 1fr 70px; font-size: 14px; } .stat b { font-size: 34px; } }
+</style></head>
+<body><div class="wrap">
+<header><span class="mark">FU<b>£</b>L</span><span class="tag">owner</span><span class="grow"></span><span class="note" id="stamp"></span><button class="ghost" id="refresh" hidden>Refresh</button><button class="ghost" id="signout" hidden>Sign out</button></header>
+<div id="main"><p class="note">Loading…</p></div>
+</div>
+<script type="module">
+import { CONFIG } from './config.js';
+const PRICE = parseFloat((CONFIG.PRICE_LABEL || '£4.99').replace(/[^\d.]/g, '')) || 4.99;
+const $ = (id) => document.getElementById(id); const main = $('main');
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+const db = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true } });   // same sign-in as the app on this device
+const ago = (iso) => { if (!iso) return 'never'; const s = (Date.now() - new Date(iso)) / 1000; if (s < 90) return 'just now'; if (s < 3600) return Math.round(s / 60) + ' min ago'; if (s < 86400) return Math.round(s / 3600) + ' h ago'; if (s < 86400 * 14) return Math.round(s / 86400) + ' d ago'; return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); };
+const trend = (now, prev) => prev === 0 && now === 0 ? '' : prev === 0 ? `<span class="up">new</span>` : now >= prev ? `<span class="up">▲ ${Math.round((now - prev) / prev * 100)}%</span>` : `<span class="down">▼ ${Math.round((prev - now) / prev * 100)}%</span>`;
+const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0) + '%';
+
+function signInForm(msg) {
+  main.innerHTML = `<div class="card" style="max-width:420px"><h2 style="margin-top:0">Sign in</h2><p class="note">Use the same email and password as the app.</p>${msg ? `<p class="err">${esc(msg)}</p>` : ''}<form id="f"><input name="email" type="email" required placeholder="Email" autocomplete="email"><input name="password" type="password" required placeholder="Password" autocomplete="current-password"><button>Sign in</button></form></div>`;
+  $('f').addEventListener('submit', async (e) => { e.preventDefault(); const fd = new FormData(e.target); const { error } = await db.auth.signInWithPassword({ email: fd.get('email'), password: fd.get('password') }); if (error) signInForm(error.message); else load(); });
+}
+
+async function load() {
+  const { data: sess } = await db.auth.getSession();
+  $('signout').hidden = $('refresh').hidden = !sess.session;
+  if (!sess.session) return signInForm();
+  main.innerHTML = '<p class="note">Loading…</p>';
+  const { data: d, error } = await db.rpc('owner_stats');
+  if (error) { main.innerHTML = `<div class="card"><p class="err">${/not allowed/i.test(error.message) ? `This account (${esc(sess.session.user.email)}) isn't set up as the owner.` : /owner_stats|schema cache|function/i.test(error.message) ? 'The dashboard hasn\'t been switched on in the database yet: run supabase/owner-dashboard.sql once in Supabase → SQL Editor.' : esc(error.message)}</p></div>`; return; }
+  const u = d.users, a = d.access, v = d.activity; const days = d.by_day || []; const max = Math.max(1, ...days.map((x) => x.signups));
+  $('stamp').textContent = 'Updated ' + new Date(d.generated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const stat = (cls, n, label, small) => `<div class="card stat ${cls}"><b>${n}</b><span>${label}</span>${small ? `<small>${small}</small>` : ''}</div>`;
+  const fr = (label, n, of) => `<div class="row"><span>${label}</span><div class="bar"><i style="width:${Math.max(2, Math.round((n / Math.max(1, of)) * 100))}%"></i></div><span class="n">${n} · ${pct(n, of)}</span></div>`;
+  main.innerHTML = `
+  <h2 style="margin-top:4px">Right now</h2><div class="grid">
+    ${stat('navy', u.total, 'accounts', `${u.last_24h} in the last 24 hours`)}
+    ${stat('sun', u.last_7d, 'new this week', `${trend(u.last_7d, u.prev_7d)} vs the week before (${u.prev_7d})`)}
+    ${stat('', a.paid, 'paid', `${a.paid_7d} this week ${trend(a.paid_7d, a.paid_prev_7d)}`)}
+    ${stat('lime', '£' + (a.paid * PRICE).toFixed(2), 'taken so far', `${a.paid} × £${PRICE.toFixed(2)}, before Stripe's fees`)}
+    ${stat('grape', v.active_7d, 'active this week', `${v.active_24h} today · ${v.active_30d} this month`)}
+    ${stat('', pct(a.paid, u.total), 'sign-up → paid', `${a.signed_up_no_access} signed up and haven't paid or used a code`)}
+  </div>
+  <h2>Last 30 days</h2><div class="card"><p class="legend"><i style="background:var(--grape)"></i>new accounts<i style="background:var(--pink)"></i>of which paid that day</p>
+    <div class="chart">${days.map((x) => `<div class="col" data-tip="${new Date(x.day).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}: ${x.signups} new, ${x.paid} paid, ${x.active} active"><i class="paid" style="height:${(x.paid / max) * 100}%"></i><i style="height:${(Math.max(0, x.signups - x.paid) / max) * 100}%"></i></div>`).join('')}</div>
+    <div class="axis"><span>${days[0] ? new Date(days[0].day).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}</span><span>today</span></div></div>
+  <h2>Where people drop off</h2><div class="card funnel">
+    ${fr('Made an account', u.total, u.total)}${fr('Got access (paid or code)', a.with_access, u.total)}${fr('Planned a week', v.planned_a_week, u.total)}${fr('Finished a shop', v.finished_a_shop, u.total)}${fr('Planned a 2nd week', v.planned_2_plus, u.total)}
+    <p class="note" style="margin:10px 0 0">The biggest gap between two bars is the thing to fix next.</p></div>
+  <h2>How they got in, and how they use it</h2><div class="grid">
+    ${stat('', a.paid, 'paid through Stripe')}${stat('', a.by_code, 'used a code', (d.codes || []).map((c) => `${esc(c.code)} ${c.uses}/${c.max_uses}`).join(' · '))}${stat('', a.other, 'given access by hand')}
+    ${stat('', v.on_home_screen, 'on their home screen', `counted from v66 on · iPhone ${v.iphone} · Android ${v.android}`)}
+    ${stat('', Object.entries(d.goals || {}).sort((x, y) => y[1] - x[1]).map(([g, n]) => `${esc(g)} ${n}`).join(' · ') || '—', 'goals picked').replace('<b>', '<b style="font-size:20px;line-height:1.25">')}
+  </div>
+  <h2>Newest accounts</h2><div class="card tablewrap"><table><thead><tr><th>Email</th><th>Joined</th><th>Access</th><th>Last active</th><th>Weeks</th><th>Shops</th><th></th></tr></thead><tbody>
+    ${(d.recent || []).map((r) => `<tr><td>${esc(r.email)}</td><td>${ago(r.created_at)}</td><td>${/^stripe:/.test(r.source || '') ? '<span class="pill paid">paid</span>' : /^code:/.test(r.source || '') ? `<span class="pill code">${esc(r.source.slice(5))}</span>` : r.plan ? `<span class="pill">${esc(r.plan)}</span>` : '<span class="pill none">not yet</span>'}</td><td>${ago(r.last_active || r.last_sign_in_at)}</td><td>${r.weeks_planned}</td><td>${r.shops_done}</td><td>${r.on_home_screen ? `<span class="pill home">${esc(r.device || 'home screen')}</span>` : ''}</td></tr>`).join('') || '<tr><td colspan="7" class="note">Nobody yet.</td></tr>'}
+  </tbody></table></div>
+  <p class="note" style="margin-top:18px">Not counted here: visits to the website and money after Stripe's fees. Stripe's own dashboard has the exact payouts.</p>`;
+}
+$('refresh').onclick = load; $('signout').onclick = async () => { await db.auth.signOut(); load(); };
+load();
+</script></body></html>

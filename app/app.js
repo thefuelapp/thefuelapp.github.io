@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v65';
+const APP_VERSION = 'v66';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -184,6 +184,15 @@ function weekSwitch() {
 }
 
 // ---------- boot ----------
+// For the owner's dashboard: one small note per session, saved with the account's own data (so nothing for people without an account):
+// is the app on the home screen, what kind of phone, when it was last opened and how many times. No pages, taps or content.
+let openNoted = false;
+function noteOpen() {
+  if (openNoted) return; openNoted = true;
+  const ua = navigator.userAgent; const device = /iPhone|iPad|iPod/.test(ua) ? 'ios' : /Android/.test(ua) ? 'android' : 'other';
+  const m = S.meta || {}; S.meta = { standalone: isStandalone() || !!m.standalone, device, opens: (m.opens || 0) + 1, lastOpen: new Date().toISOString(), version: APP_VERSION };
+  save();
+}
 async function boot() {
   try {
     const [i, r] = await Promise.all([fetch('data/ingredients.json').then((x) => x.json()), fetch('data/recipes.json').then((x) => x.json())]);
@@ -204,6 +213,7 @@ async function boot() {
   onCloudChange(async () => {
     const gated = gateScreen();
     if (cloud.user && cloud.user.id !== syncedFor) { syncedFor = cloud.user.id; await syncOnSignIn(); }
+    if (cloud.user && !gated) noteOpen();
     if (!gated) ensureIntro();
     if (S.tab === 'pantry') render();
   });
@@ -637,7 +647,7 @@ async function pastCell(w, day, slot) {
 // First-time tip cards, one per tab. Dismissed with "Got it" (S.tips[key]); "Show the tips again" in Settings clears them.
 const TIPS = {
   cook: { title: 'How Cook works', items: ['<b>Batch cook</b> lists everything for your cook day with amounts already scaled for your week.', '<b>Box it up</b> tells you what goes in the fridge, what goes in the freezer, and how to reheat it.', 'Tap a meal on the Plan grid and tick <b>make fresh</b> if you\'d rather cook it on the day.'] },
-  shop: { title: 'How Shop works', items: ['The big number is <b>this week's food</b> at the cheapest shop, and the budget bar judges that. One-off stock-ups (oil, spices, rice) sit underneath with the total you'd pay at the till. Tap another shop to see its list instead. <b>Why this much?</b> shows what costs most and where to save.', 'Tick lines off as you go round. When they\'re all ticked the shop is logged under <b>Settings → Money</b>.', '<b>Stock up</b> is the whey, oils, spices and rice that last weeks: counted this week, in your Pantry next week.', 'Want milk for your coffee or crisps? <b>Add something to this shop</b>, just this week or every week.'] },
+  shop: { title: 'How Shop works', items: ['The big number is <b>this week\'s food</b> at the cheapest shop, and the budget bar judges that. One-off stock-ups (oil, spices, rice) sit underneath with the total you\'d pay at the till. Tap another shop to see its list instead. <b>Why this much?</b> shows what costs most and where to save.', 'Tick lines off as you go round. When they\'re all ticked the shop is logged under <b>Settings → Money</b>.', '<b>Stock up</b> is the whey, oils, spices and rice that last weeks: counted this week, in your Pantry next week.', 'Want milk for your coffee or crisps? <b>Add something to this shop</b>, just this week or every week.'] },
   pantry: { title: 'How Pantry works', items: ['Tick what you already have and it comes off the shop list.', 'Type an amount if you only have some, or leave it blank for "plenty".', 'Stock-ups you\'ve ticked or bought carry into next week on their own.', 'Got leftovers to use? Tap <b>Use up</b> and the Plan tab suggests meals for them.'] },
 };
 function tipCard(key) { if (S.tips && S.tips[key]) return ''; const t = TIPS[key]; return `<div class="card tipcard"><h3>${t.title}</h3><ol class="tips">${t.items.map((i) => `<li>${i}</li>`).join('')}</ol><button class="btn small" data-action="tip-done" data-tip="${key}">Got it</button></div>`; }
