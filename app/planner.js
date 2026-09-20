@@ -207,7 +207,9 @@ export function autoLayout(portions, recipes, cookDay = 0, days = [true, true, t
   const rec = byId(recipes);
   const grid = DAYS.map(() => ({ breakfast: null, lunch: null, dinner: null }));
   for (const [k, v] of Object.entries(locked)) { const [d, sl] = k.split('-'); if (days[+d]) grid[+d][sl] = v; }
-  const order = Array.from({ length: 7 }, (_, k) => (cookDay + k) % 7).filter((d) => days[d]);
+  // A Sunday cook is the Sunday BEFORE the week starts (the Cook tab says so), so the week runs Mon → Sun from it and its own Sunday is
+  // seven days on, not cook day. Any other cook day sits inside the week and the days wrap round it.
+  const order = (cookDay === 6 ? [0, 1, 2, 3, 4, 5, 6] : Array.from({ length: 7 }, (_, k) => (cookDay + k) % 7)).filter((d) => days[d]);
   const targetsFor = (sl) => order.filter((d) => !grid[d][sl]);
   const capOf = { breakfast: targetsFor('breakfast').length, lunch: targetsFor('lunch').length, dinner: targetsFor('dinner').length };
   const entries = Object.entries(portions).filter(([rid, n]) => rec[rid] && n > 0).sort((a, b) => b[1] - a[1]);
@@ -230,7 +232,7 @@ export function autoLayout(portions, recipes, cookDay = 0, days = [true, true, t
   }
   for (const slot of SLOTS) {
     const targets = targetsFor(slot);
-    const seq = sequence(counts[slot], rec, targets.length);
+    const seq = sequence(counts[slot], rec, targets.length, cookDay === 6 ? 1 : 0);
     seq.forEach((rid, k) => { grid[targets[k]][slot] = rid; });
     const left = { ...counts[slot] };
     for (const rid of seq) left[rid] -= 1;
@@ -243,14 +245,15 @@ export function autoLayout(portions, recipes, cookDay = 0, days = [true, true, t
   return { grid, overflow };
 }
 
-// Day-by-day pick for one slot. k = days after the cook day.
-export function sequence(countMap, rec, cap = 7) {
+// Day-by-day pick for one slot. The k-th pick is eaten k + startAge days after the cook (startAge 1 for the Sunday-before cook: Monday is day 1).
+export function sequence(countMap, rec, cap = 7, startAge = 0) {
   const left = { ...countMap };
   const out = [];
   let prev = null;
   const isFresh = (rid) => rec[rid].cookMinutes === 0; // made on the day: no shelf-life constraint
   const deadline = (rid) => (rec[rid].freezer || isFresh(rid) ? Infinity : Math.max(0, rec[rid].fridgeDays - 1));
-  for (let k = 0; k < cap; k++) {
+  for (let i = 0; i < cap; i++) {
+    const k = i + startAge;
     let pool = Object.keys(left).filter((rid) => left[rid] > 0);
     if (!pool.length) break;
     // Must go now or it spoils: non-freezable recipes whose remaining portions need every day left in their window.
@@ -285,14 +288,16 @@ export function gridStats(grid, recipes, ingredients, extra = { protein: 0, kcal
 }
 
 // ---------- storage ----------
-// cookDay: index into DAYS (0 = Monday, 6 = Sunday). Ages wrap, so a Sunday cook feeds Mon–Sat and the Sunday itself. Portions eaten within fridgeDays of cooking go in the fridge.
+// Days between the cook and eating on day d. Sunday cooks happen the day before the week starts, so Mon = 1 … Sun = 7.
+export const cookAge = (d, cookDay) => (cookDay === 6 ? d + 1 : (d - cookDay + 7) % 7);
+// cookDay: index into DAYS (0 = Monday, 6 = Sunday). Portions eaten within fridgeDays of cooking go in the fridge.
 export function tubPlan(recipe, grid, cookDay = 0, fresh = {}) {
   const days = [];
   if (recipe.cookMinutes === 0) return { total: 0, fridge: [], freezer: [], late: [], eatBy: null, fresh: true };
   grid.forEach((d, i) => { for (const s of SLOTS) if (d[s] === recipe.id && !fresh[`${i}-${s}`]) days.push(i); });
   const fridge = [], freezer = [], late = [];
   for (const d of days) {
-    const age = (d - cookDay + 7) % 7; // days after cooking
+    const age = cookAge(d, cookDay); // days after cooking
     if (age < recipe.fridgeDays) fridge.push(d);
     else if (recipe.freezer) freezer.push(d);
     else late.push(d);

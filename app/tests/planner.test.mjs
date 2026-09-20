@@ -130,9 +130,19 @@ test('tubPlan with a Sunday cook (index 6) feeds the Mon–Sun week that follows
   const grid = Array.from({ length: 7 }, () => ({ breakfast: null, lunch: null, dinner: null }));
   [0, 1, 3, 6].forEach((d) => (grid[d].dinner = 'curry')); // Mon, Tue, Thu, Sun
   const t = tubPlan(recipes[0], grid, 6);
-  assert.deepEqual(t.fridge, [0, 1, 6]); // Mon and Tue are 1–2 days after the Sunday cook; Sunday itself is cooked that day
-  assert.deepEqual(t.freezer, [3]);
+  assert.deepEqual(t.fridge, [0, 1]); // Mon and Tue are 1–2 days after the Sunday cook
+  assert.deepEqual(t.freezer, [3, 6]); // the week's own Sunday is seven days after the cook (the Sunday BEFORE the week), so it's a freezer tub
+  [5, 6].forEach((d) => (grid[d].lunch = 'salad'));
+  assert.deepEqual(tubPlan(recipes[1], grid, 6).late, [5, 6]); // a salad that can't be frozen is too old by the weekend
   assert.equal(t.eatBy, 'Tue');
+});
+
+test('autoLayout with a Sunday cook puts food that cannot be frozen at the start of the week, never on the Sunday a week later', () => {
+  const { grid } = autoLayout({ salad: 2, curry: 7, eggs: 7 }, recipes, 6);
+  const days = grid.flatMap((d, i) => ['breakfast', 'lunch', 'dinner'].filter((s) => d[s] === 'salad').map(() => i));
+  assert.equal(days.length, 2);
+  assert.ok(days.every((d) => d <= 1), 'salad on ' + days.join(','));
+  assert.deepEqual(tubPlan(recipes[1], grid, 6).late, []);
 });
 
 test('runSheet orders longest cook first and skips no-cook recipes', () => {
