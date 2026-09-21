@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v76';
+const APP_VERSION = 'v77';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -789,6 +789,22 @@ function renderShop() {
   const haveIds = Object.keys(needsAll).filter((id) => pantryFor[id] !== undefined);
   const full = haveIds.length ? shopTotals(w, { recipes, all: true }).byShop[chosen.shop] : null; const pantrySave = full ? P.round2(full.comparable - chosen.comparable) : 0; // a saving, not a second total
   const haveRows = haveIds.map((id) => { const it = ingById(id); const v = pantryFor[id]; return `<div class="line"><span class="grow"><span class="name">${esc(it?.name || id)}</span><span class="sub">${v === true ? 'plenty' : `you have ${P.fmtQty(v, it?.unit || 'g')}`} · ${esc((usedBy[id] || []).join(', '))}</span></span><button class="btn ghost small" data-action="need" data-id="${id}">Need it</button></div>`; }).join('');
+  // Cupboard check. New people never open Pantry, see the full first-shop price and think Fuel is dear. So the question comes to them, here, under the price:
+  // tap what you already own and watch the number fall. It is the same tick as Pantry (w.pantry), shown until they say they are done for this week.
+  if (cup.week !== S.activeWeek) cup = { week: S.activeWeek, ids: new Set(), costs: {}, base: null };
+  const startedShop = chosen.lines.some((l) => w.ticks[`${chosen.shop}:${l.id}`]);
+  const cupPool = [...chosen.lines.map((l) => ({ id: l.id, cost: l.cost })), ...chosen.notSold.map((m) => ({ id: m.id, cost: T.cheapestElsewhere(m.id, chosen.shop) }))].filter((x) => ingById(x.id) && !cup.ids.has(x.id));
+  const cupOrder = [...cupPool.filter((x) => isStock(x.id)).sort((x, y) => y.cost - x.cost), ...cupPool.filter((x) => !isStock(x.id)).sort((x, y) => x.cost - y.cost)]; // cupboard basics first (most likely owned), then the cheap everyday bits
+  const cupMine = [...cup.ids].filter((id) => w.pantry[id] !== undefined);
+  let cupHtml = '';
+  if (!w.done && !w.cupChecked && !startedShop && (cupOrder.length || cupMine.length)) {
+    cup.base ??= chosen.comparable; const off = P.round2(cup.base - chosen.comparable); const shown = cupOrder.slice(0, 14);
+    const chipName = (id) => esc((ingById(id)?.name || id).replace(/\s*\([^)]*\)/g, ''));
+    cupHtml = `<div class="card cupcheck"><h3>Before you shop: already got any of this?</h3><p class="small">Tap anything that is already in your cupboard, fridge or freezer. It comes off your list and the price drops.${off > 0 ? ` <b class="cupoff">${P.gbp(off)} off so far</b>` : ''}</p>
+    <div class="chip-row">${cupMine.map((id) => `<button class="chip on" data-action="cup-tick" data-id="${id}">✓ ${chipName(id)}</button>`).join('')}${shown.map((x) => `<button class="chip" data-action="cup-tick" data-id="${x.id}" data-cost="${x.cost}">${chipName(x.id)}${x.cost ? `<small>${P.gbp(x.cost)}</small>` : ''}</button>`).join('')}</div>
+    ${cupOrder.length > shown.length ? `<p class="small muted">and ${cupOrder.length - shown.length} more in your full cupboard.</p>` : ''}
+    <div class="row" style="gap:8px;margin-top:8px"><button class="btn small grow" data-action="cup-done">${cupMine.length ? `Done · shop is now ${P.gbp(chosen.comparable)}` : 'Nothing, I need it all'}</button><button class="btn ghost small grow" data-action="go-pantry">See my full cupboard</button></div></div>`;
+  }
   return `${shopTop}
   ${doneBox}
   <div class="card shophead"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.comparable)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]}</span></span><span class="muted small">budget ${P.gbp(budget)}</span></div>
@@ -797,7 +813,7 @@ function renderShop() {
     ${chosen.stock ? `<div class="stockline">Includes <b>${P.gbp(chosen.stock)}</b> of cupboard stock-ups (${esc(stockList)}) that last for weeks. <a href="#" data-action="go-pantry">Already got some? Tick them in Pantry.</a></div>` : ''}
     ${chosen.elsewhere ? `<p class="small muted">Includes about ${P.gbp(chosen.elsewhere)} for what ${P.SHOP_NAMES[chosen.shop]} doesn't sell, priced at the cheapest other shop.</p>` : ''}
     <div class="row" style="gap:8px;margin-top:6px"><button class="btn small grow" data-action="share-list">Share list</button><button class="btn ghost small grow" data-action="copy-list">Copy</button>${online[chosen.shop] ? `<a class="btn ghost small grow" style="text-align:center" href="${online[chosen.shop]('')}" target="_blank" rel="noopener">Shop online</a>` : ''}</div></div>
-  ${tipCard('shop')}${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
+  ${cupHtml}${tipCard('shop')}${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
   ${chosen.stock ? '' : `<p class="small muted" style="margin:0 2px 10px">Already got some of this at home? <a href="#" data-action="go-pantry">Tick it off in Pantry</a> and the price drops.</p>`}
   <button class="btn block big" data-action="extra-add" style="margin:2px 0 6px">+ Add something to this shop</button>
   <h2>Where to shop</h2><div class="shopchips">${chips}</div>
@@ -1016,6 +1032,7 @@ function gateScreen() {
 // What the chosen (or cheapest) shop comes to at the till right now, worked out the way the Shop tab does it (things that shop doesn't sell
 // are priced at the cheapest other shop). Pantry shows it live, so ticking something visibly takes it off the bill.
 let planAdd = null; // Plan page: true = Add meals view, false = Your week view, null = decide from the week. Never saved.
+let cup = { week: null, ids: new Set(), costs: {}, base: null }; // Shop's cupboard check this visit: what was tapped (so it can be untapped) and the bill when the card first showed
 let pantryBase = null; // the bill when Pantry was opened, so the bar can say how much this visit has taken off
 function pantryPriceHtml(w) {
   const now = tillNow(w); if (!now) return '';
@@ -1418,6 +1435,8 @@ function onAction(e) {
   }
   else if (a === 'gate-retry') { location.reload(); }
   else if (a === 'plan-filter') { S.planFilter = el.dataset.filter; save(); render(); const h = document.getElementById('pick-head'); if (h) h.scrollIntoView({ block: 'start' }); }
+  else if (a === 'cup-tick') { const id = el.dataset.id; if (cup.ids.has(id) && w.pantry[id] !== undefined) { delete w.pantry[id]; delete (w.useUp || {})[id]; cup.ids.delete(id); } else { w.pantry[id] = true; cup.ids.add(id); } save(); holdPlace('.cupcheck', () => render()); const t = tillNow(w); if (t) toast(`Shop is now ${P.gbp(t.total)}`); } // the price card has scrolled away by now, so say the new price where the thumb is
+  else if (a === 'cup-done') { const off = cup.base === null ? 0 : P.round2(cup.base - (tillNow(w)?.total ?? cup.base)); w.cupChecked = true; save(); render(); toast(off > 0 ? `Cupboard checked. ${P.gbp(off)} off your shop.` : 'Cupboard checked'); }
   else if (a === 'go-pantry') { e.preventDefault(); pantryBase = null; S.prevTab = S.tab; S.tab = 'pantry'; save(); render({ top: true }); }
   else if (a === 'go-ideas') { S.tab = 'recipes'; S.ideasOpen = true; save(); render({ top: true }); }
   else if (a === 'ideas-toggle') { S.ideasOpen = !S.ideasOpen; save(); render(); }
