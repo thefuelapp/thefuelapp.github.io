@@ -15,32 +15,33 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body><script>
-/* iPhone home-screen app. When the page runs UNDER a see-through status bar, iOS draws it SHORT by about the status bar's height:
-   a strip at the bottom of the screen is never painted (only the page background shows there), so anything placed there, like the
-   tab bar's marker line, disappears. So: keep the app inside what is actually drawn, and in that case drop the tab bar's own
-   home-indicator padding, because the unpainted strip (coloured like the tab bar) already is that space. */
+/* iPhone home-screen app. The status-bar style is frozen when the icon is added, so two kinds of install exist:
+   - fresh ("default"): the page starts below the status bar and runs to the very bottom of the screen; env(safe-area-inset-bottom) is the home-bar space.
+   - old ("black-translucent", class ios-under): the page runs under the status bar, but iOS lays it out SHORT by the status bar's height and never
+     paints the strip below it: only the html background colour shows there (class ios-short).
+   ios-short is also set if a fresh install ever turns out short. styles.css (v76) does the rest. */
 (function () {
   var d = document.documentElement, ios = navigator.standalone === true;
   if (ios || matchMedia('(display-mode: standalone)').matches) d.classList.add('is-standalone');
   if (!ios) return;
   d.classList.add('is-ios-app');
   function fit() {
-    var probe = document.createElement('div'); probe.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);width:1px;visibility:hidden'; d.appendChild(probe);
+    var probe = document.createElement('div'); probe.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top);visibility:hidden;pointer-events:none'; d.appendChild(probe);
     var under = probe.offsetHeight > 0; d.removeChild(probe);
     var portrait = matchMedia('(orientation: portrait)').matches;
     var full = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width);
+    var gap = full - window.innerHeight; /* a healthy fresh install is short by the status bar only (20 to 62pt); a short one by about 34 more */
     d.classList.toggle('ios-under', under);
-    d.classList.toggle('ios-short', under && window.innerHeight < full - 20);
-    d.style.setProperty('--app-h', window.innerHeight + 'px');
+    d.classList.toggle('ios-short', under ? gap > 20 : gap > 75);
   }
   fit(); addEventListener('resize', fit); addEventListener('orientationchange', function () { setTimeout(fit, 350); }); addEventListener('pageshow', fit);
 })();
 </script><div id="statusband" aria-hidden="true"></div>
 <main id="view"></main>
 <nav id="tabs">
-  <button data-tab="plan">Plan</button>
-  <button data-tab="cook">Cook</button>
-  <button data-tab="shop">Shop</button>
+  <button data-tab="plan"><i>1</i>Plan</button>
+  <button data-tab="shop"><i>2</i>Shop</button>
+  <button data-tab="cook"><i>3</i>Cook</button>
   <button data-tab="recipes">Recipes</button>
   <button data-tab="pantry">Pantry</button>
 </nav>

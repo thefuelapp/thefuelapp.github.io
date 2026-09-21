@@ -415,40 +415,18 @@ h2.pickgroup span { font-weight: 600; color: var(--muted); font-size: 12px; }
 /* v68: boxes inside pop-up sheets inherit the sheet's 14px text; keep them at 16px so iPhone doesn't zoom the page */
 .sheet-inner input:not([type=checkbox]):not([type=radio]):not([type=range]), .sheet-inner select, .sheet-inner textarea, #gate input, #intro input { font-size: 16px; }
 #gate input.big, #intro input.big { font-size: 28px; } #gate .codecard input.big { font-size: 20px; } #gate #signin-form input.big { font-size: 20px; }
-/* v69: iPhone home-screen apps (black-translucent status bar) measure 100dvh as the screen MINUS the status bar, so the app stopped
-   short and a strip of page background showed under the tab bar. Pin the app to all four edges of the screen instead of trusting
-   that height, and make anything that could ever show behind it the tab bar's colour. Safari tabs keep the old sizing. */
-@media (display-mode: standalone) { body { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: auto; } }
-}
-html.is-standalone body { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: auto; }
-
-/* v70: on an iPhone home-screen app the height comes from the real screen (see index.html), not from 100dvh / the viewport */
-html.is-ios-app body { position: fixed; top: 0; left: 0; right: 0; bottom: auto; width: 100%; height: var(--app-h, 100vh); }
-html.is-ios-app #sheet, html.is-ios-app #gate, html.is-ios-app #intro { bottom: auto; height: var(--app-h, 100vh); } /* full-screen layers get the real height too */
-
-/* v71 */
-html.ios-short #tabs { height: var(--tab-h); padding-bottom: 0; }                       /* the unpainted strip below is the home-indicator space */
+/* v76: iPhone home-screen app, top and bottom, in ONE place (replaces the v69-v73 attempts; the classes come from the script in index.html).
+   The tab bar is navy everywhere and carries the home-bar space as its own padding, so it runs to the very bottom of the screen.
+   iOS colours whatever it doesn't draw from the page (the status-bar area on a fresh install, the strip under a short page) with the html background colour. */
+#tabs { height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); }
+#tabs button.active::after { bottom: 6px; }
+html.is-ios-app { background: #fff1c2; }                                        /* fresh install: cream status-bar area, dark clock */
+html.is-ios-app.ios-under, html.is-ios-app.ios-short { background: #1b1a2e; }   /* short page: the strip under the tab bar is navy, like the bar */
+html.ios-short #tabs { height: 56px; padding-bottom: 0; }                       /* that strip already is the home-bar space */
 html.ios-short .sheet-inner { padding-bottom: 20px; } html.ios-short #gate .wrap, html.ios-short #intro .wrap { padding-bottom: 28px; }
-#statusband { background: #fff1c2; }                                                     /* same cream as the top of the page, all the way up */
-body:has(#gate:not([hidden])) #statusband, body:has(#intro:not([hidden])) #statusband { background: transparent; } /* sign-in and setup screens run to the top themselves */
-
-/* v72. iPhone fills the status-bar area (and anything it doesn't draw) with the PAGE background colour, and picks dark or light clock
-   text to suit it. Fresh installs: cream, like the top of the app. Old see-through-status-bar installs keep navy, because there the
-   undrawn strip is at the bottom, under the tab bar. */
-html.is-ios-app { background: #fff1c2; }
-html.is-ios-app.ios-under { background: #1b1a2e; }
-/* the tab bar sits lower, like a native one: a slimmer bar, and only as much home-bar clearance as the home bar needs */
-#tabs { height: calc(56px + max(env(safe-area-inset-bottom) - 14px, 0px)); padding-bottom: max(env(safe-area-inset-bottom) - 14px, 0px); }
-#tabs button.active::after { bottom: 5px; }
-html.ios-short #tabs { height: 56px; padding-bottom: 0; }
-/* v73. On an iPhone home-screen install the page is only drawn between the status bar and the home-bar zone; iOS fills BOTH of those
-   zones with one colour, the page background. So the top of the page, the page background and the tab bar are all the same cream:
-   the top is seamless and the tab bar reads as running to the very bottom of the screen. (A navy bar would float above a cream
-   strip; a navy page background would turn the status bar blue.) */
-html.is-ios-app:not(.ios-under) #tabs { background: #fff1c2; border-top: 1px solid #f2d88f; height: 52px; padding-bottom: 0; }
-html.is-ios-app:not(.ios-under) #tabs button { color: #8a84a8; }
-html.is-ios-app:not(.ios-under) #tabs button.active { color: #1b1a2e; font-weight: 800; }
-html.is-ios-app:not(.ios-under) #tabs button.active::after, html.is-ios-app:not(.ios-under) #tabs button[data-tab].active::after { background: #1b1a2e; bottom: 3px; height: 3px; }
+#statusband { background: #fff1c2; }
+html.ios-under #statusband { background: #1b1a2e; }                             /* old installs have a white clock: keep it readable */
+body:has(#gate:not([hidden])) #statusband, body:has(#intro:not([hidden])) #statusband { background: transparent; } /* sign-in and setup run to the top themselves */
 
 /* v75 Pantry: the shop's price, live. Sticks to the top while you tick, so you watch the bill fall. */
 .pantryprice { position: sticky; top: 8px; z-index: 6; display: flex; align-items: baseline; gap: 10px; background: #1b1a2e; color: #fff; border-radius: 16px; padding: 12px 16px; margin: 0 0 12px; box-shadow: 0 8px 22px rgba(27, 26, 46, .22); }
@@ -456,3 +434,104 @@ html.is-ios-app:not(.ios-under) #tabs button.active::after, html.is-ios-app:not(
 .pantryprice span { flex: 1; font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, .78); }
 .pantryprice b { font-size: 24px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .pantryprice i { font-style: normal; font-size: 13px; font-weight: 800; background: #7cf0b5; color: #0b3a23; border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+
+/* v76 clarity: the app reads as three steps (1 Plan, 2 Shop, 3 Cook). Cards get a real edge so they stop blurring into the cream page, each page says which step it is,
+   the tab bar carries the step numbers (a tick once that step is done), and the Plan page has a navy dock that stays above the tab bar with the count and the next button.
+   Colour rule: pink = do something here; sun on navy = go to the next step; cream ghost buttons = secondary. Only Inter 400 to 700 is loaded, so no heavier weights. */
+:root { --edge: rgba(27,26,46,.16); }
+.card { border: 1.5px solid var(--edge); box-shadow: 0 2px 8px rgba(27,26,46,.05); margin-bottom: 14px; }
+.card.flat, .card.pickcard { border: 0; box-shadow: none; }
+.tipcard { border-color: #1b1a2e; }
+.pickhead { border-color: #e0a800; }
+#plan-top:empty + .pickhead { margin-top: 0; }
+.endcard { border-style: dashed; }
+.wtabs { border: 1.5px solid var(--edge); box-shadow: none; }
+details.pantry-group summary { border: 1.5px solid var(--edge); border-left: 5px solid var(--sky); box-shadow: none; }
+.card.pickcard .recipe-row.pick { border: 1.5px solid var(--edge); border-left: 5px solid var(--sun); box-shadow: none; }
+.card.pickcard .recipe-row.pick.mains { border-left-color: var(--coral); }
+.card.pickcard .recipe-row.pick.snack { border-left-color: var(--grape); }
+.cell { border: 1.5px solid rgba(27,26,46,.10); }
+.cell.empty { background: #fff; border: 1.5px dashed rgba(27,26,46,.30); color: #ff4f7b; }
+.cell.empty .cadd { font-weight: 700; }
+.cell.off { border-color: transparent; }
+h1 { font-size: 30px; }
+h2 { color: var(--text); font-size: 14px; }
+h3 { font-size: 18px; font-weight: 700; }
+.btn.ghost { border: 1.5px solid var(--edge); }
+.btn.sun { background: #ffc531; color: #4a3300; }
+.search { border-color: var(--edge); }
+.stepline { margin: -8px 0 12px; font-size: 14px; line-height: 1.35; color: var(--muted); }
+.stepline b { display: inline-block; background: #1b1a2e; color: #fff; border-radius: 999px; padding: 2px 9px; font-size: 12px; font-weight: 700; margin-right: 6px; }
+.stepline strong { color: var(--text); font-weight: 600; }
+.gridhelp { list-style: none; padding: 8px 12px; font-size: 14px; }
+.nextcard { border: 2px solid #1b1a2e; text-align: center; margin-top: 16px; }
+.nextcard .btn { margin-top: 10px; }
+.introsteps { text-align: left; padding-left: 22px; margin: 10px 0 14px; }
+.introsteps li { margin: 8px 0; }
+.introsteps li::marker { font-weight: 700; color: #ff4f7b; }
+#intro .introsteps { font-size: 17px; }
+#intro .introsteps li::marker { color: #fff; }                                   /* the set-up screens are pink already */
+.plandock { position: sticky; bottom: 8px; z-index: 6; display: flex; align-items: center; gap: 10px; min-height: 60px; background: #1b1a2e; color: #fff; border-radius: 16px; padding: 10px 10px 10px 16px; margin-top: 16px; box-shadow: 0 8px 22px rgba(27,26,46,.28); }
+#view.has-dock { padding-bottom: 0; } .plandock { margin-bottom: 8px; } /* the dock sits 8px above the tab bar, and keeps 8px under it at the end of the list */
+.plandock .grow { flex: 1; min-width: 0; }
+.plandock b { display: block; font-size: 15px; }
+.plandock small { display: block; font-size: 12.5px; color: rgba(255,255,255,.75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.plandock .btn { padding: 11px 14px; font-size: 15px; white-space: nowrap; }
+.plandock.two { padding: 8px; }
+.plandock.two .btn { flex: 1; text-align: center; }
+.plandock .btn.ghost { background: rgba(255,255,255,.14); color: #fff; border: 0; }
+#view.dragging .plandock, #view.picking .plandock { visibility: hidden; }       /* out of the way while a meal is being moved */
+#view:has([data-plan-search]:focus) .plandock { display: none; }                 /* and while the keyboard is up */
+#tabs button i { font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-right: 5px; border: 1.5px solid currentColor; border-radius: 999px; font-size: 10.5px; font-weight: 700; vertical-align: 1px; }
+#tabs button.active i { color: #1b1a2e; border-color: transparent; }
+#tabs button[data-tab=plan].active i { background: var(--sun); }
+#tabs button[data-tab=shop].active i { background: var(--lime); }
+#tabs button[data-tab=cook].active i { background: var(--coral); }
+#tabs button.done i { font-size: 0; }
+#tabs button.done i::before { content: "✓"; font-size: 11px; }
+#tabs button.done:not(.active) i { background: var(--lime); color: #163d00; border-color: transparent; }
+#tabs button[data-tab=recipes] { border-left: 1px solid rgba(255,255,255,.16); }
+#tabs button { white-space: nowrap; padding-left: 0; padding-right: 0; }         /* "2 Shop" stays on one line on a 320px phone */
+@media (max-width: 340px) { #tabs button i { margin-right: 3px; } }
+@media (max-height: 600px) { .plandock { min-height: 48px; padding-top: 6px; padding-bottom: 6px; } .plandock:not(.two) small { display: none; } } /* short phones: a slimmer dock hides less of the list */
+
+/* v76 toast: longer messages (new targets after a goal change) wrap onto a second line instead of running off both sides of the screen; short ones stay a one-line pill */
+#hint { width: max-content; max-width: calc(100vw - 24px); white-space: normal; text-align: center; line-height: 1.35; border-radius: 20px; }
+
+/* v76 one price on Shop: stock-ups are a quiet "Includes £x" sentence, not a second total in a box. Switch buttons sit on the save rows; Undo sits in the green box. */
+.shophead .stockline { background: none; padding: 0; margin: 6px 0 8px; font-size: 13.5px; line-height: 1.4; color: var(--muted); }
+.shophead .stockline b { font-weight: 700; }
+.shophead .stockline a, .shophead p a { color: inherit; font-weight: 700; }
+.saverow { flex-wrap: nowrap; } .saverow .btn { flex: none; }
+.undo-box { display: flex; align-items: center; gap: 10px; margin-top: 6px; } .undo-box span { flex: 1; }
+
+/* v76 Pantry: what this week needs first, the rest of the cupboard folded away; optional use-by dates */
+.check.prow { flex-wrap: wrap; align-items: flex-start; }
+.check.prow > input[type=checkbox] { margin-top: 1px; }
+.check.prow > .grow { flex: 1; min-width: 0; }
+.check.prow .have { flex: 0 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 2px 0 2px 34px; }
+.check.prow .have .chip.useup { margin-left: 0; }
+.check.prow .sub.need { color: var(--text); opacity: .72; }
+.datechip { margin-left: 6px; margin-right: 0; white-space: nowrap; }
+.useby { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; font-weight: 700; color: var(--muted); }
+.useby input[type=date] { width: auto; font-size: 16px; min-width: 150px; min-height: 36px; background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 4px 8px; color: var(--text); accent-color: var(--sky); }
+h2.pweekhead { margin-top: 6px; }
+h2.pweekhead span { text-transform: none; letter-spacing: 0; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.card.pweek { border: 2px solid #1b1a2e; padding-top: 8px; }
+h4.psub { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 2px; padding-bottom: 4px; border-bottom: 2px solid var(--line); }
+h4.psub:first-child { margin-top: 4px; }
+details.pantry-rest { margin-top: 18px; }
+details.pantry-rest > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; padding: 14px 16px; background: var(--panel-2, #fff7e8); border: 1.5px dashed var(--edge, var(--line)); border-radius: 16px; }
+details.pantry-rest > summary::-webkit-details-marker { display: none; }
+details.pantry-rest > summary b { display: block; font-size: 16px; }
+details.pantry-rest > summary b::before { content: "▸"; display: inline-block; width: 18px; color: var(--accent); transition: transform .15s; }
+details.pantry-rest[open] > summary b::before { transform: rotate(90deg); }
+details.pantry-rest > summary small { display: block; font-size: 13px; line-height: 1.35; color: var(--muted); font-weight: 500; margin-top: 3px; }
+details.pantry-rest > summary small.cnt { font-weight: 700; margin-top: 6px; }
+details.pantry-rest > summary small.cnt::after { content: " · tap to open"; color: var(--accent); }
+details.pantry-rest[open] > summary small.cnt::after { content: " · tap to close"; }
+.check.prow > .chip.useup { margin-top: 2px; }
+.useby-banner { margin-top: 0; }
+.useby-banner .row { flex-wrap: wrap; }
+#useby-banner:empty { display: none; }
+#useup-card .useby-banner { margin: 0 0 8px; }

@@ -5,7 +5,14 @@ export const SLOTS = ['breakfast', 'lunch', 'dinner'];
 export const SHOPS = ['aldi', 'asda', 'tesco', 'sainsburys']; // Lidl publishes no prices online, so it can't be compared
 export const SHOP_NAMES = { aldi: 'Aldi', lidl: 'Lidl', asda: 'ASDA', tesco: 'Tesco', sainsburys: "Sainsbury's", any: 'Any shop' };
 
-const byId = (list) => Object.fromEntries(list.map((x) => [x.id, x]));
+// Same list in, same lookup out: this used to be rebuilt on every call (over a thousand times per tap on the Plan tab).
+// Remembered per array; rebuilt when the array grows, shrinks or has its first or last item replaced. Items edited in place are seen as-is (same objects).
+const BYID = new WeakMap();
+const byId = (list) => {
+  const n = list.length; let m = BYID.get(list);
+  if (!m || m.n !== n || m.first !== list[0] || m.last !== list[n - 1]) { m = { n, first: list[0], last: list[n - 1], map: Object.fromEntries(list.map((x) => [x.id, x])) }; BYID.set(list, m); }
+  return m.map;
+};
 
 // ---------- nutrition ----------
 export function kcalPerPortion(recipe, ingredients) {
@@ -39,6 +46,15 @@ export function kcalTargetFor(weightKg, goal) {
 export function proteinTargetFor(weightKg, goal) {
   const perKg = goal === 'lose' ? 2.2 : goal === 'build' ? 2.0 : goal === 'lean' ? 1.9 : 1.4;
   return Math.round((weightKg * perKg) / 5) * 5;
+}
+// Goal or bodyweight changed in Settings: the targets the set-up questions would give now, or null when there is nothing to change (or no sensible weight).
+// byHand = the current targets are not what the OLD weight and goal suggest, so the user moved the sliders and must be asked before they are overwritten. Needs no saved flag, so it works on old data.
+export function retargetFor(st, oldWeight, oldGoal) {
+  if (!st || !(st.weight >= 30 && st.weight <= 200)) return null;
+  const kcal = kcalTargetFor(st.weight, st.goal), prot = proteinTargetFor(st.weight, st.goal);
+  if (kcal === st.kcalTarget && prot === st.proteinTarget) return null;
+  const byHand = st.kcalTarget !== kcalTargetFor(oldWeight, oldGoal) || st.proteinTarget !== proteinTargetFor(oldWeight, oldGoal);
+  return { kcal, prot, byHand };
 }
 
 export function proteinPerPortion(recipe, ingredients) {
@@ -325,6 +341,26 @@ export function scaleIngredients(recipe, portions, ingredients) {
 }
 
 export const round2 = (x) => Math.round(x * 100) / 100;
+// One total, one verdict. 'stock' = over budget only because of one-off stock-ups (oil, spices, rice): said kindly, not painted red.
+export function budgetVerdict(total, stock, budget) {
+  const pct = budget > 0 ? Math.min(100, Math.round((total / budget) * 100)) : 100;
+  const over = round2(total - budget);
+  if (over <= 0.004) return { state: 'ok', left: round2(budget - total), pct };
+  return { state: round2(total - stock) <= budget ? 'stock' : 'over', over, pct };
+}
+// Replace one recipe with another from fromDay onwards, keeping every slot where it is (eaten days, 'out' and freezer tubs are left alone). Mutates grid; returns the cells changed.
+export function swapRecipe(grid, from, to, fromDay = 0) { const cells = []; grid.forEach((d, i) => { if (i < fromDay) return; for (const s of SLOTS) if (d[s] === from) { d[s] = to; cells.push([i, s]); } }); return cells; }
+// Would every batch-cooked portion still be good on the day it is eaten, sitting where it is?
+export const keepsInPlace = (recipe, grid, cookDay = 0, fresh = {}) => tubPlan(recipe, grid, cookDay, fresh).late.length === 0;
 export const round1 = (x) => Math.round(x * 10) / 10;
 export const fmtQty = (qty, unit) => (unit === 'each' ? `${qty}` : qty >= 1000 ? `${round2(qty / 1000)}${unit === 'ml' ? 'l' : 'kg'}` : `${qty}${unit}`);
 export const gbp = (x) => `£${x.toFixed(2)}`;
+// Optional use-by dates (Pantry). Dates are 'YYYY-MM-DD'; today is passed in so tests and the recording clock control it. UTC maths, so clock changes can't shift a day.
+export const daysBetween = (fromISO, toISO) => Math.round((Date.parse(toISO + 'T00:00:00Z') - Date.parse(fromISO + 'T00:00:00Z')) / 86400000);
+export function useByState(dateISO, todayISO, soonDays = 3) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateISO || '')) return null;
+  const days = daysBetween(todayISO, dateISO); if (!Number.isFinite(days)) return null;
+  return { days, state: days < 0 ? 'past' : days <= soonDays ? 'soon' : 'ok' };
+}
+export const useByDay = (dateISO, todayISO) => { const d = daysBetween(todayISO, dateISO); return d === 0 ? 'today' : d === 1 ? 'tomorrow' : DAYS[(new Date(dateISO + 'T00:00:00Z').getUTCDay() + 6) % 7]; };
+export function useByLabel(dateISO, todayISO) { const s = useByState(dateISO, todayISO); return !s || s.state === 'ok' ? '' : s.state === 'past' ? 'Past its date' : s.days === 0 ? 'Use today' : `Use by ${useByDay(dateISO, todayISO)}`; }

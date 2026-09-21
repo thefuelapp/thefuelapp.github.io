@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { kcalTargetFor, kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet, unitPrice } from '../planner.js';
+import { kcalTargetFor, retargetFor, kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet, unitPrice, budgetVerdict, swapRecipe, keepsInPlace, daysBetween, useByState, useByDay, useByLabel } from '../planner.js';
 
 const ingredients = [
   { id: 'chicken', name: 'Chicken breast', unit: 'g', protein: 22.5, packs: [
@@ -209,8 +209,99 @@ test('kcal, scaling and targets', () => {
 });
 
 test('kcal target from weight and goal', () => { assert.equal(kcalTargetFor(85, 'build'), 3000); assert.equal(kcalTargetFor(68, 'lose'), 1800); });
+test('changing goal or weight moves the targets, and hand-set targets are flagged', () => {
+  assert.equal(kcalTargetFor(85, 'eatwell'), 2600); assert.equal(proteinTargetFor(85, 'eatwell'), 120);
+  // untouched targets (still what the old goal suggests): move without asking
+  assert.deepEqual(retargetFor({ weight: 85, goal: 'build', kcalTarget: 2600, proteinTarget: 120 }, 85, 'eatwell'), { kcal: 3000, prot: 170, byHand: false });
+  assert.deepEqual(retargetFor({ weight: 70, goal: 'build', kcalTarget: 3000, proteinTarget: 170 }, 85, 'build'), { kcal: 2550, prot: 140, byHand: false });
+  // a slider was moved by hand: flagged so the app asks first
+  assert.equal(retargetFor({ weight: 85, goal: 'lose', kcalTarget: 2200, proteinTarget: 170 }, 85, 'build').byHand, true);
+  // already right, or no sensible weight (old data): nothing to do
+  assert.equal(retargetFor({ weight: 85, goal: 'build', kcalTarget: 3000, proteinTarget: 170 }, 85, 'lean'), null);
+  assert.equal(retargetFor({ goal: 'build', kcalTarget: 3000, proteinTarget: 170 }, undefined, 'lean'), null);
+});
 
 test('unitPrice ignores packs from shops that are not compared (Lidl receipt prices on file)', () => {
   const it = { id: 'x', unit: 'g', packs: [{ shop: 'lidl', size: 500, price: 0.1 }, { shop: 'aldi', size: 500, price: 0.5 }, { shop: 'any', size: 500, price: 0.4 }] };
   assert.equal(unitPrice(it), 0.4 / 500);
+});
+
+// The ingredient/recipe lookup is remembered per array (it used to be rebuilt on every call, which made ticking meals lag). These pin what it must still notice.
+test('remembered lookup: a price edited in place shows up in the next costing', () => {
+  const ing = [{ id: 'a', unit: 'g', protein: 10, kcal: 100, packs: [{ shop: 'aldi', size: 1000, price: 2 }] }, { id: 'b', unit: 'g', protein: 20, kcal: 200, packs: [{ shop: 'aldi', size: 1000, price: 4 }] }];
+  const r = { id: 'r', slots: ['dinner'], ingredients: [{ id: 'a', qty: 100 }, { id: 'b', qty: 100 }] };
+  const before = costPerPortion(r, ing).cost; ing[0].packs[0].price = 12;
+  assert.ok(costPerPortion(r, ing).cost > before + 0.9, 'same array, same objects, new price');
+});
+test('remembered lookup: an ingredient pushed onto the same array is found', () => {
+  const ing = [{ id: 'a', unit: 'g', protein: 10, kcal: 100, packs: [] }];
+  const r = { id: 'r', slots: ['dinner'], ingredients: [{ id: 'a', qty: 100 }, { id: 'b', qty: 100 }] };
+  assert.equal(proteinPerPortion(r, ing), 10);
+  ing.push({ id: 'b', unit: 'g', protein: 20, kcal: 200, packs: [] });
+  assert.equal(proteinPerPortion(r, ing), 30); assert.equal(kcalPerPortion(r, ing), 300);
+});
+test('remembered lookup: replacing the first or last item is noticed (replacing a middle item in place is not supported: the app swaps the whole array instead)', () => {
+  const ing = [{ id: 'a', unit: 'g', protein: 10, packs: [] }, { id: 'b', unit: 'g', protein: 20, packs: [] }, { id: 'c', unit: 'g', protein: 30, packs: [] }];
+  const r = { id: 'r', slots: ['dinner'], ingredients: [{ id: 'a', qty: 100 }, { id: 'c', qty: 100 }] };
+  assert.equal(proteinPerPortion(r, ing), 40);
+  ing[0] = { id: 'a', unit: 'g', protein: 50, packs: [] }; assert.equal(proteinPerPortion(r, ing), 80);
+  ing[2] = { id: 'c', unit: 'g', protein: 0, packs: [] }; assert.equal(proteinPerPortion(r, ing), 50);
+});
+test('remembered lookup: same list gives the same answer twice, and two lists sharing ids do not mix', () => {
+  const r = { id: 'r', slots: ['dinner'], ingredients: [{ id: 'a', qty: 200 }] };
+  const one = [{ id: 'a', unit: 'g', protein: 10, kcal: 100, packs: [] }], two = [{ id: 'a', unit: 'g', protein: 10, kcal: 250, packs: [] }];
+  assert.equal(kcalPerPortion(r, one), 200); assert.equal(kcalPerPortion(r, two), 500); assert.equal(kcalPerPortion(r, one), 200); assert.equal(kcalPerPortion(r, two), 500);
+});
+
+test('budgetVerdict: one total, three kind states', () => {
+  assert.deepEqual(budgetVerdict(38.18, 0, 45), { state: 'ok', left: 6.82, pct: 85 });
+  const st = budgetVerdict(48.10, 8.60, 45); assert.equal(st.state, 'stock'); assert.equal(st.over, 3.1); assert.equal(st.pct, 100);
+  const ov = budgetVerdict(52, 3, 45); assert.equal(ov.state, 'over'); assert.equal(ov.over, 7);
+  assert.deepEqual(budgetVerdict(45, 0, 45), { state: 'ok', left: 0, pct: 100 });
+  const zero = budgetVerdict(10, 0, 0); assert.equal(zero.pct, 100); assert.equal(zero.state, 'over'); assert.ok(!Number.isNaN(zero.over));
+});
+
+test('swapRecipe: swaps only from the given day and keeps every slot, tubs and skipped meals', () => {
+  const blank = () => ({ breakfast: null, lunch: null, dinner: null });
+  const grid = [0, 1, 2, 3, 4, 5, 6].map(blank);
+  grid[0].dinner = 'curry'; grid[1].dinner = 'curry'; grid[3].dinner = 'curry'; grid[2].dinner = 'out'; grid[4].dinner = 'tub:curry'; grid[1].lunch = 'salad';
+  const cells = swapRecipe(grid, 'curry', 'wrap', 1);
+  assert.deepEqual(cells, [[1, 'dinner'], [3, 'dinner']]);
+  assert.equal(grid[0].dinner, 'curry'); assert.equal(grid[2].dinner, 'out'); assert.equal(grid[4].dinner, 'tub:curry'); assert.equal(grid[1].lunch, 'salad');
+  const c = gridCounts(grid); assert.equal(c.curry, 1); assert.equal(c.wrap, 2);
+});
+
+test('keepsInPlace: a meal that would go off where it sits is not a fair swap', () => {
+  const blank = () => ({ breakfast: null, lunch: null, dinner: null });
+  const at = (id, day, slot = 'dinner') => { const g = [0, 1, 2, 3, 4, 5, 6].map(blank); g[day][slot] = id; return g; };
+  const [curry, , eggs, wrap] = recipes;
+  assert.equal(keepsInPlace(wrap, at('wrap', 0), 0), true);
+  assert.equal(keepsInPlace(wrap, at('wrap', 3), 0), false); // keeps 2 days, can't be frozen
+  assert.equal(keepsInPlace(curry, at('curry', 6), 0), true); // freezes
+  assert.equal(keepsInPlace(eggs, at('eggs', 5, 'breakfast'), 0), true); // made on the day
+  assert.equal(keepsInPlace(wrap, at('wrap', 3), 0, { '3-dinner': true }), true); // flagged make fresh
+});
+
+test('use-by dates: day maths is safe across the clock change, soon means within 3 days, bad input is ignored', () => {
+  assert.equal(daysBetween('2026-10-24', '2026-10-26'), 2); // clocks go back on the 25th
+  assert.equal(daysBetween('2026-03-28', '2026-03-30'), 2); // and forward on the 29th
+  const T = '2026-09-21'; // a Monday
+  assert.deepEqual(useByState('2026-09-24', T), { days: 3, state: 'soon' });
+  assert.equal(useByState('2026-09-25', T).state, 'ok');
+  assert.deepEqual(useByState('2026-09-21', T), { days: 0, state: 'soon' });
+  assert.equal(useByState('2026-09-20', T).state, 'past');
+  for (const bad of ['', undefined, null, '24/09/2026', '2026-13-45']) assert.equal(useByState(bad, T), null);
+  assert.equal(useByDay('2026-09-23', T), 'Wed');
+});
+test('use-by labels: amber wording names the day, red says past, far-off dates stay quiet', () => {
+  const T = '2026-09-21';
+  assert.equal(useByLabel('2026-09-24', T), 'Use by Thu');
+  assert.equal(useByLabel('2026-09-22', T), 'Use by tomorrow');
+  assert.equal(useByLabel('2026-09-21', T), 'Use today');
+  assert.equal(useByLabel('2026-09-19', T), 'Past its date');
+  assert.equal(useByLabel('2026-10-30', T), '');
+  assert.equal(useByLabel('', T), '');
+});
+test('netPantry: a ticked item the week does not need changes nothing', () => {
+  assert.deepEqual(netPantry({ rice: 300 }, { tuna: true, rice: undefined }), { rice: 300 });
 });
