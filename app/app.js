@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v78';
+const APP_VERSION = 'v79';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -246,11 +246,12 @@ async function boot() {
     return;
   }
   setupWeeks();
-  document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { if (b.dataset.tab !== S.tab) pantryBase = null; S.tab = b.dataset.tab; planAdd = null; save(); render({ top: true }); } });
+  document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { justAdded.clear(); if (b.dataset.tab !== S.tab) pantryBase = null; S.tab = b.dataset.tab; planAdd = null; save(); render({ top: true }); } });
   const v = document.getElementById('view');
   v.addEventListener('click', onAction); v.addEventListener('change', onChange); v.addEventListener('input', onInput);
   // Shop's "Where can I save?" fold: its switches are only worked out once it is opened. 'toggle' doesn't bubble, hence capture; the equality test stops the redrawn, already-open fold looping.
   v.addEventListener('toggle', (e) => { if (e.target.classList?.contains('pantry-rest') && !S.pantrySearch && !!S.pantryRestOpen !== e.target.open) { S.pantryRestOpen = e.target.open; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} } }, true); // this device only, so no cloud push
+  v.addEventListener('toggle', (e) => { const id = e.target.dataset?.cook; if (id) { if (e.target.open) cookOpen.add(id); else cookOpen.delete(id); } }, true);
   v.addEventListener('toggle', (e) => { if (e.target.id !== 'savefold' || e.target.open === saveOpen) return; saveOpen = e.target.open; if (saveOpen) render(); }, true);
   v.addEventListener('pointerdown', onDragStart);
   v.addEventListener('touchmove', (e) => { if (drag.active) e.preventDefault(); }, { passive: false });
@@ -434,18 +435,13 @@ function useUpCard(w, top = false) {
   const upList = upIds.length ? REC().filter((r) => !r.slots.includes('snack') && !isAvoided(r)).map((r) => ({ r, u: usesUp(r) })).filter((x) => x.u.length).sort((a, b) => (top ? !!w.portions[b.r.id] - !!w.portions[a.r.id] : 0) || b.u.length - a.u.length || (metaFor(b.r).pp / (metaFor(b.r).c.cost || 1)) - (metaFor(a.r).pp / (metaFor(a.r).c.cost || 1))).slice(0, top ? 5 : 8) : []; // above the grid: short, and meals already in the week first so you can see it is covered
   return `<div class="card" id="useup-card"><h3>${due.length ? 'Use these first' : `Use up what you've got`}</h3>${due.length ? useByInner('plan') : ''}${marked.length ? `<p class="small muted">You marked ${marked.map((u) => esc((ingById(u)?.name || u).toLowerCase())).join(', ')} to use up (Pantry).</p>` : ''}${upIds.length ? `<p class="small muted">${!upList.length ? 'None of your recipes use those yet.' : upList.some((x) => w.portions[x.r.id]) ? 'The ticked meals are already in your week. Tap another to add it.' : 'Tap a meal to add it to the week.'}</p>` : ''}${upList.length ? `<div class="chip-row">${upList.map(({ r, u }) => `<button class="chip ${w.portions[r.id] ? 'on' : ''}" data-action="quick-pick" data-id="${r.id}">${w.portions[r.id] ? '✓' : '+'} ${esc(shortName(r))} <span class="muted">· ${u.map((x) => esc((ingById(x)?.name || x).toLowerCase().split(' ')[0])).join(', ')}</span></button>`).join('')}</div>` : ''}</div>`;
 }
-function planSug(w) {
-  const sug = (planAdd || !Object.keys(w.portions).length) ? suggestions(6) : [];
-  const upHtml = !planAdd && dueOnPlan().length ? '' : useUpCard(w); // already at the top of "Your week" when a date is due
-  const sugHtml = sug.length ? `<div class="card"><h3>Quick picks</h3><p class="small muted">Not sure? Tap one. These give the most protein for your money.</p><div class="chip-row">${sug.map((r) => `<button class="chip ${w.portions[r.id] ? 'on' : ''}" data-action="quick-pick" data-id="${r.id}">${w.portions[r.id] ? '✓' : '+'} ${esc(shortName(r))} · ${metaFor(r).pp}g protein · £${metaFor(r).c.cost.toFixed(2)}</button>`).join('')}</div></div>` : '';
-  return upHtml + sugHtml;
-}
+function planSug(w) { return !planAdd && dueOnPlan().length ? '' : useUpCard(w); } // Quick picks went (21 Sep: "go straight to the meals"); use-up suggestions stay
 function renderPlan() {
   const w = W(); const recipes = REC();
   if (planAdd === null) planAdd = !(Object.values(w.portions).some((n) => n > 0) || Object.values(S.tubs || {}).some((n) => n > 0) || Object.keys(lockedCells(w)).length); // same test as the grid: an empty week opens on the meal list
-  const q = (S.planSearch || '').toLowerCase();
+  const q = ''; // the search box went (21 Sep): an old saved search must never hide meals
   const free = P.freeSlots(w.grid, w.days);
-  const mine = recipes.filter((r) => inLibrary(r.id) && !r.slots.includes('snack'));
+  const mine = recipes.filter((r) => inLibrary(r.id) && !justAdded.has(r.id) && !r.slots.includes('snack'));
   const visible = mine.filter((r) => !isAvoided(r));
   const hidden = mine.length - visible.length;
   const snacks = recipes.filter((r) => r.slots.includes('snack') && inLibrary(r.id) && !isAvoided(r) && (!q || r.name.toLowerCase().includes(q)));
@@ -456,17 +452,22 @@ function renderPlan() {
     const list = visible.filter((r) => (slot === 'breakfast' ? r.slots[0] === 'breakfast' : r.slots[0] !== 'breakfast') && (!q || r.name.toLowerCase().includes(q)));
     return list.length ? `<h2 class="pickgroup ${slot}">${title} <span>${list.length}</span></h2><div class="card pickcard ${slot}">${list.map((r) => pickRow(r, w, free)).join('')}</div>` : '';
   };
+  // More meals: the recipes not in your list yet, as the same tickable rows. Ticking one adds it to your list AND your week, so "I don't fancy these" never means leaving Plan.
+  const tag = S.ideaTag || ''; const extraAll = recipes.filter((r) => (!inLibrary(r.id) || justAdded.has(r.id)) && !r.slots.includes('snack') && !isAvoided(r)); const moreCount = extraAll.length;
+  const extra = extraAll.filter((r) => !tag || tagsOf(r).has(tag));
+  const moreHtml = !moreCount ? '' : planMore ? `<h2 class="pickgroup more" id="more-meals">More meals <span>${moreCount}</span></h2><div class="chip-row"><button class="chip ${!tag ? 'on' : ''}" data-action="idea-tag" data-tag="">All</button>${TAGS.filter(([k]) => k !== 'snack').map(([k, l]) => `<button class="chip ${tag === k ? 'on' : ''}" data-action="idea-tag" data-tag="${k}">${l}</button>`).join('')}</div>
+    <div class="card pickcard more">${extra.map((r) => pickRow(r, w, free)).join('') || '<p class="small muted">Nothing under that filter.</p>'}</div><button class="btn ghost block" data-action="plan-more" style="margin-bottom:10px">Hide more meals</button>`
+    : `<button class="btn ghost block" data-action="plan-more" id="more-meals" style="margin:4px 0 10px">+ More meals · ${moreCount}</button>`;
   const nBreak = visible.filter((r) => r.slots[0] === 'breakfast').length, nMain = visible.length - nBreak, nSnack = recipes.filter((r) => r.slots.includes('snack') && inLibrary(r.id) && !isAvoided(r)).length;
-  const filterChips = `<div class="chip-row pickfilters">${[['all', 'All'], ['breakfast', `Breakfasts · ${nBreak}`], ['mains', `Mains · ${nMain}`], ['snack', `Snacks · ${nSnack}`]].map(([k, l]) => `<button class="chip ${filt === k ? 'on' : ''}" data-action="plan-filter" data-filter="${k}">${l}</button>`).join('')}</div>`;
+  const filterChips = `<div class="chip-row pickfilters">${[['all', 'All'], ['breakfast', `Breakfasts · ${nBreak}`], ['mains', `Mains · ${nMain}`], ['snack', `Snacks · ${nSnack}`]].map(([k, l]) => `<button class="chip ${filt === k ? 'on' : ''}" data-action="plan-filter" data-filter="${k}">${l}</button>`).join('')}${moreCount ? `<button class="chip more" data-action="plan-more">+ More meals · ${moreCount}</button>` : ''}</div>`;
   const nothing = q && !visible.some((r) => r.name.toLowerCase().includes(q)) && !snacks.length ? `<p class="muted">Nothing called "${esc(S.planSearch)}" in your recipes. Try Recipes → Find more meal ideas.</p>` : '';
   return `<h1>Plan</h1>${stepLine(1, planAdd ? 'Tick the meals you want this week.' : `Here's your week. Tap a meal to change it.`)}${weekSwitch()}<div id="plan-top">${planTop(w)}</div>
-  <div class="card pickhead" id="pick-head"><h3>Choose your meals</h3><p class="small">Tick a meal and it goes into your week. − and + set how many portions.</p>
-  <input class="search" placeholder="Search your meals" value="${esc(S.planSearch || '')}" data-plan-search>${filterChips}</div>
+  <div class="card pickhead" id="pick-head"><h3>Choose your meals</h3>${filterChips}</div>
   <div id="plan-sug">${planSug(w)}</div>
   <div id="plan-pick">${nothing}${filt === 'snack' ? snackHtml : ''}${group('breakfast', 'Breakfasts')}${group('mains', 'Mains (lunch or dinner)')}
   ${filt === 'snack' ? '' : snackHtml}
   ${hidden ? `<p class="small muted">${hidden} recipe${hidden > 1 ? 's' : ''} hidden because of what you don't eat (see Settings).</p>` : ''}
-  <div class="card endcard"><b>That's everything in your list.</b><p class="small muted" style="margin:4px 0 10px">${REC().filter((r) => !inLibrary(r.id) && !r.slots.includes('snack')).length} more recipes are waiting under meal ideas.</p><button class="btn small" data-action="go-ideas">Find more meal ideas</button></div></div>${planDock(w)}`;
+  ${moreHtml}</div>${planDock(w)}`;
 }
 // Just the inside of #plan-pick, for the search box to refresh without redrawing the page.
 function planPickHtml() { const tmp = document.createElement('div'); tmp.innerHTML = renderPlan(); return tmp.querySelector('#plan-pick').innerHTML; }
@@ -525,7 +526,7 @@ function renderCook() {
   const rs = P.runSheet(counts, recipes);
   const fresh = Object.entries(all).filter(([rid, n]) => n > 0 && recById(rid)?.cookMinutes === 0).map(([rid, n]) => ({ recipe: recById(rid), portions: n }));
   for (const c of P.freshCells(w.grid, fm)) { const r = recById(c.id); if (r) fresh.push({ recipe: r, portions: 1, day: P.DAYS[c.day] }); }
-  const head = `<h1>Cook</h1>${stepLine(3, 'Cook it all in one go, then box it up.')}${weekSwitch()}${tipCard('cook')}`;
+  const head = `<h1>Cook</h1>${stepLine(3, 'Cook once, box it up.')}${weekSwitch()}`;
   if (!rs.list.length && !fresh.length) return `${head}<div class="card"><p><b>Nothing to cook yet.</b></p><p class="small muted">Pick your meals first and your cook list builds itself.</p><button class="btn block" style="margin-top:10px" data-action="go-tab" data-to="plan">Pick my meals</button></div>`;
   const cookDay = P.DAYS[w.cookDay];
   const dayFull = DAY_FULL[w.cookDay]; const cookOn = fmtDate(cookDate(w, S.activeWeek));
@@ -544,8 +545,7 @@ function renderCook() {
       tp.freezer.length ? `<li><b>Freezer</b> ${tp.freezer.length} tub${tp.freezer.length > 1 ? 's' : ''} for ${dayList(tp.freezer)}. Move each one to the fridge the night before.</li>` : '',
       reheat ? `<li><b>Reheat</b> ${reheat}.</li>` : '',
     ].join('');
-    return `<div class="card"><h3>${esc(r.name)}</h3>
-      <p class="small muted" style="margin:0 0 10px">${n} portion${n > 1 ? 's' : ''} · ${r.cookMinutes} min · ${r.equipment.join(', ')} · ${P.proteinPerPortion(r, ing)}g protein a portion</p>
+    return `<details class="fold cookfold" data-cook="${r.id}" ${cookOpen.has(r.id) ? 'open' : ''}><summary><b>${esc(r.name)}</b><span class="muted small">${n} portion${n > 1 ? 's' : ''} · ${r.cookMinutes} min · ${r.equipment.join(', ')} · ${tp.fridge.length ? `${tp.fridge.length} fridge` : ''}${tp.fridge.length && tp.freezer.length ? ', ' : ''}${tp.freezer.length ? `${tp.freezer.length} freezer` : ''}</span></summary>
       <div class="seg"><button class="on">Batch on ${cookDay}</button><button data-action="fresh-default" data-id="${r.id}" data-on="1">Make fresh each time</button></div>
       <h4 class="sub">Ingredients for ${n}</h4>
       <div class="ing-list">${scaled.map((s) => `<span>${esc(s.name)}</span><b>${P.fmtQty(s.qty, s.unit)}</b>`).join('')}</div>
@@ -556,12 +556,13 @@ function renderCook() {
       <ul class="store">${store}</ul>
       ${tp.late.length ? `<div class="warn-box">${dayList(tp.late)}: past its fridge life by then and it doesn't freeze. Cook ${tp.late.length > 1 ? 'those' : 'that one'} fresh, or move ${tp.late.length > 1 ? 'them' : 'it'} earlier on the Plan tab.</div>` : ''}
       ${tp.total < n ? `<p class="small muted">${n - tp.total} portion${n - tp.total > 1 ? 's' : ''} not in the week grid.</p>` : ''}
-    </div>`;
+    </details>`;
   }).join('');
   return `${head}
-  <div class="card"><h3>Batch cook on ${dayFull} ${cookOn}</h3><p class="small muted" style="margin:0 0 8px">${w.cookDay === 6 ? 'The Sunday before the week starts. ' : ''}About ${rs.minutes} minutes. Start the longest one first and run the others alongside.</p><ol class="steps cooklist">${sheet}</ol>
+  <div class="card"><h3>Batch cook on ${dayFull} ${cookOn}</h3><p class="small muted" style="margin:0 0 8px">About ${rs.minutes} min. Longest first, the rest alongside.</p><ol class="steps cooklist">${sheet}</ol>
   ${fresh.length ? `<h4 class="sub">Made fresh on the day</h4><ul class="clean">${freshList}</ul>` : ''}
   ${usesRice ? `<p class="small muted" style="margin-top:10px">Rice: freeze cooked rice the same day unless it's eaten within 24 hours.</p>` : ''}</div>
+  <h2>Recipes <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">tap one to open it</span></h2>
   ${cards}
   ${S.activeWeek === S.thisMon ? `<div class="card nextcard"><b>All boxed up?</b><p class="small muted">That's the week sorted. When you're ready, line up the next one.</p><button class="btn block" data-action="go-tab" data-to="plan" data-week="${S.nextMon}">Plan next week</button></div>` : `<div class="card nextcard"><b>All boxed up?</b><p class="small muted">That's next week sorted.</p><button class="btn block" data-action="go-tab" data-to="plan">Back to Plan</button></div>`}`;
 }
@@ -719,8 +720,8 @@ function renderShop() {
   const usedBy = {};
   for (const [rid, n] of Object.entries(counts)) { const r = recById(rid); if (!r) continue; for (const x of r.ingredients) for (const id of resolve(x.id)) (usedBy[id] ||= []).push(`${r.short || r.name} ×${n}`); }
   for (const e of extras(w)) (usedBy[e.id] ||= []).push(e.scope === 'week' ? 'extra this week' : 'extra every week');
-  const choiceHtml = Object.keys(rawNeeds).map(ingById).filter((it) => it?.choices?.length).map((it) => { const picks = chosenFor(w, it); return `<div class="small muted" style="margin-bottom:6px"><b>${esc(it.name)}</b> · pick one or more; the amount is split between them</div><div class="chip-row">${it.choices.map((c) => `<button class="chip ${picks.includes(c) ? 'on' : ''}" data-action="choice-toggle" data-choice="${it.id}" data-val="${c}">${esc((ingById(c)?.name || c).replace(/^Frozen /, ''))}</button>`).join('')}</div>`; }).join('');
-  const shopTop = `<h1>Shop</h1>${stepLine(2, 'Your list, priced. Tick things off as you shop.')}${weekSwitch()}`; const head = shopTop + tipCard('shop');
+  const choiceHtml = Object.keys(rawNeeds).map(ingById).filter((it) => it?.choices?.length).map((it) => { const picks = chosenFor(w, it); return `<div class="small muted" style="margin-bottom:6px"><b>${esc(it.name)}</b> · pick yours</div><div class="chip-row">${it.choices.map((c) => `<button class="chip ${picks.includes(c) ? 'on' : ''}" data-action="choice-toggle" data-choice="${it.id}" data-val="${c}">${esc((ingById(c)?.name || c).replace(/^Frozen /, ''))}</button>`).join('')}</div>`; }).join('');
+  const shopTop = `<h1>Shop</h1>${stepLine(2, 'Your list, priced.')}${weekSwitch()}`; const head = shopTop + tipCard('shop');
   if (!Object.keys(needsAll).length) return `${head}<div class="card"><p><b>Nothing to buy yet.</b></p><p class="small muted">Pick your meals first and your list builds itself.</p><button class="btn block" style="margin-top:10px" data-action="go-tab" data-to="plan">Pick my meals</button></div><h2>Also buy every week</h2><div class="card"><p class="small muted">Things that aren't part of a meal but you always get. They're priced into the list.</p><button class="btn ghost small" data-action="extra-add" style="margin-top:4px">+ Add something</button></div>`;
   const split = P.cheapestSplit(needs, ing);
   const budget = S.settings.budget;
@@ -752,7 +753,7 @@ function renderShop() {
   const aisleGroups = {}; for (const l of weekLines) (aisleGroups[aisleOf(ingById(l.id))] ||= []).push(l);
   const breakdown = AISLES.filter(([k]) => aisleGroups[k]).map(([k, label]) => `${label.split(',')[0].split(' &')[0]} ${P.gbp(P.round2(aisleGroups[k].reduce((t, l) => t + l.cost, 0)))}`).concat(chosen.stock ? [`Stock-ups ${P.gbp(chosen.stock)}`] : [], chosen.elsewhereWeek ? [`From another shop ${P.gbp(chosen.elsewhereWeek)}`] : []).join(' · '); // adds up to the one total, so it lives under "Why £X?" and not beside the big number
   const extraRows = extras(w).map((e) => { const it = ingById(e.id); const l = chosen.lines.find((x) => x.id === e.id); return `<div class="line"><span class="grow"><span class="name">${esc(it.name)}</span><span class="sub">${e.scope === 'week' ? 'this week only' : 'every week'}${l ? ` · ${esc(l.pack.name.replace(/\s*\([^)]*\)/g, ''))}` : ' · no price at this shop'}</span></span><button class="chip" data-action="extra-qty" data-id="${e.id}" data-scope="${e.scope}">${P.fmtQty(e.qty, it.unit)}${it.unit === 'each' ? (e.qty === 1 ? ' piece' : ' pieces') : ''}</button><span class="cost">${l ? P.gbp(l.cost) : '—'}</span><button class="btn ghost small" data-action="extra-remove" data-id="${e.id}" data-scope="${e.scope}" aria-label="Remove">×</button></div>`; }).join('');
-  const extrasCard = `<h2>Extras</h2><div class="card">${extraRows || '<p class="small muted">Nothing extra yet. Anything you add here is priced into the list and the total above.</p>'}<button class="btn block big" data-action="extra-add" style="margin-top:${extraRows ? 12 : 6}px">+ Add something to this shop</button></div>`;
+  const extrasCard = `${extraRows ? `<h2>Extras</h2><div class="card">${extraRows}</div>` : ''}<button class="btn ghost block" data-action="extra-add" style="margin:10px 0 4px">+ Add something to this shop</button>`; // Cameron: keep the extras, lose the text around them
   const complete = chosen.lines.length > 0 && chosen.lines.every((l) => w.ticks[`${chosen.shop}:${l.id}`]);
   const doneBox = complete ? `<div class="done-box"><b>Shop done ✓</b> ${P.gbp(chosen.comparable)} at ${P.SHOP_NAMES[chosen.shop]}${w.done?.date ? ` on ${fmtDate(w.done.date)}` : ''}. Logged under Settings → Money.</div>` : '';
   const notSold = chosen.notSold.filter((m) => !isStock(m.id)).map((m) => esc(m.name)); const unpriced = chosen.unpriced.map((m) => esc(m.name));
@@ -772,18 +773,11 @@ function renderShop() {
   const ideas = saveOpen ? saveIdeas(w) : { list: [], all: 0 }; const undo = undoFor(w);
   const ideaRow = (x) => `<div class="line saverow"><span class="grow"><span class="name">${esc(x.title)}</span><span class="sub">${esc(x.sub)}</span></span><span class="cost alt">−${P.gbp(x.save)}</span><button class="btn small" data-action="save-switch" data-key="${esc(x.key)}">Switch</button></div>`;
   const undoHtml = undo ? `<div class="done-box undo-box"><span>${esc(undo.text)}</span><button class="btn ghost small" data-action="save-undo">Undo</button></div>` : '';
-  const whyHtml = chosen.lines.length ? `<details class="fold" id="savefold" ${saveOpen ? 'open' : ''}><summary><b>Why ${P.gbp(chosen.comparable)}? Where can I save?</b><span class="muted small">what costs the most, and switches Fuel can make for you</span></summary>
-    ${breakdown ? `<p class="small muted breakdown">${breakdown}</p>` : ''}
-    <h4 class="sub">Switches Fuel can make for you</h4>${undoHtml}
-    ${ideas.list.map(ideaRow).join('') || `<p class="small muted">${!saveOpen ? 'Working out the switches…' : undo ? 'Nothing else worth switching.' : ideas.started ? (w.done ? 'This shop is done, so there is nothing left to switch.' : 'You have started ticking off this shop, so Fuel will not change your meals now. Untick the list to see switches again.') : 'No cheaper switch that keeps your protein up. You are already close to the cheapest week.'}</p>`}
+  const whyHtml = chosen.lines.length ? `<details class="fold" id="savefold" ${saveOpen ? 'open' : ''}><summary><b>Where can I save?</b><span class="muted small">cheaper switches, made for you</span></summary>
+    ${undoHtml}
+    ${ideas.list.map(ideaRow).join('') || `<p class="small muted">${!saveOpen ? 'Working out the switches…' : undo ? 'Nothing else worth switching.' : ideas.started ? (w.done ? 'This shop is done.' : 'Untick your list to see switches again.') : 'Nothing cheaper that keeps your protein up.'}</p>`}
     ${ideas.list.length > 1 && ideas.all > 0 ? `<button class="btn block" data-action="save-all" style="margin-top:10px">Make all these switches · ${P.gbp(ideas.all)} cheaper</button>` : ''}
-    <h4 class="sub">Dearest meals this week</h4>${mealCosts.slice(0, 5).map((m) => `<div class="line"><span class="grow"><span class="name">${esc(m.r.name)}</span><span class="sub">${m.n} portion${m.n > 1 ? 's' : ''} · ${P.gbp(m.pp)} each</span></span><span class="cost">${P.gbp(m.cost)}</span></div>`).join('')}
-    <h4 class="sub">Dearest items on the list</h4>${dearLines.map((l) => `<div class="line"><span class="grow"><span class="name">${l.n > 1 ? `${l.n} × ` : ''}${esc(l.pack.name.replace(/\s*\([^)]*\)/g, ''))}</span><span class="sub">${esc((usedBy[l.id] || []).join(', '))}</span></span><span class="cost">${P.gbp(l.cost)}</span></div>`).join('')}
-    ${split || cheaperElsewhere.length || chosen.stock ? '<h4 class="sub">Other ideas</h4>' : ''}
-    ${split ? `<div class="line"><span class="grow"><span class="name">Shop at ${P.SHOP_NAMES[split.shops[0]]} and ${P.SHOP_NAMES[split.shops[1]]}</span><span class="sub">${split.baskets.map((b) => `${b.lines.length} item${b.lines.length > 1 ? 's' : ''} at ${P.SHOP_NAMES[b.shop]}`).join(', ')}. Only worth it if you pass both.</span></span><span class="cost alt">−${P.gbp(split.saving)}</span></div>` : ''}
-    ${cheaperElsewhere.length ? `<div class="line"><span class="grow"><span class="name">${cheaperElsewhere.length} line${cheaperElsewhere.length > 1 ? 's are' : ' is'} cheaper at another shop</span><span class="sub">${cheaperElsewhere.slice(0, 4).map((x) => `${esc(ingById(x.l.id)?.name || x.l.id)} ${P.gbp(x.c.cost)} at ${P.SHOP_NAMES[x.c.shop]}`).join(' · ')}</span></span><span class="cost alt">−${P.gbp(savePot)}</span></div>` : ''}
-    ${chosen.stock ? `<div class="line"><span class="grow"><span class="name">${P.gbp(chosen.stock)} of this is stock-ups</span><span class="sub">Rice, oils, spices, whey: they last weeks and next week's list won't ask for them again.</span></span></div>` : ''}
-    </details>` : '';
+    </details>` : ''; // Cameron: just the switches. The price-of-everything lists went.
   const splitHtml = '';
   const unpricedAll = ids.filter((id) => !(ingById(id)?.packs || []).length).map((id) => ingById(id)?.name);
   const haveIds = Object.keys(needsAll).filter((id) => pantryFor[id] !== undefined);
@@ -800,32 +794,34 @@ function renderShop() {
   if (!w.done && !w.cupChecked && !startedShop && (cupOrder.length || cupMine.length)) {
     cup.base ??= chosen.comparable; const off = P.round2(cup.base - chosen.comparable); const shown = cupOrder.slice(0, 14);
     const chipName = (id) => esc((ingById(id)?.name || id).replace(/\s*\([^)]*\)/g, ''));
-    cupHtml = `<div class="card cupcheck"><h3>Before you shop: already got any of this?</h3><p class="small">Tap anything that is already in your cupboard, fridge or freezer. It comes off your list and the price drops.${off > 0 ? ` <b class="cupoff">${P.gbp(off)} off so far</b>` : ''}</p>
+    cupHtml = `<div class="card cupcheck"><h3>Already got any of this?${off > 0 ? ` <b class="cupoff">${P.gbp(off)} off</b>` : ''}</h3><p class="small muted" style="margin:0 0 6px">Tap it and it comes off your shop.</p>
     <div class="chip-row">${cupMine.map((id) => `<button class="chip on" data-action="cup-tick" data-id="${id}">✓ ${chipName(id)}</button>`).join('')}${shown.map((x) => `<button class="chip" data-action="cup-tick" data-id="${x.id}" data-cost="${x.cost}">${chipName(x.id)}${x.cost ? `<small>${P.gbp(x.cost)}</small>` : ''}</button>`).join('')}</div>
-    ${cupOrder.length > shown.length ? `<p class="small muted">and ${cupOrder.length - shown.length} more in your full cupboard.</p>` : ''}
-    <div class="row" style="gap:8px;margin-top:8px"><button class="btn small grow" data-action="cup-done">${cupMine.length ? `Done · shop is now ${P.gbp(chosen.comparable)}` : 'Nothing, I need it all'}</button><button class="btn ghost small grow" data-action="go-pantry">See my full cupboard</button></div></div>`;
+    
+    <div class="row" style="gap:8px;margin-top:8px"><button class="btn small grow" data-action="cup-done">${cupMine.length ? `Done · shop is now ${P.gbp(chosen.comparable)}` : 'Nothing, I need it all'}</button><button class="btn ghost small grow" data-action="go-pantry">${cupOrder.length > shown.length ? `See all ${cupOrder.length + cupMine.length}` : 'Full cupboard'}</button></div></div>`;
   }
+  const verdictLine = verdict.state === 'ok' ? `${P.gbp(verdict.left)} under budget` : verdict.state === 'stock' ? `${P.gbp(verdict.over)} over, only because of one-off stock-ups` : `${P.gbp(verdict.over)} over budget. <a href="#" data-action="open-save"><b>Where can I save?</b></a>`;
+  const inc = [chosen.stock ? `${P.gbp(chosen.stock)} of stock-ups that last weeks` : '', chosen.elsewhere ? `${P.gbp(chosen.elsewhere)} from another shop (${P.SHOP_NAMES[chosen.shop]} doesn't sell it)` : ''].filter(Boolean).join(' and ');
+  // Cameron (21 Sep): "there's so much stuff in the way". The page is now: already got it? → THE price → where to shop → the list → extras → next. Everything else is a closed fold or gone.
   return `${shopTop}
   ${doneBox}
+  ${cupHtml}
   <div class="card shophead"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.comparable)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]}</span></span><span class="muted small">budget ${P.gbp(budget)}</span></div>
     <div class="budget ${verdict.state === 'over' ? 'over' : verdict.state === 'stock' ? 'low' : ''}"><i style="width:${verdict.pct}%"></i></div>
-    <p class="small muted">${verdict.state === 'ok' ? `${P.gbp(verdict.left)} left of your budget.` : verdict.state === 'stock' ? `${P.gbp(verdict.over)} over budget this week, but only because of one-off stock-ups. Next week is just the food.` : `${P.gbp(verdict.over)} over budget. Tap <a href="#" data-action="open-save"><b>Where can I save?</b></a> and Fuel can make cheaper switches for you.`}</p>
-    ${chosen.stock ? `<div class="stockline">Includes <b>${P.gbp(chosen.stock)}</b> of cupboard stock-ups (${esc(stockList)}) that last for weeks. <a href="#" data-action="go-pantry">Already got some? Tick them in Pantry.</a></div>` : ''}
-    ${chosen.elsewhere ? `<p class="small muted">Includes about ${P.gbp(chosen.elsewhere)} for what ${P.SHOP_NAMES[chosen.shop]} doesn't sell, priced at the cheapest other shop.</p>` : ''}
-    <div class="row" style="gap:8px;margin-top:6px"><button class="btn small grow" data-action="share-list">Share list</button><button class="btn ghost small grow" data-action="copy-list">Copy</button>${online[chosen.shop] ? `<a class="btn ghost small grow" style="text-align:center" href="${online[chosen.shop]('')}" target="_blank" rel="noopener">Shop online</a>` : ''}</div></div>
-  ${cupHtml}${tipCard('shop')}${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
-  ${chosen.stock ? '' : `<p class="small muted" style="margin:0 2px 10px">Already got some of this at home? <a href="#" data-action="go-pantry">Tick it off in Pantry</a> and the price drops.</p>`}
-  <button class="btn block big" data-action="extra-add" style="margin:2px 0 6px">+ Add something to this shop</button>
-  <h2>Where to shop</h2><div class="shopchips">${chips}</div>
+    <p class="small muted">${verdictLine}</p>
+    ${inc ? `<p class="small muted stockline">Includes ${inc}.</p>` : ''}
+    <div class="shopchips">${chips}</div>
+  </div>
+  ${whyHtml}
+  ${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
   <h2>${P.SHOP_NAMES[chosen.shop]} list <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">${done}/${weekCount} ticked</span></h2>
   <div class="card list">${missing}${lines || '<p class="muted">Nothing priced at this shop.</p>'}</div>
   ${stockHtml}
   ${extrasCard}
-  ${whyHtml}${items}${splitHtml}
-  ${unpricedAll.length ? `<div class="card" style="margin-top:10px"><h3>No price anywhere yet</h3><p class="small muted">${unpricedAll.map(esc).join(', ')}. Left out of the totals until priced.</p></div>` : ''}
-  ${haveRows ? `<h2>Already in your pantry</h2><div class="card"><p class="small muted">Left off the list because it's ticked in Pantry. Tap "Need it" to put it back.${pantrySave > 0.004 ? ` Your pantry is taking about ${P.gbp(pantrySave)} off this shop.` : ''}</p>${haveRows}</div>` : ''}
-  <div class="card nextcard" style="margin-top:14px"><b>Got your shopping?</b><p class="small muted">Step 3 is the cook: everything in one go on ${DAY_FULL[w.cookDay]}.</p><button class="btn block" data-action="go-tab" data-to="cook">Next: Cook</button></div>
-  <p class="small muted">${esc(DATA.priceNote || '')}</p>`;
+  <div class="row" style="gap:8px;margin:6px 0 10px"><button class="btn ghost small grow" data-action="share-list">Share list</button><button class="btn ghost small grow" data-action="copy-list">Copy</button>${online[chosen.shop] ? `<a class="btn ghost small grow" style="text-align:center" href="${online[chosen.shop]('')}" target="_blank" rel="noopener">Shop online</a>` : ''}</div>
+  ${unpricedAll.length ? `<div class="card"><h3>No price anywhere yet</h3><p class="small muted">${unpricedAll.map(esc).join(', ')}. Left out of the total.</p></div>` : ''}
+  ${haveRows ? `<details class="fold"><summary><b>Already in your pantry</b><span class="muted small">${haveIds.length} left off the list${pantrySave > 0.004 ? ` · ${P.gbp(pantrySave)} saved` : ''}</span></summary>${haveRows}</details>` : ''}
+  <button class="btn block big" data-action="go-tab" data-to="cook" style="margin-top:14px">Next: Cook</button>
+  <details class="fold" style="margin-top:12px"><summary><span class="muted small">About these prices</span></summary><p class="small muted">${esc(DATA.priceNote || '')}</p></details>`;
 }
 // A day that has gone: was the meal eaten? If not, it goes in the freezer as a tub and straight into next week's first free slot.
 async function pastCell(w, day, slot) {
@@ -1031,6 +1027,9 @@ function gateScreen() {
 }
 // What the chosen (or cheapest) shop comes to at the till right now, worked out the way the Shop tab does it (things that shop doesn't sell
 // are priced at the cheapest other shop). Pantry shows it live, so ticking something visibly takes it off the bill.
+const cookOpen = new Set(); // Cook: which recipe folds are open (this visit only)
+const justAdded = new Set(); // meals ticked under "More meals" this visit: they stay in that section (under your thumb) until you close it, then join your list
+let planMore = false; // Plan's "More meals" section (recipes not in your list yet), opened from the picker so nobody is sent off to Recipes and stranded
 let planAdd = null; // Plan page: true = Add meals view, false = Your week view, null = decide from the week. Never saved.
 let cup = { week: null, ids: new Set(), costs: {}, base: null }; // Shop's cupboard check this visit: what was tapped (so it can be untapped) and the bill when the card first showed
 let pantryBase = null; // the bill when Pantry was opened, so the bar can say how much this visit has taken off
@@ -1434,13 +1433,14 @@ function onAction(e) {
     resetPassword(email).then(() => show('ok', `Reset link sent to ${email}. It can take a few minutes; check spam.`)).catch((err) => show('bad', `Couldn't send a reset link: ${err.message}`));
   }
   else if (a === 'gate-retry') { location.reload(); }
+  else if (a === 'plan-more') { planMore = !planMore; justAdded.clear(); render(); if (planMore) document.getElementById('more-meals')?.scrollIntoView({ block: 'start' }); }
   else if (a === 'plan-filter') { S.planFilter = el.dataset.filter; save(); render(); const h = document.getElementById('pick-head'); if (h) h.scrollIntoView({ block: 'start' }); }
   else if (a === 'cup-tick') { const id = el.dataset.id; if (cup.ids.has(id) && w.pantry[id] !== undefined) { delete w.pantry[id]; delete (w.useUp || {})[id]; cup.ids.delete(id); } else { w.pantry[id] = true; cup.ids.add(id); } save(); holdPlace('.cupcheck', () => render()); const t = tillNow(w); if (t) toast(`Shop is now ${P.gbp(t.total)}`); } // the price card has scrolled away by now, so say the new price where the thumb is
   else if (a === 'cup-done') { const off = cup.base === null ? 0 : P.round2(cup.base - (tillNow(w)?.total ?? cup.base)); w.cupChecked = true; save(); render(); toast(off > 0 ? `Cupboard checked. ${P.gbp(off)} off your shop.` : 'Cupboard checked'); }
   else if (a === 'go-pantry') { e.preventDefault(); pantryBase = null; S.prevTab = S.tab; S.tab = 'pantry'; save(); render({ top: true }); }
   else if (a === 'go-ideas') { S.tab = 'recipes'; S.ideasOpen = true; save(); render({ top: true }); }
   else if (a === 'ideas-toggle') { S.ideasOpen = !S.ideasOpen; save(); render(); }
-  else if (a === 'idea-tag') { S.ideaTag = el.dataset.tag; save(); render(); }
+  else if (a === 'idea-tag') { S.ideaTag = el.dataset.tag; save(); holdPlace('#more-meals, #ideas', () => render()); }
   else if (a === 'lib-add') { if (!S.library.includes(id)) S.library.push(id); save(); closeSheet(); render(); toast('Added to your recipes'); }
   else if (a === 'lib-remove') { S.library = S.library.filter((x) => x !== id); for (const wk of Object.values(S.weeks)) { delete wk.portions[id]; delete wk.snacks?.[id]; relayout(wk); } save(); closeSheet(); render(); toast('Removed from your recipes'); }
   else if (a === 'clear-pantry') { ask(`Untick everything for ${weekLabel(S.activeWeek).toLowerCase()}? Everything your meals need goes back on the shop list.`, 'Untick all').then((ok) => { if (ok) { const had = Object.keys(w.pantry); w.pantry = {}; w.useUp = {}; had.forEach(dropUseBy); useByOpen.clear(); save(); render(); toast('Pantry cleared'); } }); }
@@ -1522,7 +1522,7 @@ function onChange(e) {
   if (t.dataset.pick) {
     const r = recById(t.dataset.pick);
     const room = P.roomFor(r, P.freeSlots(w.grid, w.days));
-    if (t.checked) { if (room <= 0) { t.checked = false; return; } w.portions[r.id] = Math.min(defaultPortions(r), room); } else delete w.portions[r.id];
+    if (t.checked) { if (room <= 0) { t.checked = false; return; } if (!inLibrary(r.id)) { S.library.push(r.id); justAdded.add(r.id); toast('Added to your meals'); } w.portions[r.id] = Math.min(defaultPortions(r), room); } else delete w.portions[r.id]; // a tick under "More meals" adds the recipe to your list as well as your week
     relayout(); refreshPlan(rowSel(r.id));
   }
   else if (t.dataset.snackPick) { const r = recById(t.dataset.snackPick); if (t.checked) w.snacks[r.id] = 7; else delete w.snacks[r.id]; save(); refreshPlan(rowSel(r.id)); }

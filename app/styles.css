@@ -543,3 +543,12 @@ details.pantry-rest[open] > summary small.cnt::after { content: " · tap to clos
 .cupcheck .chip { font-size: 12.5px; padding: 7px 10px; border-radius: 11px; text-align: left; line-height: 1.2; }
 .cupcheck .chip small { display: block; font-size: 11px; font-weight: 600; opacity: .7; margin-top: 2px; }
 .cupcheck .cupoff { display: inline-block; background: #7cf0b5; color: #0b3a23; border-radius: 999px; padding: 2px 8.5px; font-size: 12px; white-space: nowrap; }
+
+/* v79 less in the way (Cameron, 21 Sep): slim picker head, shops inside the price card, recipes on Cook fold away */
+.pickhead { padding: 10px 12px; } .pickhead h3 { margin-bottom: 6px; } .pickhead .chip-row { margin: 0; }
+.chip.more { background: #1b1a2e; color: #fff; border-color: #1b1a2e; }
+.shophead .shopchips { margin-top: 10px; }
+.shophead .stockline { background: none; border: 0; padding: 0; margin: 2px 0 0; }
+.cupcheck h3 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cookfold summary b { font-size: 15.5px; } .cookfold[open] { padding-bottom: 12px; }
+.cookfold summary::after { content: "+"; position: absolute; right: 14px; top: 10px; font-weight: 700; color: var(--muted); } .cookfold { position: relative; } .cookfold[open] summary::after { content: "−"; }
