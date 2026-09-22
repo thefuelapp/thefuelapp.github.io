@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v79';
+const APP_VERSION = 'v80';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -134,6 +134,11 @@ const DAY_FULL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 // The date you actually cook for this week: a Sunday cook is the Sunday before the week starts.
 function cookDate(w, key) { return w.cookDay === 6 ? addDays(key, -1) : addDays(key, w.cookDay); }
 function addDays(isoDate, n) { const d = new Date(isoDate + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return iso(d); }
+// '20 Sep 2026' or '6–13 Sep 2026' from ISO dates (the house style says 'Sep', the locale says 'Sept')
+function dateRange(dates) { const v = [...new Set(dates.filter(Boolean))].sort(); if (!v.length) return ''; const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const [a, z] = [v[0], v[v.length - 1]].map((x) => x.split('-').map(Number)); return a.join() === z.join() ? `${a[2]} ${M[a[1] - 1]} ${a[0]}` : `${a[2]}${a[1] !== z[1] ? ' ' + M[a[1] - 1] : ''}${a[0] !== z[0] ? ' ' + a[0] : ''}–${z[2]} ${M[z[1] - 1]} ${z[0]}`; }
+// When the prices on one shop's list were read: its own packs, plus the other shops' packs for anything it doesn't sell.
+function listDates(T, b) { return [...b.lines.map((l) => l.pack?.checked), ...b.notSold.map((m) => { let best = null; for (const o of T.ranked) { if (o === b) continue; const l = o.lines.find((x) => x.id === m.id); if (l && (!best || l.cost < best.cost)) best = l; } return best?.pack?.checked; })]; }
 function fmtDate(isoDate) { const d = new Date(isoDate + 'T00:00:00Z'); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }); }
 // Today as a local calendar day (same trick as mondayOf; iso(new Date()) is a day behind just after midnight in BST).
 const todayISO = () => { const d = new Date(); return iso(new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))); };
@@ -240,7 +245,7 @@ function noteOpen() {
 async function boot() {
   try {
     const [i, r] = await Promise.all([fetch('data/ingredients.json').then((x) => x.json()), fetch('data/recipes.json').then((x) => x.json())]);
-    DATA.ingredients = i.items; DATA.recipes = r.items; bustCaches(); DATA.priceNote = i.checkedNote; DATA.priceDate = (i.items.flatMap((x) => x.packs || []).map((p) => p.checked).sort().pop()) || '';
+    DATA.ingredients = i.items; DATA.recipes = r.items; bustCaches(); DATA.priceNote = i.checkedNote; DATA.priceDates = i.items.flatMap((x) => x.packs || []).filter((p) => P.SHOPS.includes(p.shop)).map((p) => p.checked).filter(Boolean); DATA.priceDate = [...DATA.priceDates].sort().pop() || '';
   } catch (e) {
     document.getElementById('view').innerHTML = `<div class="bad-box">Couldn't load the recipe data. ${esc(e.message)}</div>`;
     return;
@@ -821,7 +826,7 @@ function renderShop() {
   ${unpricedAll.length ? `<div class="card"><h3>No price anywhere yet</h3><p class="small muted">${unpricedAll.map(esc).join(', ')}. Left out of the total.</p></div>` : ''}
   ${haveRows ? `<details class="fold"><summary><b>Already in your pantry</b><span class="muted small">${haveIds.length} left off the list${pantrySave > 0.004 ? ` · ${P.gbp(pantrySave)} saved` : ''}</span></summary>${haveRows}</details>` : ''}
   <button class="btn block big" data-action="go-tab" data-to="cook" style="margin-top:14px">Next: Cook</button>
-  <details class="fold" style="margin-top:12px"><summary><span class="muted small">About these prices</span></summary><p class="small muted">${esc(DATA.priceNote || '')}</p></details>`;
+  <details class="fold" style="margin-top:12px"><summary><span class="muted small">About these prices</span></summary><p class="small muted">Prices on this week's lists were read on: ${T.ranked.filter((b) => b.lines.length).map((b) => `${P.SHOP_NAMES[b.shop]} ${dateRange(listDates(T, b))}`).join(' · ')}.</p><p class="small muted">${esc(DATA.priceNote || '')}</p></details>`;
 }
 // A day that has gone: was the meal eaten? If not, it goes in the freezer as a tub and straight into next week's first free slot.
 async function pastCell(w, day, slot) {
@@ -1146,7 +1151,7 @@ function renderSettings() {
     <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-action="intro">Show the intro again</button><button class="btn ghost small" data-action="tips-again">Show the tips again</button><button class="btn ghost small" data-action="export">Copy backup</button><button class="btn ghost small" data-action="import">Paste backup</button></div>
     <button class="btn danger block" data-action="reset" style="margin-top:12px">Reset everything</button>
   </div>
-  <p class="small muted" style="text-align:center">${esc(CONFIG.APP_NAME)} ${APP_VERSION} · prices checked ${DATA.priceDate ? fmtDate(DATA.priceDate) : ''} · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></p>
+  <p class="small muted" style="text-align:center">${esc(CONFIG.APP_NAME)} ${APP_VERSION} · prices checked ${dateRange(DATA.priceDates || [])} · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></p>
   <p class="small muted screenfacts" style="text-align:center;font-size:11px;opacity:.7;margin-top:-6px">${esc(screenFacts())}</p>`;
 }
 

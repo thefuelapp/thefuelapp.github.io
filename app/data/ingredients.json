@@ -1,5 +1,5 @@
 {
- "checkedNote": "Aldi, ASDA and Sainsbury's prices were read from each supermarket's own website on 20 Sep 2026; Tesco prices on the date shown against them (its website blocks automated reading, so it is refreshed more slowly). These are big-store prices; Tesco Express and Sainsbury's Local charge more. Lidl publishes no prices for its core range anywhere online, so Lidl can't be compared. 'Not stocked' means that shop's website doesn't list the item.",
+ "checkedNote": "Prices are read from each supermarket's own website, on the dates shown. Tesco's website blocks automated reading, so its prices are refreshed more slowly than the others. These are big-store prices; Tesco Express and Sainsbury's Local charge more. Lidl publishes no prices for its core range anywhere online, so Lidl can't be compared. 'Not stocked' means that shop's website doesn't list the item.",
  "items": [
   {
    "id": "chicken_breast",
