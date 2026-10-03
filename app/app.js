@@ -5,7 +5,7 @@ import { anonId, captureAttribution, carryCodeToHomeScreen, attribution, track, 
 import { planWeek } from './autoplan.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v81';
+const APP_VERSION = 'v82';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -29,6 +29,19 @@ const TRIAL_DAYS = 7;
 function trialStart() { if (!S.trial?.start) { S.trial = { start: new Date().toISOString() }; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} } return S.trial.start; }
 function trialLeft() { const used = (Date.now() - Date.parse(trialStart())) / 86400000; return Math.max(0, Math.ceil(TRIAL_DAYS - used)); }
 const trialActive = () => trialLeft() > 0;
+const trialEnd = () => new Date(Date.parse(trialStart()) + TRIAL_DAYS * 86400000);
+const trialDay = () => Math.min(TRIAL_DAYS, TRIAL_DAYS - trialLeft() + 1);
+const dayName = (d) => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+const onTrial = () => cloud.enabled && !paidUp() && !matesUnlocked() && trialActive();
+// The free week, said plainly wherever it matters: which day you're on, when it ends, and that nothing is charged by itself.
+function trialSegs() { const d = trialDay(); return `<div class="fw-seg">${Array.from({ length: TRIAL_DAYS }, (_, i) => `<i class="${i < d ? 'on' : ''}${i === d - 1 ? ' now' : ''}"></i>`).join('')}</div>`; }
+function freeWeekCard() {
+  if (!onTrial()) return '';
+  const left = trialLeft(), soon = left <= 2;
+  return `<div class="freeweek ${soon ? 'soon' : ''}" id="freeweek"><div class="fw-top"><span class="fw-eyebrow">Free week · day ${trialDay()} of ${TRIAL_DAYS}</span><button class="fw-more" data-action="trial">How it works</button></div>${trialSegs()}
+    <p>${soon ? `<b>${left === 1 ? 'Last free day.' : '2 free days left.'}</b> Keep your plan for ${esc(CONFIG.PRICE_LABEL || '£4.99')} once${GROWTH_OK ? ', or bring 3 mates and it\u2019s free' : ''}.` : `<b>Everything\u2019s unlocked until ${dayName(trialEnd())}.</b> No card, nothing to cancel.`}</p>
+    ${soon ? `<button class="btn block" data-action="buy-open">Keep FU£L · ${esc(CONFIG.PRICE_LABEL || '£4.99')} once</button>` : ''}</div>`;
+}
 const matesUnlocked = () => !!S.mate?.unlocked;
 const paidUp = () => cloud.enabled && hasAccess(); // an account with access: bought, a code, or claimed mates
 function canUse() { return !cloud.enabled || hasAccess() || trialActive() || matesUnlocked(); }
@@ -149,7 +162,7 @@ function pantryIds(w) {
 }
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const hue = (id) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
-const cellStyle = (id) => `background:hsl(${hue(id)} 90% 82%);color:hsl(${hue(id)} 70% 22%);`;
+const cellStyle = (id) => `background:hsl(${hue(id)} 78% 94%);color:hsl(${hue(id)} 50% 20%);box-shadow:inset 3px 0 0 hsl(${hue(id)} 68% 56%);`; // v82: soft tint, a colour edge
 
 // ---------- weeks ----------
 const iso = (d) => d.toISOString().slice(0, 10);
@@ -452,7 +465,7 @@ function planTop(w) {
   const hasGrid = chosen.length || tubs.length || Object.keys(lockedCells(w)).length;
   const tips = (S.tips && S.tips.plan) ? '' : `<div class="card tipcard"><h3>How Fuel works</h3><ol class="tips"><li><b>Plan.</b> Tick the meals you fancy. Fuel fits them into your week.</li><li><b>Shop.</b> Your list is priced at four supermarkets. Buy from the cheapest.</li><li><b>Cook.</b> Batch cook on ${DAY_FULL[w.cookDay]}, box it up, and the week is sorted.</li></ol><p class="small">Targets, budget and milk are under the ⚙ gear, top right.</p><button class="btn small" data-action="tip-done" data-tip="plan">Got it</button></div>`;
   const limitNote = st.filled < st.slots / 2 ? '' : weekFactor(w) >= 2.5 ? `These meals come to ${st.avgKcal.toLocaleString()} kcal a day even at the biggest portion size, under your ${kcalT.toLocaleString()} target. Add a snack or another meal to close the gap.` : weekFactor(w) <= 0.6 ? `These meals come to ${st.avgKcal.toLocaleString()} kcal a day even at the smallest portion size, over your ${kcalT.toLocaleString()} target. Drop a snack or a meal.` : '';
-  const head = `<div class="card"><h3>Your numbers</h3>` + (chosen.length
+  const head = `<div class="card ${chosen.length ? 'numcard' : ''}"><h3>Your numbers</h3>` + (chosen.length
     ? `<div class="stat-grid"><div class="stat"><b>${st.filled}<span>/${st.slots}</span></b><span>${gone ? 'meals to go' : 'meals planned'}</span></div><div class="stat"><b>${st.avg}g</b><span>protein a day<br>target ${target}g</span></div><div class="stat"><b>${st.avgKcal.toLocaleString()}</b><span>kcal a day<br>target ${kcalT.toLocaleString()}</span></div></div>
     ${limitNote ? `<p class="small muted" style="margin-top:8px">${limitNote}</p>` : ''}
     <div class="bars" style="margin-top:26px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div>
@@ -511,7 +524,7 @@ function renderPlan() {
   const nBreak = visible.filter((r) => r.slots[0] === 'breakfast').length, nMain = visible.length - nBreak, nSnack = recipes.filter((r) => r.slots.includes('snack') && inLibrary(r.id) && !isAvoided(r)).length;
   const filterChips = `<div class="chip-row pickfilters">${[['all', 'All'], ['breakfast', `Breakfasts · ${nBreak}`], ['mains', `Mains · ${nMain}`], ['snack', `Snacks · ${nSnack}`]].map(([k, l]) => `<button class="chip ${filt === k ? 'on' : ''}" data-action="plan-filter" data-filter="${k}">${l}</button>`).join('')}${moreCount ? `<button class="chip more" data-action="plan-more">+ More meals · ${moreCount}</button>` : ''}</div>`;
   const nothing = q && !visible.some((r) => r.name.toLowerCase().includes(q)) && !snacks.length ? `<p class="muted">Nothing called "${esc(S.planSearch)}" in your recipes. Try Recipes → Find more meal ideas.</p>` : '';
-  return `<h1>Plan</h1>${stepLine(1, planAdd ? 'Tick the meals you want this week.' : `Here's your week. Tap a meal to change it.`)}${weekSwitch()}<div id="plan-top">${planTop(w)}</div>
+  return `<h1>Plan</h1>${stepLine(1, planAdd ? 'Tick the meals you want this week.' : `Here's your week. Tap a meal to change it.`)}${freeWeekCard()}${weekSwitch()}<div id="plan-top">${planTop(w)}</div>
   <div class="card pickhead" id="pick-head"><h3>Choose your meals</h3>${Object.values(w.portions).some((n) => n > 0) ? '' : `<button class="btn block autoplanbtn" data-action="autoplan">Plan my week for me</button><p class="small muted" style="margin:6px 0 10px">One tap fills the week to your targets and budget. Or tick meals yourself below.</p>`}${filterChips}</div>
   <div id="plan-sug">${planSug(w)}</div>
   <div id="plan-pick">${nothing}${filt === 'snack' ? snackHtml : ''}${group('breakfast', 'Breakfasts')}${group('mains', 'Mains (lunch or dinner)')}
@@ -1098,7 +1111,7 @@ function macroPreview(kTarget, pTarget) {
   const kPct = Math.min(100, Math.round((st.avgKcal / (kTarget || 1)) * 100));
   const gapP = Math.round(pTarget - st.avg), gapK = Math.round(kTarget - st.avgKcal);
   const budget = S.settings.budget || 0;
-  const capped = f >= 1.6 ? 'Meals are at their biggest (1.6×); the rest has to come from snacks.' : f <= 0.6 ? 'Meals are at their smallest (0.6×); drop a snack or a meal to go lower.' : '';
+  const capped = f >= 2.5 ? 'Meals are at their biggest (2.5×); the rest has to come from snacks.' : f <= 0.6 ? 'Meals are at their smallest (0.6×); drop a snack or a meal to go lower.' : '';
   return `<div class="macro"><div class="row"><span class="grow">${empty ? 'Nothing picked this week yet' : `Meals sized at <b>${f}×</b> to hit ${(kTarget || 0).toLocaleString()} kcal`}</span></div>
     <div class="row" style="margin-top:6px"><span class="lbl">Calories</span><div class="budget grow kcal ${kPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${kPct}%"></i></div><b class="val">${st.avgKcal.toLocaleString()}</b><span class="small muted">/ ${(kTarget || 0).toLocaleString()}</span></div>
     <div class="row" style="margin-top:6px"><span class="lbl">Protein</span><div class="budget grow ${pPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${pPct}%"></i></div><b class="val">${st.avg}g</b><span class="small muted">/ ${pTarget}g</span></div>
@@ -1116,7 +1129,7 @@ function accountCard() {
 // and nothing else unlocks the app (a purchase, a code, or three mates), and offers exactly that: keep your plan for £4.99 once, or get it free.
 function checkoutUrl() { return CONFIG.CHECKOUT_URL && cloud.user ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}client_reference_id=${encodeURIComponent(cloud.user.id)}&prefilled_email=${encodeURIComponent(cloud.user.email)}` : ''; }
 function authFormHtml(mode, dark) {
-  const link = dark ? 'style="color:#fff;font-weight:600"' : '';
+  const link = '';
   return `<form id="signin-form" data-mode="${mode}"><input class="big ${dark ? '' : 'field'}" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:18px;text-align:left"><input class="big ${dark ? '' : 'field'}" name="password" type="password" required minlength="8" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:18px;text-align:left;margin-top:10px"><button class="${dark ? 'go' : 'btn block'}" type="submit" style="margin-top:10px">${mode === 'signup' ? 'Make my account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
     <p class="small" style="margin-top:12px">${mode === 'signup' ? `Already have an account? <a href="#" data-action="auth-mode" data-mode="signin" ${link}>Sign in</a>` : `New here? <a href="#" data-action="auth-mode" data-mode="signup" ${link}>Make an account</a> · <a href="#" data-action="auth-forgot" ${link}>Forgot password?</a>`}</p>`;
 }
@@ -1150,7 +1163,7 @@ function gateScreen() {
   el.innerHTML = `<div class="wrap gate-access"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>Your free week's up.</h1>
     <p>${weeks ? `Your ${weeks > 1 ? `${weeks} weeks` : 'week'}, your recipes and your shop lists are all still here.` : 'Everything you set up is still here.'} Keep them for ${price}, once.</p>
     ${buy}${matesHtml(true)}${code}
-    <p class="small" style="opacity:.85;margin-top:16px"><a href="terms.html" style="color:#fff">Terms</a> · <a href="privacy.html" style="color:#fff">Privacy</a></p></div>`;
+    <p class="small" style="margin-top:16px"><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></p></div>`;
   el.hidden = false; return true;
 }
 // Small sheets used from anywhere in the app: the account form, the way to buy, and the free-week explainer.
@@ -1165,14 +1178,21 @@ function buySheet() {
   openSheet(`<h3>Keep FU£L for life</h3><p class="small muted" style="margin:0 0 12px">${esc(CONFIG.PRICE_LABEL || '£4.99')} once. No subscription, nothing to cancel. Paying opens Stripe; come back here when it's done.</p><a class="btn block" href="${esc(checkoutUrl())}" target="_blank" rel="noopener" data-action="buy">Pay ${esc(CONFIG.PRICE_LABEL || '£4.99')}</a><button class="btn ghost block" data-action="gate-refresh" style="margin-top:8px">I've paid, refresh</button><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Not now</button>`);
 }
 function trialSheet() {
+  const price = esc(CONFIG.PRICE_LABEL || '£4.99');
+  if (paidUp() || matesUnlocked()) { openSheet(`<h3>FU£L is yours for life</h3><p class="small muted">${paidUp() ? esc(cloud.user?.email || '') : 'Three mates planned a week with your link.'}</p><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Close</button>`); return; }
   const left = trialLeft();
-  openSheet(`<h3>${paidUp() ? 'FU£L is yours for life' : left ? `Free week: ${left} day${left > 1 ? 's' : ''} left` : `Your free week's up`}</h3>
-    ${paidUp() ? `<p class="small muted">${esc(cloud.user?.email || '')}</p>` : `<p class="small muted" style="margin:0 0 12px">Everything works in the free week. After it, keep your plan for ${esc(CONFIG.PRICE_LABEL || '£4.99')} once${GROWTH_OK ? ', or get it free with 3 mates' : ''}.</p>
-    <button class="btn block" data-action="buy-open">Keep it for ${esc(CONFIG.PRICE_LABEL || '£4.99')}</button>${matesHtml(false)}`}
-    <button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Close</button>`);
+  openSheet(`<h3>${left ? `Free week: day ${trialDay()} of ${TRIAL_DAYS}` : 'Your free week has ended'}</h3>${left ? trialSegs() : ''}
+    <ol class="fw-steps">
+      <li><b>Days 1 to 7: everything's free.</b> Every recipe, the shop prices, the cook plan. No account, no card.</li>
+      <li><b>${left ? `After ${dayName(trialEnd())}` : 'Now'}: keep it for ${price}, once.</b> Not a subscription. Nothing renews, ever.</li>
+      ${GROWTH_OK ? `<li><b>Or free for life.</b> When 3 mates plan a week with your link.</li>` : ''}
+    </ol>
+    <p class="fw-promise">We never ask for a card during the free week, so you can't be charged by surprise. If you don't keep it, nothing happens.</p>
+    <button class="btn block" data-action="buy-open">Keep it now · ${price} once</button>${matesHtml(false)}
+    <button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">${left ? 'Carry on free' : 'Close'}</button>`);
 }
 // The small "Free week · 5 days left" pill in the top bar (tap: the sheet above). Gone once paid.
-function trialPill() { if (!cloud.enabled || paidUp() || matesUnlocked()) return ''; const left = trialLeft(); return `<button class="trialpill ${left <= 2 ? 'soon' : ''}" data-action="trial">${left ? `Free week · ${left} day${left > 1 ? 's' : ''} left` : 'Free week over'}</button>`; }
+function trialPill() { if (!cloud.enabled || paidUp() || matesUnlocked()) return ''; const left = trialLeft(); return `<button class="trialpill ${left <= 2 ? 'soon' : ''}" data-action="trial">${left ? `Free · ${left} day${left > 1 ? 's' : ''} left` : 'Free week over'}</button>`; }
 function refreshTrialPill() { const b = document.querySelector('.brandbar .trialpill'); const html = S.tab === 'settings' ? '' : trialPill(); if (b) b.outerHTML = html || ''; else if (html) document.querySelector('.brandbar')?.insertAdjacentHTML('beforeend', html); }
 // After any sign-in: say which code this account came with (once), make three mates' unlock permanent, count the step.
 async function afterSignIn() {
@@ -1287,13 +1307,13 @@ function moneyCard() {
 function renderSettings() {
   const st = S.settings;
   const goal = (k, l) => `<option value="${k}" ${st.goal === k ? 'selected' : ''}>${l}</option>`;
-  const access = !cloud.enabled ? '' : paidUp() ? `Yours for life${cloud.planExpires ? ` until ${fmtDate(cloud.planExpires.slice(0, 10))}` : ''}` : matesUnlocked() ? 'Free for life: 3 mates planned a week' : trialLeft() ? `Free week: ${trialLeft()} day${trialLeft() > 1 ? 's' : ''} left` : 'Free week over';
+  const access = !cloud.enabled ? '' : paidUp() ? `Yours for life${cloud.planExpires ? ` until ${fmtDate(cloud.planExpires.slice(0, 10))}` : ''}` : matesUnlocked() ? 'Free for life: 3 mates planned a week' : trialLeft() ? `Free week, day ${trialDay()} of ${TRIAL_DAYS} · free until ${dayName(trialEnd())}` : 'Free week over';
   const buyBtn = cloud.enabled && !paidUp() && !matesUnlocked() && CONFIG.CHECKOUT_URL ? `<button class="btn block" data-action="buy-open" style="margin-top:12px">Keep FU£L for life · ${esc(CONFIG.PRICE_LABEL || '£4.99')} once</button>` : '';
   const extrasAcct = cloud.enabled && !paidUp() ? `${buyBtn}${matesUnlocked() ? '' : matesHtml(false)}` : '';
   const account = !cloud.enabled
     ? `<div class="acct"><div class="avatar">☺</div><div class="grow"><b>This phone only</b><span class="sub muted">Everything is saved here. Sign-in and sync switch on with the cloud project.</span></div></div>`
     : cloud.status === 'error' ? `<div class="bad-box">Cloud problem: ${esc(cloud.error || 'unknown')}. The app keeps working on this phone.</div>${extrasAcct}`
-    : !cloud.user ? `<div class="acct"><div class="avatar">☺</div><div class="grow"><b>Your plan lives on this phone</b><span class="sub muted">${access}</span></div></div>
+    : !cloud.user ? `<div class="acct"><div class="avatar">☺</div><div class="grow"><b>Your plan lives on this phone</b><span class="sub muted">${access}</span></div></div>${onTrial() ? trialSegs() : ''}
        <div class="row" style="margin-top:12px;gap:8px"><button class="btn ghost grow" data-action="account" data-mode="signup">Save to an account</button><button class="btn ghost grow" data-action="account" data-mode="signin">Sign in</button></div>${extrasAcct}`
     : `<div class="acct"><div class="avatar">${esc((cloud.user.email || '?')[0].toUpperCase())}</div><div class="grow"><b>${esc(cloud.user.email)}</b><span class="sub muted">${access}${cloud.lastSync ? ` · synced ${new Date(cloud.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}</span></div></div>
        <div class="row" style="margin-top:12px;gap:8px"><button class="btn ghost grow" data-action="signout">Sign out</button>${paidUp() ? '' : '<button class="btn ghost grow" data-action="code-sheet">Have a code?</button>'}</div>${extrasAcct}`;
@@ -1405,14 +1425,14 @@ function introStep(n) {
   const el = document.getElementById('intro');
   const dots = `<div class="dots">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</div>`;
   const goals = [['build', 'Build muscle', 'Rugby, lifting, bulking. 2g protein per kilo, calories up.'], ['lean', 'Stay lean and strong', 'Training most days, not bulking.'], ['lose', 'Lose fat, keep muscle', 'Calories down, protein high so you stay full.'], ['eatwell', 'Just eat well', 'Healthy, cheap, sorted. No targets to chase.']];
-  const wt = S.settings.weight || 85; const g = INTRO.goal || 'build';
+  const wt = S.settings.weight || 85; const g = INTRO.goal || 'build'; const picked = INTRO.goal; // nothing looks chosen until they choose
   const budgets = [30, 40, 50, 60];
   const step = {
-    1: `<div class="logo wordmark" aria-label="Fuel">FU<b>£</b>L</div>${cloud.enabled && !paidUp() ? '<p class="freeline">Your first week is free. No account, no card.</p>' : ''}${gateInstallHint()}<h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${g === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
+    1: `<div class="logo wordmark" aria-label="Fuel">FU<b>£</b>L</div>${cloud.enabled && !paidUp() ? '<p class="freeline">Free for 7 days · no account · no card</p>' : ''}${gateInstallHint()}<h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${picked === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
     2: `<h1>How much do you weigh?</h1><p>Kilos, roughly. Your daily protein and calorie targets come from this and your goal. Portions are sized to fit your calories.</p><input class="big" type="number" id="intro-weight" inputmode="numeric" value="${wt}" min="40" max="160"><div class="stat-row"><div><b id="iw-p">${P.proteinTargetFor(wt, g)}g</b><span>protein a day</span></div><div><b id="iw-f">${P.kcalTargetFor(wt, g).toLocaleString()}</b><span>kcal a day</span></div></div><button class="go" data-action="intro-weight">Next</button><button class="back" data-action="intro-back">Back</button>`,
     3: `<h1>Weekly food budget?</h1><p>The shop list always shows what's left against it.</p><div class="chips">${budgets.map((b) => `<button class="opt ${S.settings.budget === b ? 'on' : ''}" data-action="intro-budget" data-budget="${b}">£${b}</button>`).join('')}</div><p style="margin-bottom:6px">Or type your own</p><input class="big" type="number" id="intro-budget" inputmode="numeric" placeholder="£" min="10" max="300"><button class="go" data-action="intro-budget-custom">Next</button><button class="back" data-action="intro-back">Back</button>`,
     4: `<h1>Anything you don't eat?</h1><p>Recipes with these are hidden. Tap all that apply.</p><div class="chips">${Object.entries(AVOID).map(([k, v]) => `<button class="opt ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><p style="margin:16px 0 6px">Anything else? Allergies, or things you just don't like.</p><div class="row"><input class="big grow" id="intro-avoid-text" data-enter="intro-avoid-add" placeholder="e.g. mushrooms" autocapitalize="none" style="font-size:18px;text-align:left;margin:0"><button class="go" style="width:auto;margin:0;padding:14px 18px;font-size:16px" data-action="intro-avoid-add">Add</button></div>${avoidTextChips('intro-avoid-rm')}<p style="margin:16px 0 6px">Which milk?</p><div class="chips">${[['milk', 'Dairy'], ['oat_milk', 'Oat'], ['almond_milk', 'Almond'], ['soya_milk', 'Soya']].map(([k, l]) => `<button class="opt ${(S.settings.milk || 'milk') === k ? 'on' : ''}" data-action="intro-milk" data-id="${k}">${l}</button>`).join('')}</div><button class="go" data-action="intro-next">Next</button><button class="back" data-action="intro-back">Back</button>`,
-    5: `<h1>You're set.</h1><p>Fuel is three steps. The numbers on the bar at the bottom follow them.</p><ol class="introsteps"><li><b>Plan.</b> Tick the meals you want. We fit them into your week.</li><li><b>Shop.</b> Your list, priced at four supermarkets.</li><li><b>Cook.</b> One batch cook, then box it up.</li></ol><div class="stat-row"><div><b>${S.settings.proteinTarget}g</b><span>protein a day</span></div><div><b>${(S.settings.kcalTarget || 0).toLocaleString()}</b><span>kcal a day</span></div><div><b>£${S.settings.budget}</b><span>a week</span></div></div><p class="small">Meals are sized to your calorie target. Change that, your milk or your budget any time under the <b>⚙ gear</b>, top right.</p><button class="go" data-action="intro-auto">Plan my week for me</button><button class="go ghostgo" data-action="intro-done">I'll pick my own meals</button><button class="back" data-action="intro-back">Back</button>`,
+    5: `<h1>You're set.</h1><p>Fuel is three steps. The numbers on the bar at the bottom follow them.</p><ol class="introsteps"><li><b>Plan.</b> Tick the meals you want. We fit them into your week.</li><li><b>Shop.</b> Your list, priced at four supermarkets.</li><li><b>Cook.</b> One batch cook, then box it up.</li></ol><div class="stat-row"><div><b>${S.settings.proteinTarget}g</b><span>protein a day</span></div><div><b>${(S.settings.kcalTarget || 0).toLocaleString()}</b><span>kcal a day</span></div><div><b>£${S.settings.budget}</b><span>a week</span></div></div>${onTrial() ? `<div class="freebox"><b>Free until ${dayName(trialEnd())}.</b> Every feature. No card, nothing to cancel.</div>` : ''}<p class="small">Meals are sized to your calorie target. Change that, your milk or your budget any time under the <b>⚙ gear</b>, top right.</p><button class="go" data-action="intro-auto">Plan my week for me</button><button class="go ghostgo" data-action="intro-done">I'll pick my own meals</button><button class="back" data-action="intro-back">Back</button>`,
   }[n];
   el.innerHTML = `<div class="wrap">${dots}${step}</div>`; el.hidden = false;
   const wIn = document.getElementById('intro-weight');
@@ -1602,7 +1622,7 @@ function onAction(e) {
   else if (a === 'settings-avoid-rm') { removeAvoidText(el.dataset.term); render(); }
   else if (a === 'intro-next') { introStep(INTRO.step + 1); }
   else if (a === 'intro-back') { introStep(Math.max(1, INTRO.step - 1)); }
-  else if (a === 'intro-done' || a === 'intro-auto') { S.settings.onboarded = true; save(); closeIntro(); S.tab = 'plan'; planAdd = null; for (const wk of Object.values(S.weeks)) relayout(wk); render({ top: true }); if (a === 'intro-auto') autoPlan(1); }
+  else if (a === 'intro-done' || a === 'intro-auto') { S.settings.onboarded = true; S.tips ||= {}; S.tips.plan = true; /* the last set-up screen just showed the same three steps */ save(); closeIntro(); S.tab = 'plan'; planAdd = null; for (const wk of Object.values(S.weeks)) relayout(wk); render({ top: true }); if (a === 'intro-auto') autoPlan(1); }
   else if (a === 'suggest-targets') { const resized = setTargets(P.kcalTargetFor(S.settings.weight, S.settings.goal), P.proteinTargetFor(S.settings.weight, S.settings.goal)); toast(`${S.settings.kcalTarget.toLocaleString()} kcal and ${S.settings.proteinTarget}g protein a day.${resized ? ' Portions resized to match.' : ''}`, 3500); }
   else if (a === 'sinc' || a === 'sdec') { w.snacks[id] = Math.max(0, (w.snacks[id] || 0) + (a === 'sinc' ? 1 : -1)); if (!w.snacks[id]) delete w.snacks[id]; save(); refreshPlan(rowSel(id)); }
   else if (a === 'fresh-default') { if (el.dataset.on === '1') S.freshDefault[id] = true; else delete S.freshDefault[id]; save(); render(); toast(el.dataset.on === '1' ? 'Made fresh each time, not batched' : 'Back on the batch list'); }

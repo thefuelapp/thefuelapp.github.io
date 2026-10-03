@@ -573,3 +573,226 @@ details.pantry-rest[open] > summary small.cnt::after { content: " · tap to clos
 #intro .ginstall { font-size: 14px; } #intro .ginstall summary { cursor: pointer; list-style: none; } #intro .ginstall summary::-webkit-details-marker { display: none; } #intro .ginstall small { display: block; opacity: .9; margin-top: 4px; } #intro .ginstall ol { margin: 8.5px 0 2px; padding-left: 17px; } #intro .ginstall li { margin: 6px 0; }
 #gate .gcard > b { display: block; font-size: 15.5px; } #gate .gcard > small { display: block; font-size: 12.5px; opacity: .85; margin: 2px 0 10px; font-weight: 500; }
 #gate .gcard #signin-form .go { margin-top: 10px; }
+
+/* ============================================================================================================================
+   v82 LOOK (4 Oct 2026). One design system over everything above: Cameron said the app looked "weak and old school".
+   Calm paper background, white cards with a hairline edge, ink type, ONE loud colour (pink = the action), the brand's display
+   font (Bricolage Grotesque) for titles and the numbers that matter, numbers in one dark card instead of three candy tiles,
+   soft meal tints with a colour edge, a lighter dock, an icon tab bar, and light set-up / door screens. Later rules win.
+   ============================================================================================================================ */
+:root {
+  --bg: #f5f3ee; --panel: #ffffff; --panel-2: #f1eee7; --line: #e7e2d8; --edge: #e5e0d5;
+  --text: #14122a; --muted: #6e6a80; --ink: #14122a;
+  --accent: #ff4f7b; --accent-soft: #fff0f4;
+  --mint: #13b36f; --mint-soft: #e3f6ec; --ok: #13b36f;
+  --radius: 20px;
+  --shadow: 0 1px 2px rgba(20, 18, 42, .04), 0 6px 20px rgba(20, 18, 42, .04);
+  --display: "Bricolage Grotesque", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+html, body { background: var(--bg); }
+body { background: var(--bg); font-size: 15px; }
+html.is-ios-app { background: var(--bg); } #statusband { background: var(--bg); }
+html.is-ios-app.ios-under, html.is-ios-app.ios-short { background: var(--ink); } html.ios-under #statusband { background: var(--ink); }
+#view { padding: calc(10px + env(safe-area-inset-top)) 16px 34px; }
+
+/* type */
+h1 { font-family: var(--display); font-weight: 800; font-size: 34px; line-height: 1.02; letter-spacing: -.035em; margin: 2px 0 8px; }
+h2 { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 26px 0 10px; }
+h3 { font-size: 17px; font-weight: 700; letter-spacing: -.015em; margin: 0 0 6px; }
+.small { font-size: 13.5px; } .muted { color: var(--muted); }
+a { color: var(--accent); font-weight: 600; }
+
+/* top bar: wordmark left, free-week pill and settings right */
+.brandbar { justify-content: flex-start; margin: 0 0 14px; padding: 4px 0 0; gap: 8px; }
+.brandbar .wordmark { order: -2; margin-right: auto; font-family: var(--display); font-weight: 800; font-size: 21px; letter-spacing: -.01em; opacity: 1; }
+.brandbar .trialpill { order: 0; background: var(--panel); border: 1px solid var(--edge); box-shadow: none; padding: 8px 12px; font-size: 12.5px; font-weight: 600; }
+.brandbar .trialpill::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 9px; background: var(--mint); margin-right: 6px; vertical-align: 1px; }
+.brandbar .trialpill.soon { background: var(--accent); border-color: var(--accent); color: #fff; } .brandbar .trialpill.soon::before { background: #fff; }
+.brandbar .gear { order: 1; width: 36px; height: 36px; background: var(--panel); border: 1px solid var(--edge); box-shadow: none; }
+.settings-head { margin: 0 0 8px; } .settings-head .btn { padding: 8px 12px; }
+
+/* the "Step 1 of 3" line: an eyebrow, not a badge */
+.stepline { margin: 0 0 16px; font-size: 14.5px; color: var(--muted); }
+.stepline b { background: none; color: var(--accent); padding: 0; margin-right: 8px; font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; border-radius: 0; }
+
+/* surfaces */
+.card { background: var(--panel); border: 1px solid var(--edge); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); }
+.card.flat, .card.pickcard { border: 0; box-shadow: none; background: transparent; padding: 0; }
+.fold, .shop-card { border: 1px solid var(--edge); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 16px; }
+hr, .recipe-row, .line, .check, ul.clean li, ul.store li, .cmp-row { border-color: #efebe3; }
+
+/* buttons: pink = the thing to do, ink = go on to the next step, white = everything else */
+.btn { background: var(--accent); color: #fff; border: 0; border-radius: 14px; padding: 12px 16px; font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+.btn.block { padding: 14px 16px; font-size: 16px; }
+.btn.small { padding: 8px 12px; font-size: 13px; border-radius: 11px; }
+.btn.ghost { background: var(--panel); color: var(--text); border: 1px solid var(--edge); }
+.btn.sun { background: var(--ink); color: #fff; }
+.btn.danger { background: #fff0f2; color: #c81e4a; border: 1px solid #ffd3dc; }
+.btn.big { padding: 15px 18px; font-size: 16px; }
+.chip { background: var(--panel); border: 1px solid var(--edge); color: var(--text); border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 600; }
+.chip.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.chip.more { background: var(--panel-2); color: var(--text); border-color: var(--panel-2); }
+.badge { background: var(--panel-2); color: var(--muted); font-weight: 600; }
+.badge.ok { background: var(--mint-soft); color: #0b7a4a; }
+
+/* week switch: a quiet segmented control */
+.wtabs { background: #ebe7de; border: 0; border-radius: 14px; padding: 4px; margin: 0 0 14px; box-shadow: none; }
+.wtabs button { border-radius: 11px; padding: 8px 6px; color: var(--muted); font-size: 14px; }
+.wtabs button.on { background: var(--panel); color: var(--text); box-shadow: 0 1px 3px rgba(20, 18, 42, .1); }
+.wtabs button small { font-size: 11.5px; opacity: .75; }
+
+/* the free week, said plainly */
+.freeweek { background: var(--panel); border: 1px solid var(--edge); border-radius: var(--radius); padding: 14px 16px; margin: 0 0 14px; box-shadow: var(--shadow); }
+.freeweek .fw-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.fw-eyebrow { font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--mint); }
+.fw-more { border: 0; background: none; color: var(--text); font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; padding: 4px 0; }
+.fw-seg { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 10px 0 10px; }
+.fw-seg i { height: 6px; border-radius: 6px; background: #ebe7de; }
+.fw-seg i.on { background: var(--mint); } .fw-seg i.now { background: var(--ink); }
+.freeweek p { margin: 0; font-size: 14px; color: var(--muted); } .freeweek p b { color: var(--text); }
+.freeweek.soon { border-color: var(--accent); background: var(--accent-soft); } .freeweek.soon .fw-eyebrow { color: var(--accent); } .freeweek.soon .fw-seg i.now { background: var(--accent); }
+.freeweek.soon .btn { margin-top: 12px; }
+.fw-steps { padding-left: 20px; margin: 4px 0 12px; } .fw-steps li { margin: 8px 0; font-size: 14.5px; line-height: 1.4; } .fw-steps li::marker { color: var(--mint); font-weight: 800; }
+.fw-promise { background: var(--mint-soft); color: #0b5c38; border-radius: 14px; padding: 10px 12px; font-size: 13.5px; line-height: 1.4; margin: 0 0 12px; }
+.acct + .fw-seg { margin: 12px 0 0; }
+
+/* Plan: the numbers in one dark card */
+.numcard { background: var(--ink); color: #fff; border-color: var(--ink); padding: 18px 16px 14px; }
+.numcard h3 { font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .55); margin-bottom: 12px; }
+.numcard .stat-grid { gap: 0; }
+.numcard .stat { background: none; color: #fff; border-radius: 0; padding: 0 12px; border-left: 1px solid rgba(255, 255, 255, .12); }
+.numcard .stat:first-child { border-left: 0; padding-left: 0; }
+.numcard .stat b { font-family: var(--display); font-weight: 800; font-size: 32px; letter-spacing: -.03em; line-height: 1; }
+.numcard .stat b span { font-size: 15px; opacity: .5; }
+.numcard .stat span { display: block; font-size: 12px; color: rgba(255, 255, 255, .62); font-weight: 500; margin-top: 6px; line-height: 1.3; }
+.numcard .muted, .numcard p.small { color: rgba(255, 255, 255, .6); }
+.numcard .bars { height: 64px; gap: 8px; margin-top: 30px; }
+.numcard .bar { background: rgba(255, 255, 255, .07); border-radius: 6px; }
+.numcard .bar i { background: #3ddc97; border-radius: 6px; }
+.numcard .bar.low i { background: var(--sun); }
+.numcard .bar b { color: rgba(255, 255, 255, .7); font-size: 10.5px; }
+.numcard .bars-labels { color: rgba(255, 255, 255, .5); font-weight: 600; }
+.numcard .btn { background: var(--accent); }
+.numcard .btn.ghost { background: rgba(255, 255, 255, .1); color: #fff; border-color: rgba(255, 255, 255, .15); }
+.stat { background: var(--panel-2); color: var(--text); border-radius: 14px; }
+.stat:nth-child(1), .stat:nth-child(2), .stat:nth-child(3) { background: var(--panel-2); color: var(--text); }
+.stat b { font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: -.03em; }
+.stat span { color: var(--muted); font-weight: 500; opacity: 1; }
+.numcard .stat:nth-child(1), .numcard .stat:nth-child(2), .numcard .stat:nth-child(3) { background: none; color: #fff; }
+
+/* the week grid: soft tints with a colour edge (colours come from cellStyle in app.js) */
+.gridcard { padding: 14px 12px; }
+.gridhelp { background: var(--panel-2); border-radius: 12px; font-size: 13px; color: var(--muted); }
+.grid { gap: 6px; }
+.grid .hd { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.grid .lbl .dname { font-size: 12.5px; } .grid .lbl .dnum { font-size: 11.5px; }
+.grid .dayx { background: var(--panel-2); }
+.cell { border: 0; border-radius: 12px; min-height: 72px; padding: 8px 7px 8px 10px; font-size: 12px; font-weight: 600; }
+.cell .cmeta { opacity: .7; font-weight: 500; } .cell .ctag { opacity: .75; }
+.cell.empty { background: var(--panel); border: 1.5px dashed #d9d3c6; color: var(--accent); box-shadow: none; }
+.cell.past { background: var(--panel-2); box-shadow: none; }
+.cell.late { outline: 2px solid var(--sun); }
+.day-pick button { background: var(--panel-2); border-radius: 10px; font-size: 12px; } .day-pick button.on { background: var(--ink); color: #fff; }
+
+/* the meal picker */
+.pickhead { background: var(--panel); color: var(--text); border: 1px solid var(--edge); box-shadow: var(--shadow); padding: 16px; margin-top: 4px; }
+.pickhead h3 { font-family: var(--display); font-size: 22px; font-weight: 800; letter-spacing: -.025em; }
+.pickfilters .chip { background: var(--panel); border-color: var(--edge); color: var(--text); }
+.pickfilters .chip.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.pickfilters .chip.more { background: var(--panel-2); border-color: var(--panel-2); }
+.autoplanbtn { padding: 15px; font-size: 16px; }
+.card.pickcard .recipe-row.pick { border: 1px solid var(--edge); border-left: 1px solid var(--edge); box-shadow: inset 4px 0 0 var(--sun); border-radius: 14px; padding: 12px 10px 12px 14px; margin-bottom: 8px; }
+.card.pickcard .recipe-row.pick.mains { box-shadow: inset 4px 0 0 var(--coral); }
+.card.pickcard .recipe-row.pick.snack { box-shadow: inset 4px 0 0 var(--grape); }
+.card.pickcard .recipe-row.pick.on { background: var(--accent-soft); outline: 0; border-color: var(--accent); }
+.recipe-row.pick .tick { accent-color: var(--accent); }
+h2.pickgroup { font-size: 12px; color: var(--muted); letter-spacing: .08em; } h2.pickgroup::before { border-radius: 3px; width: 10px; height: 10px; }
+.stepper { background: var(--panel-2); border-radius: 12px; }
+.stepper:not(.zero) { background: var(--accent); }
+.endcard { background: var(--panel-2); border: 1px dashed #d9d3c6; box-shadow: none; }
+
+/* tips: dark and compact */
+.tipcard { background: var(--ink); border-color: var(--ink); }
+.tipcard .btn { background: #fff; color: var(--ink); }
+.tipcard ol.tips li::marker { color: #3ddc97; }
+
+/* the dock above the tab bar: light, so it doesn't stack two dark bars */
+.plandock { background: rgba(255, 255, 255, .92); color: var(--text); border: 1px solid var(--edge); border-radius: 18px; box-shadow: 0 10px 30px rgba(20, 18, 42, .14); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.plandock small { color: var(--muted); }
+.plandock .btn.ghost { background: var(--panel-2); color: var(--text); border: 0; }
+.plandock .btn.sun { background: var(--ink); color: #fff; }
+
+/* tab bar: icons, the step number as a small badge, a tick once done */
+#tabs { background: var(--ink); }
+#tabs button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 600; letter-spacing: .01em; color: rgba(255, 255, 255, .5); }
+#tabs button.active { color: #fff; }
+#tabs button.active::after { display: none; }
+#tabs .ti { position: relative; display: block; width: 24px; height: 24px; }
+#tabs .ti svg { display: block; width: 24px; height: 24px; }
+#tabs button i { position: absolute; top: -5px; right: -9px; margin: 0; width: 15px; height: 15px; font-size: 9.5px; border: 0; background: rgba(255, 255, 255, .16); color: #fff; }
+#tabs button.active i, #tabs button[data-tab=plan].active i, #tabs button[data-tab=shop].active i, #tabs button[data-tab=cook].active i { background: var(--accent); color: #fff; }
+#tabs button.done i, #tabs button.done:not(.active) i { background: #3ddc97; color: var(--ink); }
+#tabs button.done i::before { font-size: 9px; }
+#tabs button[data-tab=recipes] { border-left: 1px solid rgba(255, 255, 255, .1); }
+
+/* Shop */
+.bigtotal { font-family: var(--display); font-weight: 800; font-size: 44px; letter-spacing: -.04em; line-height: 1; }
+.shopchip { border: 1px solid var(--edge); border-radius: 12px; background: var(--panel); }
+.shopchip.on { border: 2px solid var(--ink); background: var(--panel); } .shopchip.on i { color: var(--mint); }
+.budget { height: 8px; background: #ebe7de; } .budget i { background: var(--mint); } .budget.over i { background: var(--accent); }
+.cupcheck { border: 1px solid var(--edge); background: #fffbf0; }
+.cupcheck .chip { border-radius: 12px; }
+.card.list h4.aisle { color: var(--muted); letter-spacing: .08em; }
+.card.list .line .name .n { color: var(--accent); }
+.done-box { background: var(--mint-soft); color: #0b5c38; border-radius: 14px; }
+.pantryprice { background: var(--ink); border-radius: 16px; }
+details.pantry-group summary { border: 1px solid var(--edge); border-left: 4px solid var(--sky); border-radius: 14px; background: var(--panel); }
+.card.pweek { border: 1px solid var(--edge); }
+
+/* sheets */
+#sheet { background: rgba(20, 18, 42, .5); }
+.sheet-inner { border-radius: 24px 24px 0 0; padding: 22px 18px calc(22px + env(safe-area-inset-bottom)); }
+.sheet-inner::before { content: ""; display: block; width: 40px; height: 5px; border-radius: 5px; background: #e2ddd2; margin: -10px auto 14px; }
+.sheet-inner h3 { font-family: var(--display); font-size: 24px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; margin-bottom: 8px; }
+.sheet-inner .stat-grid { gap: 8px; }
+.card.matescard { background: var(--panel-2); border: 0; }
+.matedots i.on { background: var(--mint); border-color: var(--mint); }
+#hint { background: var(--ink); border-radius: 14px; font-size: 13px; padding: 10px 14px; }
+
+/* set-up and the door: light, roomy, big type (and the iPhone clock stays readable on a fresh install) */
+#intro, #gate { background: var(--bg); color: var(--text); }
+#intro .wrap, #gate .wrap { padding: 24px 22px calc(28px + env(safe-area-inset-bottom)); }
+#intro .dots i { height: 5px; background: #e2ddd2; } #intro .dots i.on { background: var(--ink); }
+#gate .logo, #intro .logo { color: var(--text); font-weight: 800; font-size: 26px; } #gate .logo b, #intro .logo b { color: var(--accent); font-weight: 800; }
+#gate h1, #intro h1 { font-family: var(--display); font-weight: 800; font-size: 36px; line-height: 1.02; letter-spacing: -.035em; }
+#gate .gate-access h1 { font-size: 42px; }
+#gate p, #intro p { color: var(--muted); opacity: 1; font-size: 16px; }
+#intro .opt { background: var(--panel); border: 1.5px solid var(--edge); color: var(--text); box-shadow: var(--shadow); -webkit-backdrop-filter: none; backdrop-filter: none; border-radius: 16px; }
+#intro .opt small { color: var(--muted); opacity: 1; }
+#intro .opt.on { background: var(--ink); color: #fff; border-color: var(--ink); } #intro .opt.on small { color: rgba(255, 255, 255, .7); }
+#gate input.big, #intro input.big { background: var(--panel); border: 1.5px solid var(--edge); color: var(--text); box-shadow: var(--shadow); }
+#gate .go, #intro .go { background: var(--accent); color: #fff; border-radius: 16px; box-shadow: 0 8px 22px rgba(255, 79, 123, .28); font-size: 17px; }
+#intro .go.ghostgo { background: var(--panel); color: var(--text); border: 1.5px solid var(--edge); box-shadow: none; }
+#gate .back, #intro .back { color: var(--muted); opacity: 1; }
+#intro .stat-row div { background: var(--panel); border: 1px solid var(--edge); border-radius: 14px; }
+#intro .stat-row b { font-family: var(--display); font-weight: 800; letter-spacing: -.03em; } #intro .stat-row span { color: var(--muted); opacity: 1; }
+#intro .introsteps li::marker { color: var(--accent); }
+#intro .freeline { background: var(--mint-soft); color: #0b5c38; font-weight: 700; margin: 0 0 16px; }
+#intro .freeline::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 9px; background: var(--mint); margin-right: 7px; vertical-align: 1px; }
+.freebox { background: var(--mint-soft); color: #0b5c38; border-radius: 14px; padding: 11px 13px; font-size: 14.5px; margin: 0 0 14px; } .freebox b { color: #064428; }
+#intro .gcard, #gate .gcard { background: var(--panel); border: 1px solid var(--edge); color: var(--text); box-shadow: var(--shadow); -webkit-backdrop-filter: none; backdrop-filter: none; }
+#gate .gcard > small, #intro .ginstall small, #gate .perk small, #gate .price small, #gate .codecard small, .matescard small { color: var(--muted); opacity: 1; }
+#gate .gcard a, #gate p.small a, #gate .gcard p.small a { color: var(--accent); }
+#gate .price { background: var(--ink); color: #fff; border-color: var(--ink); } #gate .price small { color: rgba(255, 255, 255, .7); }
+#gate .price .go { box-shadow: none; }
+#gate .gfoot .back { color: var(--muted); }
+.signin-msg, #gate .signin-msg { background: var(--panel-2); color: var(--text); } .signin-msg.ok { background: var(--mint-soft); color: #0b5c38; } .signin-msg.bad { background: #fff0f2; color: #a8163d; }
+#gate .matescard .matedots i.on { background: var(--mint); border-color: var(--mint); }
+body:has(#gate:not([hidden])) #statusband, body:has(#intro:not([hidden])) #statusband { background: var(--bg); }
+.numcard .stat b span { display: inline; margin: 0; font-size: 16px; color: rgba(255, 255, 255, .45); }
+.tipcard { background: var(--panel); color: var(--text); border: 1px solid var(--edge); } .tipcard h3 { color: var(--text); }
+.tipcard ol.tips li::marker { color: var(--accent); } .tipcard .btn { background: var(--ink); color: #fff; }
+.card input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=date]), .search { background: var(--panel); border: 1px solid var(--edge); border-radius: 12px; padding: 10px 12px; color: var(--text); min-width: 0; }
+label.field { color: var(--text); font-weight: 600; } label.field .sub, .check .sub { display: block; font-weight: 500; font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+label.field input, label.field select, label.field textarea { border: 1px solid var(--edge); border-radius: 12px; }
+.macro { background: var(--panel-2); border-radius: 14px; }

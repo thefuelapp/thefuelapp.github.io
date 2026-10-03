@@ -128,6 +128,11 @@ footer .mark { color:var(--ink) }
 .founder-photo img { width:100%; height:auto; display:block; border-radius:14px } .founder-photo figcaption { font:500 14px "JetBrains Mono", monospace; color:var(--mut); padding:10px 4px 2px }
 .founder-text h2 { font-size:clamp(34px,4.4vw,52px); margin:10px 0 14px } .founder-text p { color:var(--mut); font-size:18px; max-width:52ch } .founder-text .btn { margin-top:10px }
 @media (max-width: 900px) { .founder .wrap { grid-template-columns:1fr; gap:26px } .founder-photo { max-width:520px } }
+.freeweek-band { padding: 34px 0 0 } .fwb { display:grid; grid-template-columns: repeat(3, 1fr); gap:14px }
+.fwb-step { background:var(--card); border:1px solid var(--line); border-radius:22px; padding:20px 20px 18px } .fwb-step:first-child { background:var(--ink); color:#fff; border-color:var(--ink) }
+.fwb-k { display:inline-block; font:700 12px "JetBrains Mono", monospace; letter-spacing:.12em; text-transform:uppercase; color:var(--green) } .fwb-step:first-child .fwb-k { color:#7cf0b5 }
+.fwb-step b { display:block; font:800 26px/1.05 "Bricolage Grotesque", sans-serif; letter-spacing:-.025em; margin:8px 0 6px } .fwb-step p { margin:0; font-size:15.5px; color:var(--mut) } .fwb-step:first-child p { color:rgba(255,255,255,.75) }
+@media (max-width: 900px) { .fwb { grid-template-columns:1fr } }
 </style>
 <nav class="top" id="top"><div class="wrap"><a class="mark" href="#top" aria-label="Fuel home" style="text-decoration:none">FU<b>£</b>L</a><div class="links"><a href="#how">How it works</a><a href="#prices">Prices</a><a href="#recipes">Recipes</a><a href="#get">Get Fuel</a></div><a class="btn sun" href="https://thefuelapp.github.io/app/" data-app style="padding:10px 18px">Try it free</a></div></nav>
 <header class="hero"><div class="blob a"></div><div class="blob b"></div><div class="wrap">
@@ -756,6 +761,10 @@ html,body{overflow:hidden} *{animation:none!important;transition:none!important}
 
 
 &lt;/body&gt;&lt;/html&gt;"></iframe></div></div></div></header>
+
+<section class="freeweek-band"><div class="wrap"><div class="fwb rv"><div class="fwb-step"><span class="fwb-k">Days 1 to 7</span><b>Free. Everything.</b><p>Every recipe, every shop price, the Sunday cook plan. No account, no card.</p></div>
+<div class="fwb-step"><span class="fwb-k">Day 8</span><b>Keep it for £4.99, once.</b><p>Not a subscription. Nothing renews. If you don't keep it, nothing happens.</p></div>
+<div class="fwb-step"><span class="fwb-k">Or</span><b>Free for life.</b><p>When 3 mates plan a week with your link (Settings → Account).</p></div></div></div></section>
 
 <section class="founder"><div class="wrap"><figure class="founder-photo rv"><img src="https://thefuelapp.github.io/app/img/sunday-tubs.jpg" onerror="this.onerror=null;this.src='../img/sunday-tubs.jpg'" alt="Fourteen tubs of chilli, coconut red curry and bang bang chicken from one Sunday cook" width="1000" height="987" loading="lazy"><figcaption>One Sunday, 27 Sep. 14 tubs.</figcaption></figure>
 <div class="founder-text rv"><div class="eyebrow">Made by a student, for students</div><h2>I built it for my own week.</h2><p>I'm Cam, a student and rugby player in Newcastle. I wanted high-protein food without the meal-deal bill, so I built FU£L to plan my week, find the cheapest shop and tell me what to cook on Sunday.</p><p>That's my cook from Sunday 27 September: chilli, coconut red curry and bang bang chicken, planned in the app, cooked in one go, eaten all week.</p><a class="btn" href="https://thefuelapp.github.io/app/" data-app>Plan your week free</a></div></div></section>
@@ -5746,4 +5755,4 @@ try {
 })();
 
 </script>
-<!-- deployed 2026-10-03T20:54:16Z -->
+<!-- deployed 2026-10-03T22:36:51Z -->
