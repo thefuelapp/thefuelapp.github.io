@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>FU£L · creator dashboard</title>
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<!-- A creator's own numbers. The address carries their code and a secret (partner.html#CODE.SECRET, after the # so it is never sent to
+     any server log). Every figure comes from partner_stats() in supabase/growth.sql, which answers only when the secret matches.
+     Nothing here says who bought: only counts, dates and money. -->
+<style>
+:root { --bg:#fffbf2; --panel:#fff; --line:#ffe3a3; --text:#1b1a2e; --muted:#6b6785; --pink:#ff4f7b; --sun:#ffc531; --lime:#7be34a; --grape:#9b5cff; --navy:#1b1a2e; }
+* { box-sizing: border-box; } html, body { margin: 0; background: linear-gradient(180deg, #fff1c2 0, var(--bg) 300px); color: var(--text); font: 16px/1.5 Inter, -apple-system, sans-serif; min-height: 100%; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 22px 18px 60px; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; } .mark { font: 800 28px "Bricolage Grotesque", sans-serif; letter-spacing: .02em; } .mark b { color: var(--pink); }
+.tag { font: 700 12px "JetBrains Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--grape); }
+h1 { font: 800 clamp(30px, 6vw, 44px)/1.05 "Bricolage Grotesque", sans-serif; letter-spacing: -.02em; margin: 6px 0 8px; }
+h2 { font: 700 13px "JetBrains Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 28px 0 10px; }
+.card { background: var(--panel); border-radius: 20px; padding: 16px 18px; box-shadow: 0 1px 0 var(--line); margin-bottom: 12px; }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); } @media (max-width: 560px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+.stat b { display: block; font: 800 38px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.02em; } .stat span { display: block; margin-top: 6px; font-weight: 600; font-size: 14px; } .stat small { display: block; color: var(--muted); font-size: 12.5px; }
+.stat.sun { background: var(--sun); } .stat.navy { background: var(--navy); color: #fff; } .stat.navy small { color: rgba(255,255,255,.7); } .stat.lime { background: var(--lime); }
+.linkbox { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .linkbox code { flex: 1; min-width: 0; font: 600 15px "JetBrains Mono", monospace; background: #fff3d6; border-radius: 12px; padding: 12px 14px; overflow-wrap: anywhere; }
+button { font: 600 14px Inter, sans-serif; border: 0; border-radius: 999px; padding: 11px 16px; background: var(--navy); color: #fff; cursor: pointer; }
+.muted { color: var(--muted); } .small { font-size: 14px; } ol, ul { padding-left: 20px; } li { margin: 6px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; } th { text-align: left; font: 700 11px "JetBrains Mono", monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 8px 6px; } td { padding: 9px 6px; border-top: 1px solid #f3ead2; }
+.pill { display: inline-block; font: 700 11px "JetBrains Mono", monospace; padding: 3px 8px; border-radius: 999px; background: #eee; } .pill.paid { background: var(--lime); } .pill.hold { background: #fff3d6; } .pill.ready { background: var(--sun); } .pill.void { background: #ffe1e8; color: #8a1230; }
+.bars { display: flex; align-items: flex-end; gap: 3px; height: 90px; margin-top: 8px; } .bars i { flex: 1; background: var(--grape); border-radius: 4px 4px 0 0; min-height: 2px; opacity: .85; } .bars i.s { background: var(--pink); }
+.err { background: #ffe1e8; color: #8a1230; border-radius: 14px; padding: 12px 14px; }
+</style></head>
+<body><div class="wrap">
+<header><span class="mark">FU<b>£</b>L</span><span class="tag">creator dashboard</span></header>
+<div id="main"><p class="muted">Loading…</p></div>
+</div>
+<script type="module">
+import { CONFIG } from './config.js';
+const $ = (id) => document.getElementById(id); const main = $('main');
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const gbp = (p) => '£' + (p / 100).toFixed(2);
+const day = (iso) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+const [code, secret] = decodeURIComponent(location.hash.slice(1)).split('.');
+async function load() {
+  if (!code || !secret) { main.innerHTML = `<div class="card"><p class="err">This page needs your own link (the one Cam sent you, with a # in it).</p></div>`; return; }
+  let d;
+  try {
+    const r = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/partner_stats`, { method: 'POST', headers: { apikey: CONFIG.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_code: code, p_secret: secret }) });
+    d = await r.json();
+  } catch (e) { main.innerHTML = `<div class="card"><p class="err">Couldn't load your numbers. Check your connection and refresh.</p></div>`; return; }
+  if (!d?.ok) { main.innerHTML = `<div class="card"><p class="err">That link doesn't match a creator code. Ask Cam for your dashboard link again.</p></div>`; return; }
+  const link = `https://thefuelapp.github.io/?c=${d.code}`;
+  const st = d.steps || {}; const opened = d.reached ?? Math.max(st.visit || 0, st.open || 0); // phones that opened the site or the app through the link, each once
+  const days = d.by_day || []; const top = Math.max(1, ...days.map((x) => x.visits));
+  main.innerHTML = `
+  <h1>Hi${d.name ? ' ' + esc(d.name.split(' ')[0]) : ''}.</h1>
+  <p class="muted">${d.active ? '' : '<b>Your code is paused.</b> '}Every number here is live. You earn <b>${gbp(d.commission_pence)}</b> for every person who buys FU£L (£4.99) after coming through your link.</p>
+  <h2>Your link</h2><div class="card"><div class="linkbox"><code id="lnk">${esc(link)}</code><button id="copy">Copy</button></div>
+    <p class="small muted" style="margin:10px 0 0">Or tell people your code: <b>${esc(d.code)}</b>. Put the link in your bio or stories. It works on iPhone and Android, and the first week in FU£L is free, so it's an easy yes.</p></div>
+  <h2>So far</h2><div class="grid">
+    <div class="card stat"><b>${opened}</b><span>opened your link</span><small>phones, counted once each</small></div>
+    <div class="card stat sun"><b>${st.planned || 0}</b><span>planned a week</span><small>in their free week</small></div>
+    <div class="card stat navy"><b>${d.sales}</b><span>bought FU£L</span><small>${d.refunded ? `${d.refunded} refunded, not counted` : 'through your link'}</small></div>
+    <div class="card stat lime"><b>${gbp(d.earned_pence)}</b><span>earned</span><small>all time</small></div>
+    <div class="card stat"><b>${gbp(d.payable_pence)}</b><span>ready to pay you</span><small>past the 14-day refund window</small></div>
+    <div class="card stat"><b>${gbp(d.paid_pence)}</b><span>paid to you</span><small>${d.on_hold_pence ? `${gbp(d.on_hold_pence)} more on hold` : 'nothing on hold'}</small></div>
+  </div>
+  <div class="card"><b>Last 30 days</b><span class="small muted"> · purple: opened your link · pink: sales</span><div class="bars">${days.map((x) => x.sales ? `<i class="s" title="${day(x.day)}: ${x.sales} sale${x.sales > 1 ? 's' : ''}" style="height:${Math.max(8, (x.visits / top) * 100)}%"></i>` : `<i title="${day(x.day)}: ${x.visits} opened" style="height:${(x.visits / top) * 100}%"></i>`).join('')}</div></div>
+  ${(d.recent || []).length ? `<h2>Sales</h2><div class="card"><table><thead><tr><th>Date</th><th>You earn</th><th>Status</th></tr></thead><tbody>${d.recent.map((r) => `<tr><td>${day(r.at)}</td><td>${gbp(r.pence)}</td><td>${r.status === 'paid' ? '<span class="pill paid">paid to you</span>' : r.status === 'void' ? '<span class="pill void">refunded</span>' : r.payable ? '<span class="pill ready">ready to pay</span>' : '<span class="pill hold">on hold</span>'}</td></tr>`).join('')}</tbody></table></div>` : ''}
+  <h2>Your free FU£L</h2><div class="card"><p style="margin:0 0 8px">Your lifetime-access code: <b style="font-family:'JetBrains Mono',monospace">${esc(d.promo_code || '')}</b></p>
+    <ol class="small"><li>Open <a href="https://thefuelapp.github.io/app/">thefuelapp.github.io/app</a> (on iPhone, add it to your home screen first).</li><li>Settings (the ⚙ top right) → Account → <b>Save to an account</b>.</li><li>Then <b>Have a code?</b> and type the code above.</li></ol></div>
+  <h2>How it works</h2><div class="card small">
+    <ul>
+      <li>You earn <b>${gbp(d.commission_pence)}</b> for each purchase by someone whose first visit came through your link or code. Free weeks don't earn; purchases do, whenever they happen.</li>
+      <li>Each sale is held for <b>14 days</b> in case of a refund, then it's ready to pay. Cam pays what's ready by bank transfer, at least once a month.</li>
+      <li>Refunded purchases are taken off. Buying through your own link doesn't count.</li>
+      <li><b>Label every post about FU£L as an ad</b> (#ad at the start of the caption, or the platform's paid-partnership label). It's the law in the UK because you get free access and earn per sale.</li>
+      <li>Only say what's true for you: no made-up savings, results or health claims.</li>
+    </ul>
+    <p class="muted" style="margin:6px 0 0">Questions or payment details: reply to Cam's message.</p></div>`;
+  $('copy').onclick = async () => { try { await navigator.clipboard.writeText(link); $('copy').textContent = 'Copied'; } catch { const r = document.createRange(); r.selectNodeContents($('lnk')); getSelection().removeAllRanges(); getSelection().addRange(r); } };
+}
+load();
+</script></body></html>

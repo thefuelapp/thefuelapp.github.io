@@ -1,9 +1,11 @@
 import * as P from './planner.js';
 import { CONFIG } from './config.js';
-import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
+import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, refreshAccess, pullState, pushStateSoon, setReferral, claimMates } from './cloud.js';
+import { anonId, captureAttribution, carryCodeToHomeScreen, attribution, track, setOptOut, mateCode, savedMateCode, mateStatus, growthReady } from './growth.js';
+import { planWeek } from './autoplan.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v80';
+const APP_VERSION = 'v81';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -13,7 +15,29 @@ function load() {
   try { return { ...base, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return base; }
 }
 function syncable() { const { tab, search, planSearch, planFilter, pantrySearch, pantryRestOpen, ideasOpen, ideaTag, ...rest } = S; return rest; }
-function save() { S.updatedAt = new Date().toISOString(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} pushStateSoon(syncable); }
+function save() {
+  S.updatedAt = new Date().toISOString();
+  if (cloud.enabled && !cloud.user && S.settings?.onboarded) S.signedOutEdits = true; // used on sign-in: this phone has its own plan, so ask before replacing it
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {}
+  pushStateSoon(syncable); notePlanned();
+}
+
+// ---------- the free first week, and who can use the app ----------
+// Everyone gets every feature free for 7 days from their first open: no account, no card. Then "Keep your plan: £4.99 once",
+// or free for life once 3 mates have planned a week with their code. The clock lives with the plan (and syncs with an account).
+const TRIAL_DAYS = 7;
+function trialStart() { if (!S.trial?.start) { S.trial = { start: new Date().toISOString() }; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} } return S.trial.start; }
+function trialLeft() { const used = (Date.now() - Date.parse(trialStart())) / 86400000; return Math.max(0, Math.ceil(TRIAL_DAYS - used)); }
+const trialActive = () => trialLeft() > 0;
+const matesUnlocked = () => !!S.mate?.unlocked;
+const paidUp = () => cloud.enabled && hasAccess(); // an account with access: bought, a code, or claimed mates
+function canUse() { return !cloud.enabled || hasAccess() || trialActive() || matesUnlocked(); }
+// "Planned a week" (the goal the launch plan counts): a week with at least 7 meals in it.
+function notePlanned() {
+  if (S.stepPlanned) return;
+  if (!Object.values(S.weeks || {}).some((w) => Object.values(w.portions || {}).reduce((t, n) => t + n, 0) >= 7)) return;
+  S.stepPlanned = new Date().toISOString(); track('planned');
+}
 
 // ING(), RAW(), weekFactor() and REC() are asked for dozens of times per tap, so each remembers its last answer and rebuilds only when what it is made from changes.
 // The keys: the data arrays themselves (replaced on load), the custom lists (replaced or pushed to), the tweaks, the calorie target and the week's grid, days and snacks.
@@ -243,6 +267,10 @@ function noteOpen() {
   save();
 }
 async function boot() {
+  // Where this device came from (?r=tt, ?c=CODE) is kept from its first visit; each step is counted once per device, anonymously.
+  captureAttribution(); carryCodeToHomeScreen(); setOptOut(() => S.settings?.countSteps === false); trialStart();
+  { const m = savedMateCode(); if (m && !S.mate) S.mate = { ...m }; else if (S.mate?.code && !m) try { localStorage.setItem('fuel:mate', JSON.stringify({ code: S.mate.code, secret: S.mate.secret })); } catch {} }
+  track('open'); if (isStandalone()) track('home');
   try {
     const [i, r] = await Promise.all([fetch('data/ingredients.json').then((x) => x.json()), fetch('data/recipes.json').then((x) => x.json())]);
     DATA.ingredients = i.items; DATA.recipes = r.items; bustCaches(); DATA.priceNote = i.checkedNote; DATA.priceDates = i.items.flatMap((x) => x.packs || []).filter((p) => P.SHOPS.includes(p.shop)).map((p) => p.checked).filter(Boolean); DATA.priceDate = [...DATA.priceDates].sort().pop() || '';
@@ -262,16 +290,20 @@ async function boot() {
   v.addEventListener('touchmove', (e) => { if (drag.active) e.preventDefault(); }, { passive: false });
   v.addEventListener('contextmenu', (e) => { if (e.target.closest('.cell')) e.preventDefault(); });
   render();
-  if (!cloud.enabled) ensureIntro();
+  // No sign-in wall: the free week opens straight into set-up. The door only appears once the free week is over and nothing else unlocks it.
+  if (canUse()) ensureIntro();
   onCloudChange(async () => {
     const gated = gateScreen();
-    if (cloud.user && cloud.user.id !== syncedFor) { syncedFor = cloud.user.id; await syncOnSignIn(); }
+    if (cloud.user && document.querySelector('#sheet-inner #signin-form') && !document.getElementById('sheet').hidden) closeSheet(); // signed in from a sheet
+    if (cloud.user && cloud.user.id !== syncedFor) { syncedFor = cloud.user.id; await syncOnSignIn(); afterSignIn(); }
     if (cloud.user && !gated) noteOpen();
     if (!gated) ensureIntro();
-    if (S.tab === 'pantry') render();
+    if (S.tab === 'pantry' || S.tab === 'settings') render(); else refreshTrialPill();
+    if (S.pendingBuy && cloud.user && !hasAccess()) { S.pendingBuy = false; save(); closeSheet(); buySheet(); }
   });
   if (cloud.enabled) { cloud.status = 'loading'; gateScreen(); }
   initCloud();
+  growthReady().then((ok) => { GROWTH_OK = ok; if (!ok) return; if (S.tab === 'settings') render(); const g = document.getElementById('gate'); if (!g.hidden) { g.dataset.key = ''; gateScreen(); } if (S.mate?.code && !hasAccess()) refreshMates(); }); // a mate may have planned their week since last time
   // Coming back from Stripe: re-check access without a manual refresh, and keep checking for a minute after a Buy tap.
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { recheckAccess(false); rollWeeks(); } });
   window.addEventListener('focus', () => recheckAccess(false));
@@ -285,7 +317,7 @@ async function recheckAccess(manual) {
   if (!cloud.enabled || !cloud.user || hasAccess() || recheckBusy) return;
   recheckBusy = true;
   try { await refreshAccess(); } catch {} finally { recheckBusy = false; }
-  if (hasAccess()) { S.buyStarted = 0; save(); gateScreen(); toast('Payment received. Welcome to Fuel.'); if (!S.settings.onboarded) ensureIntro(); else render({ top: true }); }
+  if (hasAccess()) { S.buyStarted = 0; save(); track('paid'); closeSheet(); gateScreen(); toast('Payment received. FU£L is yours for life.'); if (!S.settings.onboarded) ensureIntro(); else render({ top: true }); }
   else if (manual) toast('Not unlocked yet. Give it a few seconds and try again.');
 }
 
@@ -293,8 +325,21 @@ async function recheckAccess(manual) {
 let syncedFor = null;
 async function syncOnSignIn() {
   const remote = await pullState();
-  if (remote && remote.updated_at && (!S.updatedAt || remote.updated_at > S.updatedAt)) {
-    const keepTab = S.tab; Object.assign(S, remote.data, { tab: keepTab }); bustCaches(); setupWeeks(); planAdd = null; save(); render(); toast('Synced from your account');
+  const planned = (st) => Object.values(st?.weeks || {}).some((w) => Object.keys(w.portions || {}).length);
+  let useRemote = !!(remote && remote.updated_at && (!S.updatedAt || remote.updated_at > S.updatedAt));
+  // The free week means people now plan BEFORE signing in. If this phone and the account both have a plan, ask which to keep
+  // (otherwise a newer phone copy would quietly replace the account's, or the other way round).
+  if (remote?.data && planned(remote.data) && planned(S) && S.signedOutEdits) {
+    const pick = await askChoice('This phone and your account both have a plan. Which do you want?', [
+      { value: 'account', label: 'The one saved to my account', sub: remote.updated_at ? `Last changed ${fmtDate(remote.updated_at.slice(0, 10))}` : '' },
+      { value: 'phone', label: 'The one on this phone', sub: 'It replaces the account copy', ghost: true }]);
+    useRemote = pick !== 'phone';
+  } else if (remote?.data && planned(remote.data) && !planned(S)) useRemote = true;
+  S.signedOutEdits = false;
+  if (useRemote && remote?.data) {
+    const keep = { tab: S.tab, trial: S.trial, mate: S.mate || remote.data.mate, refSent: { ...(remote.data.refSent || {}), ...(S.refSent || {}) }, stepPlanned: S.stepPlanned || remote.data.stepPlanned };
+    if (remote.data.trial?.start && S.trial?.start && remote.data.trial.start < S.trial.start) keep.trial = remote.data.trial; // the earlier free-week start wins
+    Object.assign(S, remote.data, keep); bustCaches(); setupWeeks(); planAdd = null; save(); render(); toast('Synced from your account');
     if (S.settings.onboarded && introOpen()) closeIntro();
   } else pushStateSoon(syncable);
 }
@@ -307,7 +352,7 @@ function render(opts = {}) {
   document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === S.tab)); markTabs();
   const page = ({ plan: renderPlan, cook: renderCook, shop: renderShop, recipes: renderRecipes, pantry: renderPantry, settings: renderSettings })[S.tab] || renderPlan;
   view.classList.toggle('has-dock', page === renderPlan); // Plan ends in the sticky dock: #view's bottom padding is taken off the sticky area, which left the dock floating 48px above the tab bar
-  document.getElementById('view').innerHTML = `<div class="brandbar">${S.tab === 'settings' ? '' : `<button class="gear" data-action="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>`}<span class="wordmark" aria-label="Fuel">FU<b>£</b>L</span></div>` + page();
+  document.getElementById('view').innerHTML = `<div class="brandbar">${S.tab === 'settings' ? '' : `<button class="gear" data-action="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>`}<span class="wordmark" aria-label="Fuel">FU<b>£</b>L</span>${S.tab === 'settings' ? '' : trialPill()}</div>` + page();
   view.scrollTop = opts.top ? 0 : y;
 }
 
@@ -412,13 +457,13 @@ function planTop(w) {
     ${limitNote ? `<p class="small muted" style="margin-top:8px">${limitNote}</p>` : ''}
     <div class="bars" style="margin-top:26px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div>
     <p class="small muted">Protein a day. Green is on target.</p>`
-    : `<p><b>Nothing planned yet.</b></p><p class="small muted">Pick a few meals and Fuel fits them into your week.</p><button class="btn block" style="margin-top:10px" data-action="plan-add">Choose meals</button>`) + `${tubHtml}</div>`;
+    : `<p><b>Nothing planned yet.</b></p><p class="small muted">Pick a few meals and Fuel fits them into your week.</p><button class="btn block" style="margin-top:10px" data-action="autoplan">Plan my week for me</button><button class="btn ghost block" style="margin-top:8px" data-action="plan-add">Choose meals myself</button>`) + `${tubHtml}</div>`;
   return `${tips}${nudge}${dueOnPlan().length ? useUpCard(w, true) : ''}${head}
   ${hasGrid ? `<div class="card gridcard"><h3>Your week</h3><ul class="gridhelp"><li><b>Tap a meal</b> to swap it, move it or skip it. The ✕ under a day skips the whole day.</li></ul>${gridHtml}
     ${snackBar(w)}
     <p class="small muted" style="margin:12px 0 4px">Which day do you batch cook?</p>
     <div class="day-pick">${P.DAYS.map((d, i) => `<button data-action="cookday" data-day="${i}" class="${w.cookDay === i ? 'on' : ''}">${d}</button>`).join('')}</div>
-    <div class="row" style="margin-top:10px"><button class="btn ghost small" data-action="relayout">Re-arrange the week</button><button class="btn ghost small" data-action="clear-week">Clear week</button></div></div>` : ''}
+    <div class="row" style="margin-top:10px;flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-action="relayout">Re-arrange the week</button><button class="btn ghost small" data-action="clear-week">Clear week</button>${st.filled ? '<button class="btn ghost small" data-action="share-week">Share my week</button>' : ''}</div></div>` : ''}
   ${installCard()}${overflow}${lateWarnings(w)}`;
 }
 function pickRow(r, w, free) {
@@ -467,7 +512,7 @@ function renderPlan() {
   const filterChips = `<div class="chip-row pickfilters">${[['all', 'All'], ['breakfast', `Breakfasts · ${nBreak}`], ['mains', `Mains · ${nMain}`], ['snack', `Snacks · ${nSnack}`]].map(([k, l]) => `<button class="chip ${filt === k ? 'on' : ''}" data-action="plan-filter" data-filter="${k}">${l}</button>`).join('')}${moreCount ? `<button class="chip more" data-action="plan-more">+ More meals · ${moreCount}</button>` : ''}</div>`;
   const nothing = q && !visible.some((r) => r.name.toLowerCase().includes(q)) && !snacks.length ? `<p class="muted">Nothing called "${esc(S.planSearch)}" in your recipes. Try Recipes → Find more meal ideas.</p>` : '';
   return `<h1>Plan</h1>${stepLine(1, planAdd ? 'Tick the meals you want this week.' : `Here's your week. Tap a meal to change it.`)}${weekSwitch()}<div id="plan-top">${planTop(w)}</div>
-  <div class="card pickhead" id="pick-head"><h3>Choose your meals</h3>${filterChips}</div>
+  <div class="card pickhead" id="pick-head"><h3>Choose your meals</h3>${Object.values(w.portions).some((n) => n > 0) ? '' : `<button class="btn block autoplanbtn" data-action="autoplan">Plan my week for me</button><p class="small muted" style="margin:6px 0 10px">One tap fills the week to your targets and budget. Or tick meals yourself below.</p>`}${filterChips}</div>
   <div id="plan-sug">${planSug(w)}</div>
   <div id="plan-pick">${nothing}${filt === 'snack' ? snackHtml : ''}${group('breakfast', 'Breakfasts')}${group('mains', 'Mains (lunch or dinner)')}
   ${filt === 'snack' ? '' : snackHtml}
@@ -645,6 +690,76 @@ function shopTotals(w, { recipes = recFor(w), all = false, thigh = S.settings.pr
   return { ...sn, ranked, byShop, cheapestElsewhere, isStock, best: ranked[0] || null, chosen: byShop[w.shop] || ranked[0] || null };
 }
 function tillNow(w, o) { const t = shopTotals(w, o); return Object.keys(t.needsAll).length && t.chosen ? { shop: t.chosen.shop, total: t.chosen.comparable, stock: t.chosen.stock } : null; }
+
+// ----- "Plan my week for me": one tap fills a sensible week to the person's targets, budget and dislikes (autoplan.js) -----
+function autoPlan(seed = 1) {
+  if (S.activeWeek === S.thisMon && W().days.filter((on, i) => on && !isPast(i)).length < 2) { S.activeWeek = S.nextMon; toast('This week is nearly over, so here is next week.'); }
+  const w = W(); const before = seed > 1 && Object.keys(w.portions || {}).length ? { ...w.portions } : null; // "Try another week": steer away from this one
+  if (S.activeWeek === S.thisMon) for (let i = 0; i < 7; i++) if (isPast(i) && !P.SLOTS.some((sl) => P.isRecipeCell(w.grid?.[i]?.[sl]))) w.days[i] = false; // gone, empty days: nothing to plan
+  toast('Planning your week…', 4000);
+  setTimeout(() => {
+    const raw = RAW(), pool = raw.filter((r) => !r.slots.includes('snack') && !isAvoided(r));
+    const args = { P, ING: ING(), core: new Set(raw.filter((r) => r.core).map((r) => r.id)), days: liveDays(w), cookDay: w.cookDay, kcal: S.settings.kcalTarget, protein: S.settings.proteinTarget, budget: S.settings.budget,
+      pantry: w.pantry || {}, resolve: resolveFor(w), choiceOf: (id) => { const it = ingById(id); return it?.choices?.length ? chosenFor(w, it) : null; }, seed, differentFrom: before };
+    let r = planWeek({ ...args, pool: pool.filter((x) => inLibrary(x.id)) });
+    if (!r || !r.ok) { const r2 = planWeek({ ...args, pool, seed: seed + 100 }); if (r2 && (!r || (r2.ok && !r.ok) || (!r.ok && r2.overBudget + r2.shortProtein < r.overBudget + r.shortProtein))) r = r2; } // widen to every recipe they eat
+    hideHint();
+    if (!r) { toast('Couldn’t build a week from what you eat. Tick meals yourself below.', 3500); return; }
+    for (const id of Object.keys(r.portions)) if (S.library && !S.library.includes(id)) S.library.push(id);
+    w.portions = { ...r.portions }; w.overflow = []; relayout(w); planAdd = false; planMore = false; S.tab = 'plan'; save(); render({ top: true });
+    autoPlanSheet(r, seed);
+  }, 40);
+}
+function autoPlanSheet(r, seed) {
+  const w = W(); const st = P.gridStats(liveGrid(w), REC(), ING(), snackExtra(w), liveDays(w)); const c = shopTotals(w).chosen; if (!c) return;
+  const food = c.weekly, stock = c.stock, shop = P.SHOP_NAMES[c.shop];
+  const notes = [];
+  if (food > S.settings.budget + 0.004) notes.push(`£${S.settings.budget} is tight for ${st.filled} high-protein meals, so this is the cheapest sensible week FU£L could find.`);
+  if (st.avg < S.settings.proteinTarget) notes.push(`It comes to ${S.settings.proteinTarget - st.avg}g a day under your protein target. A snack closes the gap.`);
+  openSheet(`<h3>Your week is planned</h3>
+    <div class="stat-grid" style="margin:10px 0 12px"><div class="stat"><b>${st.filled}</b><span>meals</span></div><div class="stat"><b>${st.avg}g</b><span>protein a day</span></div><div class="stat"><b>${P.gbp(food)}</b><span>food at ${esc(shop)}</span></div></div>
+    ${stock > 0.004 ? `<p class="small">Starting from an empty cupboard adds <b>${P.gbp(stock)}</b> of stock-ups that last for weeks: oil, spices, rice and the like. On Shop, tap what you've already got and the price drops.</p>` : ''}
+    ${notes.map((n) => `<p class="small muted">${n}</p>`).join('')}
+    <p class="small muted">Tap any meal in the week to swap it.</p>
+    <div class="stack" style="margin-top:12px"><button class="btn block" data-action="autoplan-keep">Looks good</button><button class="btn ghost block" data-action="autoplan" data-seed="${seed + 1}">Try another week</button><button class="btn ghost block" data-action="share-week">Share my week</button></div>`);
+}
+
+// ----- Share card: a picture of this week's real numbers, for a Story, with the person's own link -----
+async function shareWeek() {
+  const w = W(); const st = P.gridStats(liveGrid(w), REC(), ING(), snackExtra(w), liveDays(w)); const c = shopTotals(w).chosen;
+  if (!st.filled || !c) { toast('Plan some meals first'); return; }
+  let code = S.mate?.code || ''; if (!code && cloud.enabled) { try { const m = await mateCode(); S.mate = { ...(S.mate || {}), ...m }; save(); code = m.code; } catch {} }
+  const url = `${shareBase()}${code ? `?c=${code}` : ''}`;
+  const meals = Object.entries(w.portions).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => [(recById(id)?.name || id).replace(/\s*\([^)]*\)/g, ''), n]);
+  try { await document.fonts.load('800 80px "Bricolage Grotesque"'); await document.fonts.load('600 40px Inter'); } catch {}
+  const cv = document.createElement('canvas'); cv.width = 1080; cv.height = 1920; const g = cv.getContext('2d');
+  const navy = '#1b1a2e', pink = '#ff4f7b', sun = '#ffc531', cream = '#fffbf2', muted = '#6b6785';
+  g.fillStyle = cream; g.fillRect(0, 0, 1080, 1920);
+  g.fillStyle = sun; g.fillRect(0, 0, 1080, 14);
+  const word = (x, y, size) => { g.font = `800 ${size}px "Bricolage Grotesque", Inter, sans-serif`; g.textBaseline = 'alphabetic'; let cx = x; for (const [t, col] of [['FU', navy], ['£', pink], ['L', navy]]) { g.fillStyle = col; g.fillText(t, cx, y); cx += g.measureText(t).width; } };
+  word(90, 210, 76);
+  g.fillStyle = muted; g.font = '600 40px Inter, sans-serif'; g.fillText(`My week · ${weekLabel(S.activeWeek).toLowerCase()}`, 90, 300);
+  const big = (y, a, b, col = navy) => { g.font = '800 150px "Bricolage Grotesque", Inter, sans-serif'; g.fillStyle = col; g.fillText(a, 86, y); const wA = g.measureText(a).width; g.font = '600 54px Inter, sans-serif'; g.fillStyle = navy; g.fillText(b, 86 + wA + 24, y); };
+  big(520, String(st.filled), 'meals');
+  big(720, P.gbp(c.weekly), `food at ${P.SHOP_NAMES[c.shop]}`, pink);
+  big(920, `${st.avg}g`, 'protein a day');
+  g.fillStyle = navy; g.fillRect(90, 1000, 900, 4);
+  g.font = '600 46px Inter, sans-serif'; const rows = Math.min(7, meals.length); const gap = Math.min(96, Math.floor(540 / Math.max(1, rows))); let y = 1090 + Math.max(0, (540 - gap * rows) / 2);
+  const fit = (t, max) => { if (g.measureText(t).width <= max) return t; while (t.length > 4 && g.measureText(t + '…').width > max) t = t.slice(0, -1); return t.trimEnd() + '…'; };
+  for (const [n, k] of meals.slice(0, 7)) { g.fillStyle = navy; g.fillText(fit(n, 780), 90, y); g.fillStyle = muted; const t = `×${k}`; g.fillText(t, 990 - g.measureText(t).width, y); y += gap; }
+  if (meals.length > 7) { g.fillStyle = muted; g.fillText(`and ${meals.length - 7} more`, 90, y); }
+  g.fillStyle = navy; g.fillRect(0, 1640, 1080, 280);
+  g.fillStyle = '#fff'; g.font = '700 48px Inter, sans-serif'; g.fillText('Planned in FU£L. First week free.', 90, 1745);
+  g.fillStyle = sun; g.font = '600 42px Inter, sans-serif'; g.fillText(url.replace('https://', ''), 90, 1820);
+  g.fillStyle = 'rgba(255,255,255,.6)'; g.font = '500 30px Inter, sans-serif'; g.fillText(`Prices checked ${dateRange(listDates(shopTotals(w), c))}`, 90, 1880);
+  const blob = await new Promise((res) => cv.toBlob(res, 'image/png')); if (!blob) { toast('Couldn’t make the picture'); return; }
+  const file = new File([blob], 'my-fuel-week.png', { type: 'image/png' });
+  const text = `My week: ${st.filled} meals, ${P.gbp(c.weekly)} of food at ${P.SHOP_NAMES[c.shop]}, ${st.avg}g protein a day. Planned in FU£L:`;
+  try { if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], text, url }); track('shared'); return; } } catch (e) { if (e?.name === 'AbortError') return; }
+  const src = URL.createObjectURL(blob);
+  openSheet(`<h3>Your week, ready to post</h3><p class="small muted">Press and hold the picture to save it, then add it to your Story with your link.</p><img src="${src}" alt="My week in FU£L" style="width:100%;border-radius:14px;margin:8px 0;box-shadow:0 4px 18px rgba(27,26,46,.15)"><button class="btn block" data-action="copy-link" data-url="${esc(url)}">Copy my link</button><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Done</button>`);
+  track('shared');
+}
 
 // ----- Shop → "Where can I save?": switches Fuel can make for you -----
 let saveUndo = null;  // the week as it was before the last switch. Memory only: never saved, never synced.
@@ -997,38 +1112,97 @@ function accountCard() {
   const until = cloud.planExpires ? ` until ${fmtDate(cloud.planExpires.slice(0, 10))}` : '';
   return `<div class="row"><span class="grow"><b>${esc(cloud.user.email)}</b><span class="sub muted">Access${until}${cloud.lastSync ? ` · synced ${new Date(cloud.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}</span></span><button class="btn ghost small" data-action="signout">Sign out</button></div>`;
 }
-// The door: with cloud on, you sign in, and your account has to be active. Inside, nothing is locked.
+// The door. Since v81 nobody meets it on the way in: the first week is free with no account. It appears only when the free week is over
+// and nothing else unlocks the app (a purchase, a code, or three mates), and offers exactly that: keep your plan for £4.99 once, or get it free.
+function checkoutUrl() { return CONFIG.CHECKOUT_URL && cloud.user ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}client_reference_id=${encodeURIComponent(cloud.user.id)}&prefilled_email=${encodeURIComponent(cloud.user.email)}` : ''; }
+function authFormHtml(mode, dark) {
+  const link = dark ? 'style="color:#fff;font-weight:600"' : '';
+  return `<form id="signin-form" data-mode="${mode}"><input class="big ${dark ? '' : 'field'}" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:18px;text-align:left"><input class="big ${dark ? '' : 'field'}" name="password" type="password" required minlength="8" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:18px;text-align:left;margin-top:10px"><button class="${dark ? 'go' : 'btn block'}" type="submit" style="margin-top:10px">${mode === 'signup' ? 'Make my account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
+    <p class="small" style="margin-top:12px">${mode === 'signup' ? `Already have an account? <a href="#" data-action="auth-mode" data-mode="signin" ${link}>Sign in</a>` : `New here? <a href="#" data-action="auth-mode" data-mode="signup" ${link}>Make an account</a> · <a href="#" data-action="auth-forgot" ${link}>Forgot password?</a>`}</p>`;
+}
+let GROWTH_OK = false; // the mates card only shows once the backend for it answers (supabase/growth.sql)
+function matesHtml(dark) {
+  if (!GROWTH_OK) return '';
+  const m = S.mate; const n = Math.min(3, m?.planned || 0);
+  const dots = [0, 1, 2].map((i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('');
+  return `<div class="${dark ? 'gcard' : 'card'} matescard"><b>Or get it free: bring 3 mates</b><small>When 3 friends plan a week with your link, FU£L is yours for life.</small>
+    <div class="matedots">${dots}<span>${n} of 3</span></div>
+    <div class="row" style="gap:8px;margin-top:8px"><button class="${dark ? 'go' : 'btn small'}" data-action="mates-share" style="${dark ? 'width:auto;margin:0;padding:11px 16px' : ''}">Send my link</button>${m?.code ? `<span class="small" style="opacity:.85">Your code <b>${esc(m.code)}</b></span>` : ''}</div></div>`;
+}
 function gateScreen() {
   const el = document.getElementById('gate');
-  if (!cloud.enabled || hasAccess()) { el.hidden = true; el.innerHTML = ''; el.dataset.key = ''; return false; }
-  const key = [cloud.status, cloud.user?.id || '', S.authMode || 'signin', cloud.error || ''].join('|');
+  if (canUse()) { el.hidden = true; el.innerHTML = ''; el.dataset.key = ''; return false; }
+  const key = [cloud.status, cloud.user?.id || '', S.authMode || 'signup', cloud.error || '', S.mate?.planned || 0].join('|');
   if (!el.hidden && el.dataset.key === key) return true;
   el.dataset.key = key;
   const name = esc(CONFIG.APP_NAME);
+  // A signed-in buyer coming back after their free week: wait for the account to load rather than flash the door at them.
   if (cloud.status === 'off' || cloud.status === 'loading') { el.innerHTML = `<div class="wrap"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>One moment…</h1></div>`; el.hidden = false; return true; }
-  if (cloud.status === 'error') { el.innerHTML = `<div class="wrap"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>Can't reach the cloud.</h1><p>${esc(cloud.error || '')}</p><button class="go" data-action="gate-retry">Try again</button></div>`; el.hidden = false; return true; }
-  if (!cloud.user) {
-    const mode = S.authMode || 'signin';
-    el.innerHTML = `<div class="wrap"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>${mode === 'signup' ? 'Create your account.' : 'Sign in.'}</h1><p><b>Plan. Shop. Cook.</b> High-protein meals, at the cheapest price, all cooked on Sunday ready for the week.</p>
-      ${gateInstallHint()}<form id="signin-form" data-mode="${mode}"><input class="big" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:20px;text-align:left"><input class="big" name="password" type="password" required minlength="8" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:20px;text-align:left;margin-top:10px"><button class="go" type="submit">${mode === 'signup' ? 'Create account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
-      <p class="small" style="margin-top:14px">${mode === 'signup' ? `Already have an account? <a href="#" data-action="auth-mode" data-mode="signin" style="color:#fff;font-weight:600">Sign in</a>` : `New here? <a href="#" data-action="auth-mode" data-mode="signup" style="color:#fff;font-weight:600">Create an account</a> · <a href="#" data-action="auth-forgot" style="color:#fff">Forgot password?</a>`}</p>
-      <p class="small" style="opacity:.85;margin-top:16px"><a href="terms.html" style="color:#fff">Terms</a> · <a href="privacy.html" style="color:#fff">Privacy</a></p></div>`;
-  } else {
-    // Stripe Payment Link: client_reference_id carries the account id to the webhook; prefilled_email saves typing.
-    const url = CONFIG.CHECKOUT_URL ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}client_reference_id=${encodeURIComponent(cloud.user.id)}&prefilled_email=${encodeURIComponent(cloud.user.email)}` : '';
-    const n = RAW().filter((r) => !r.slots.includes('snack')).length;
-    el.innerHTML = `<div class="wrap gate-access"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>You're in.<br>Nearly.</h1><p class="who">Signed in as <b>${esc(cloud.user.email)}</b></p>
-      <div class="gcard">
-        <div class="perk"><span class="ico">🍗</span><div><b>${n} recipes, all priced</b><small>Every ingredient read from Aldi, Tesco, ASDA and Sainsbury's</small></div></div>
-        <div class="perk"><span class="ico">📅</span><div><b>Your week, laid out</b><small>Tick meals, get the Sunday cook list and the tubs</small></div></div>
-        <div class="perk"><span class="ico">🛒</span><div><b>The cheapest shop</b><small>Item by item, shop by shop, against your budget</small></div></div>
-        <div class="perk"><span class="ico">☁️</span><div><b>Synced everywhere</b><small>Phone, laptop, new phone: same plan</small></div></div>
-      </div>
-      ${url ? `<div class="gcard price"><div><b>${esc(CONFIG.PRICE_LABEL || '')} one-off</b><small>Pay once, keep it forever. No subscription.</small></div><a class="go" href="${esc(url)}" target="_blank" rel="noopener" data-action="buy">Buy ${name}</a></div>` : `<div class="gcard price"><div><b>${esc(CONFIG.PRICE_LABEL || '')} one-off, opening soon</b><small>Pay once, keep it forever. For now, access is by code.</small></div></div>`}
-      <form id="code-form" class="gcard codecard"><label for="gate-code"><b>Have a code?</b><small>From a friend, a club, or the founder.</small></label><div class="row"><input id="gate-code" class="big grow" name="code" required placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" spellcheck="false"><button class="go" type="submit">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>
-      <p class="gfoot"><button class="back" data-action="gate-refresh">I've paid, refresh</button><span>·</span><button class="back" data-action="signout">Sign out</button></p></div>`;
-  }
+  const weeks = Object.values(S.weeks).filter((w) => Object.keys(w.portions || {}).length).length;
+  const url = checkoutUrl();
+  const price = esc(CONFIG.PRICE_LABEL || '£4.99');
+  const buy = !CONFIG.CHECKOUT_URL ? '' : cloud.user
+    ? `<div class="gcard price"><div><b>${price} once</b><small>Pay once, keep it forever. No subscription.</small></div><a class="go" href="${esc(url)}" target="_blank" rel="noopener" data-action="buy">Keep my plan</a></div>
+       <p class="gfoot"><button class="back" data-action="gate-refresh">I've paid, refresh</button><span>·</span><button class="back" data-action="signout">Sign out</button></p>`
+    : (S.authMode || 'signup') === 'signup' ? `<div class="gcard"><b>Make an account to keep it</b><small>Then pay ${price} once. Your plan comes with you.</small>${authFormHtml('signup', true)}</div>`
+    : `<div class="gcard"><b>Sign in to keep it</b><small>Already bought FU£L or used a code? Sign in and it opens.</small>${authFormHtml('signin', true)}</div>`;
+  const code = cloud.user ? `<form id="code-form" class="gcard codecard"><label for="gate-code"><b>Have a code?</b><small>From a friend, a club, or the founder.</small></label><div class="row"><input id="gate-code" class="big grow" name="code" required placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" spellcheck="false"><button class="go" type="submit">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>` : '';
+  el.innerHTML = `<div class="wrap gate-access"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>Your free week's up.</h1>
+    <p>${weeks ? `Your ${weeks > 1 ? `${weeks} weeks` : 'week'}, your recipes and your shop lists are all still here.` : 'Everything you set up is still here.'} Keep them for ${price}, once.</p>
+    ${buy}${matesHtml(true)}${code}
+    <p class="small" style="opacity:.85;margin-top:16px"><a href="terms.html" style="color:#fff">Terms</a> · <a href="privacy.html" style="color:#fff">Privacy</a></p></div>`;
   el.hidden = false; return true;
+}
+// Small sheets used from anywhere in the app: the account form, the way to buy, and the free-week explainer.
+function accountSheet(mode = 'signup', why = '') {
+  S.authMode = mode;
+  if (!why && S.pendingBuy) why = `Your purchase is saved to your account, so it works on any phone. Then you pay ${esc(CONFIG.PRICE_LABEL || '£4.99')} once.`;
+  openSheet(`<h3>${mode === 'signup' ? 'Save your plan to an account' : 'Sign in'}</h3><p class="small muted" style="margin:0 0 12px">${why || 'Then it syncs to any phone or laptop, and nothing is lost if this phone is.'}</p>${authFormHtml(mode, false)}<button class="btn ghost block" data-action="close-sheet" style="margin-top:6px">Not now</button>`);
+}
+function buySheet() {
+  if (!CONFIG.CHECKOUT_URL) { toast('Buying opens soon. For now, access is by code.'); return; }
+  if (!cloud.user) { S.pendingBuy = true; save(); accountSheet('signup', `Make an account first, so your purchase is saved to it and works on any phone. Then you pay ${esc(CONFIG.PRICE_LABEL || '£4.99')} once.`); return; }
+  openSheet(`<h3>Keep FU£L for life</h3><p class="small muted" style="margin:0 0 12px">${esc(CONFIG.PRICE_LABEL || '£4.99')} once. No subscription, nothing to cancel. Paying opens Stripe; come back here when it's done.</p><a class="btn block" href="${esc(checkoutUrl())}" target="_blank" rel="noopener" data-action="buy">Pay ${esc(CONFIG.PRICE_LABEL || '£4.99')}</a><button class="btn ghost block" data-action="gate-refresh" style="margin-top:8px">I've paid, refresh</button><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Not now</button>`);
+}
+function trialSheet() {
+  const left = trialLeft();
+  openSheet(`<h3>${paidUp() ? 'FU£L is yours for life' : left ? `Free week: ${left} day${left > 1 ? 's' : ''} left` : `Your free week's up`}</h3>
+    ${paidUp() ? `<p class="small muted">${esc(cloud.user?.email || '')}</p>` : `<p class="small muted" style="margin:0 0 12px">Everything works in the free week. After it, keep your plan for ${esc(CONFIG.PRICE_LABEL || '£4.99')} once${GROWTH_OK ? ', or get it free with 3 mates' : ''}.</p>
+    <button class="btn block" data-action="buy-open">Keep it for ${esc(CONFIG.PRICE_LABEL || '£4.99')}</button>${matesHtml(false)}`}
+    <button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Close</button>`);
+}
+// The small "Free week · 5 days left" pill in the top bar (tap: the sheet above). Gone once paid.
+function trialPill() { if (!cloud.enabled || paidUp() || matesUnlocked()) return ''; const left = trialLeft(); return `<button class="trialpill ${left <= 2 ? 'soon' : ''}" data-action="trial">${left ? `Free week · ${left} day${left > 1 ? 's' : ''} left` : 'Free week over'}</button>`; }
+function refreshTrialPill() { const b = document.querySelector('.brandbar .trialpill'); const html = S.tab === 'settings' ? '' : trialPill(); if (b) b.outerHTML = html || ''; else if (html) document.querySelector('.brandbar')?.insertAdjacentHTML('beforeend', html); }
+// After any sign-in: say which code this account came with (once), make three mates' unlock permanent, count the step.
+async function afterSignIn() {
+  const uid = cloud.user?.id; if (!uid) return;
+  S.refSent ||= {};
+  if (!S.refSent[uid]) { const a = attribution(); try { await setReferral(a.code, a.src, anonId()); S.refSent[uid] = true; save(); } catch {} }
+  if (S.mate?.unlocked && !hasAccess()) { try { const r = await claimMates(S.mate.code, S.mate.secret); if (r?.ok) toast('Free for life: your 3 mates did it.'); } catch {} }
+  track('account');
+}
+// How many mates have planned a week with this phone's code (asked at most every 10 minutes unless forced).
+let matesAsked = 0;
+async function refreshMates(force = false) {
+  if (!S.mate?.code || (!force && Date.now() - matesAsked < 600000)) return;
+  matesAsked = Date.now();
+  try {
+    const st = await mateStatus(); if (!st) return;
+    const was = !!S.mate.unlocked; S.mate.planned = st.planned; S.mate.unlocked = !!st.unlocked; save();
+    if (st.unlocked && !was) { toast('3 mates planned their week. FU£L is yours for life.', 3500); if (cloud.user) afterSignIn(); }
+    gateScreen(); refreshTrialPill();
+    document.querySelectorAll('.matescard').forEach((c) => { const d = document.createElement('div'); d.innerHTML = matesHtml(c.classList.contains('gcard')); c.replaceWith(d.firstElementChild); });
+  } catch {}
+}
+const shareBase = () => 'https://thefuelapp.github.io/';
+async function shareMates() {
+  let m; try { m = await mateCode(); } catch { toast('Can’t make your link right now. Try again in a minute.'); return; }
+  S.mate = { ...(S.mate || {}), ...m }; save();
+  const url = `${shareBase()}?c=${m.code}`;
+  const text = `I plan my week of food with FU£L: high-protein meals, the cheapest shop, all cooked on Sunday. Your first week's free. If you plan a week with my link it helps me get it free:`;
+  try { if (navigator.share) { await navigator.share({ title: 'FU£L', text, url }); track('shared'); return; } } catch (e) { if (e?.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(`${text} ${url}`); toast('Link copied. Paste it to your mates.'); track('shared'); } catch { showText('Send this to your mates', `${text} ${url}`); }
 }
 // What the chosen (or cheapest) shop comes to at the till right now, worked out the way the Shop tab does it (things that shop doesn't sell
 // are priced at the cheapest other shop). Pantry shows it live, so ticking something visibly takes it off the bill.
@@ -1113,12 +1287,16 @@ function moneyCard() {
 function renderSettings() {
   const st = S.settings;
   const goal = (k, l) => `<option value="${k}" ${st.goal === k ? 'selected' : ''}>${l}</option>`;
+  const access = !cloud.enabled ? '' : paidUp() ? `Yours for life${cloud.planExpires ? ` until ${fmtDate(cloud.planExpires.slice(0, 10))}` : ''}` : matesUnlocked() ? 'Free for life: 3 mates planned a week' : trialLeft() ? `Free week: ${trialLeft()} day${trialLeft() > 1 ? 's' : ''} left` : 'Free week over';
+  const buyBtn = cloud.enabled && !paidUp() && !matesUnlocked() && CONFIG.CHECKOUT_URL ? `<button class="btn block" data-action="buy-open" style="margin-top:12px">Keep FU£L for life · ${esc(CONFIG.PRICE_LABEL || '£4.99')} once</button>` : '';
+  const extrasAcct = cloud.enabled && !paidUp() ? `${buyBtn}${matesUnlocked() ? '' : matesHtml(false)}` : '';
   const account = !cloud.enabled
     ? `<div class="acct"><div class="avatar">☺</div><div class="grow"><b>This phone only</b><span class="sub muted">Everything is saved here. Sign-in and sync switch on with the cloud project.</span></div></div>`
-    : cloud.status === 'error' ? `<div class="bad-box">Cloud problem: ${esc(cloud.error || 'unknown')}. The app keeps working on this phone.</div>`
-    : !cloud.user ? `<div class="acct"><div class="avatar">?</div><div class="grow"><b>Not signed in</b></div></div>`
-    : `<div class="acct"><div class="avatar">${esc((cloud.user.email || '?')[0].toUpperCase())}</div><div class="grow"><b>${esc(cloud.user.email)}</b><span class="sub muted">Full access${cloud.planExpires ? ` until ${fmtDate(cloud.planExpires.slice(0, 10))}` : ''}${cloud.lastSync ? ` · synced ${new Date(cloud.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}</span></div></div>
-       <div class="row" style="margin-top:12px"><button class="btn ghost grow" data-action="signout">Sign out</button></div>`;
+    : cloud.status === 'error' ? `<div class="bad-box">Cloud problem: ${esc(cloud.error || 'unknown')}. The app keeps working on this phone.</div>${extrasAcct}`
+    : !cloud.user ? `<div class="acct"><div class="avatar">☺</div><div class="grow"><b>Your plan lives on this phone</b><span class="sub muted">${access}</span></div></div>
+       <div class="row" style="margin-top:12px;gap:8px"><button class="btn ghost grow" data-action="account" data-mode="signup">Save to an account</button><button class="btn ghost grow" data-action="account" data-mode="signin">Sign in</button></div>${extrasAcct}`
+    : `<div class="acct"><div class="avatar">${esc((cloud.user.email || '?')[0].toUpperCase())}</div><div class="grow"><b>${esc(cloud.user.email)}</b><span class="sub muted">${access}${cloud.lastSync ? ` · synced ${new Date(cloud.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}</span></div></div>
+       <div class="row" style="margin-top:12px;gap:8px"><button class="btn ghost grow" data-action="signout">Sign out</button>${paidUp() ? '' : '<button class="btn ghost grow" data-action="code-sheet">Have a code?</button>'}</div>${extrasAcct}`;
   return `<div class="settings-head"><button class="btn ghost small" data-action="settings-back">‹ Back</button><h1>Settings</h1></div>
   <h2>Account</h2><div class="card">${account}</div>
   <h2>You</h2><div class="card">
@@ -1148,6 +1326,7 @@ function renderSettings() {
   </div>
   ${isStandalone() ? '' : `<h2>On your phone</h2>${installCard(true)}`}
   <h2>App</h2><div class="card">
+    ${cloud.enabled ? `<label class="check" style="margin-bottom:10px"><input type="checkbox" data-setting-bool="countSteps" ${st.countSteps === false ? '' : 'checked'}><span>Count my visits, anonymously<span class="sub">Tells us which steps people get stuck on, e.g. "planned a week". A random number for this phone, never your name, email or plan. <a href="privacy.html">How</a></span></span></label>` : ''}
     <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-action="intro">Show the intro again</button><button class="btn ghost small" data-action="tips-again">Show the tips again</button><button class="btn ghost small" data-action="export">Copy backup</button><button class="btn ghost small" data-action="import">Paste backup</button></div>
     <button class="btn danger block" data-action="reset" style="margin-top:12px">Reset everything</button>
   </div>
@@ -1178,7 +1357,7 @@ function gateInstallHint() {
   const steps = `<ol><li>Open this page in <b>Safari</b>.${inAppBrowser() ? ' You\'re inside another app right now: tap <b>···</b> at the top, then <b>Open in external browser</b>.' : ''}</li><li>Press <b>Share</b>.</li><li>Scroll down and press <b>Add to Home Screen</b>.</li><li>Press <b>Add</b>, then carry on in the app.</li></ol>`;
   if (inAppBrowser() && !isIOS()) return `<div class="gcard ginstall"><b>First, open this in Chrome</b><small>You're inside another app's browser, which can't install Fuel. Tap <b>···</b> at the top, then <b>Open in Chrome</b>.</small></div>`;
   if (!isIOS()) return '';
-  return `<details class="gcard ginstall" open><summary><b>On iPhone? Add Fuel to your home screen</b></summary><small>Fuel isn't on the App Store yet, so it installs from Safari.</small>${steps}</details>`;
+  return `<details class="gcard ginstall"><summary><b>On iPhone? Add FU£L to your home screen first</b></summary><small>FU£L isn't on the App Store yet, so it installs from Safari. Do it before you plan: the home-screen app keeps its own copy of your plan.</small>${steps}</details>`;
 }
 // In-app replacements for confirm/alert/prompt: iOS standalone web apps often don't show the built-in ones at all.
 function ask(text, okLabel = 'Yes', danger = false) {
@@ -1219,7 +1398,7 @@ function askText(title, placeholder) {
 const INTRO = { step: 1, goal: null };
 function introOpen() { return !document.getElementById('intro').hidden; }
 // Open the questionnaire for a first-time user, but never restart one that's already under way (sync ticks call this too).
-function ensureIntro() { if (!S.settings.onboarded && !introOpen()) openIntro(); }
+function ensureIntro() { if (!S.settings.onboarded && !introOpen()) { openIntro(); track('setup'); } }
 function openIntro() { INTRO.step = 1; INTRO.goal = S.settings.onboarded ? (S.settings.goal || null) : null; introStep(1); }
 function introStep(n) {
   INTRO.step = n;
@@ -1229,11 +1408,11 @@ function introStep(n) {
   const wt = S.settings.weight || 85; const g = INTRO.goal || 'build';
   const budgets = [30, 40, 50, 60];
   const step = {
-    1: `<div class="logo wordmark" aria-label="Fuel">FU<b>£</b>L</div><h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${g === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
+    1: `<div class="logo wordmark" aria-label="Fuel">FU<b>£</b>L</div>${cloud.enabled && !paidUp() ? '<p class="freeline">Your first week is free. No account, no card.</p>' : ''}${gateInstallHint()}<h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${g === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
     2: `<h1>How much do you weigh?</h1><p>Kilos, roughly. Your daily protein and calorie targets come from this and your goal. Portions are sized to fit your calories.</p><input class="big" type="number" id="intro-weight" inputmode="numeric" value="${wt}" min="40" max="160"><div class="stat-row"><div><b id="iw-p">${P.proteinTargetFor(wt, g)}g</b><span>protein a day</span></div><div><b id="iw-f">${P.kcalTargetFor(wt, g).toLocaleString()}</b><span>kcal a day</span></div></div><button class="go" data-action="intro-weight">Next</button><button class="back" data-action="intro-back">Back</button>`,
     3: `<h1>Weekly food budget?</h1><p>The shop list always shows what's left against it.</p><div class="chips">${budgets.map((b) => `<button class="opt ${S.settings.budget === b ? 'on' : ''}" data-action="intro-budget" data-budget="${b}">£${b}</button>`).join('')}</div><p style="margin-bottom:6px">Or type your own</p><input class="big" type="number" id="intro-budget" inputmode="numeric" placeholder="£" min="10" max="300"><button class="go" data-action="intro-budget-custom">Next</button><button class="back" data-action="intro-back">Back</button>`,
     4: `<h1>Anything you don't eat?</h1><p>Recipes with these are hidden. Tap all that apply.</p><div class="chips">${Object.entries(AVOID).map(([k, v]) => `<button class="opt ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><p style="margin:16px 0 6px">Anything else? Allergies, or things you just don't like.</p><div class="row"><input class="big grow" id="intro-avoid-text" data-enter="intro-avoid-add" placeholder="e.g. mushrooms" autocapitalize="none" style="font-size:18px;text-align:left;margin:0"><button class="go" style="width:auto;margin:0;padding:14px 18px;font-size:16px" data-action="intro-avoid-add">Add</button></div>${avoidTextChips('intro-avoid-rm')}<p style="margin:16px 0 6px">Which milk?</p><div class="chips">${[['milk', 'Dairy'], ['oat_milk', 'Oat'], ['almond_milk', 'Almond'], ['soya_milk', 'Soya']].map(([k, l]) => `<button class="opt ${(S.settings.milk || 'milk') === k ? 'on' : ''}" data-action="intro-milk" data-id="${k}">${l}</button>`).join('')}</div><button class="go" data-action="intro-next">Next</button><button class="back" data-action="intro-back">Back</button>`,
-    5: `<h1>You're set.</h1><p>Fuel is three steps. The numbers on the bar at the bottom follow them.</p><ol class="introsteps"><li><b>Plan.</b> Tick the meals you want. We fit them into your week.</li><li><b>Shop.</b> Your list, priced at four supermarkets.</li><li><b>Cook.</b> One batch cook, then box it up.</li></ol><div class="stat-row"><div><b>${S.settings.proteinTarget}g</b><span>protein a day</span></div><div><b>${(S.settings.kcalTarget || 0).toLocaleString()}</b><span>kcal a day</span></div><div><b>£${S.settings.budget}</b><span>a week</span></div></div><p class="small">Meals are sized to your calorie target. Change that, your milk or your budget any time under the <b>⚙ gear</b>, top right.</p><button class="go" data-action="intro-done">Pick my meals</button><button class="back" data-action="intro-back">Back</button>`,
+    5: `<h1>You're set.</h1><p>Fuel is three steps. The numbers on the bar at the bottom follow them.</p><ol class="introsteps"><li><b>Plan.</b> Tick the meals you want. We fit them into your week.</li><li><b>Shop.</b> Your list, priced at four supermarkets.</li><li><b>Cook.</b> One batch cook, then box it up.</li></ol><div class="stat-row"><div><b>${S.settings.proteinTarget}g</b><span>protein a day</span></div><div><b>${(S.settings.kcalTarget || 0).toLocaleString()}</b><span>kcal a day</span></div><div><b>£${S.settings.budget}</b><span>a week</span></div></div><p class="small">Meals are sized to your calorie target. Change that, your milk or your budget any time under the <b>⚙ gear</b>, top right.</p><button class="go" data-action="intro-auto">Plan my week for me</button><button class="go ghostgo" data-action="intro-done">I'll pick my own meals</button><button class="back" data-action="intro-back">Back</button>`,
   }[n];
   el.innerHTML = `<div class="wrap">${dots}${step}</div>`; el.hidden = false;
   const wIn = document.getElementById('intro-weight');
@@ -1248,7 +1427,7 @@ document.getElementById('gate').addEventListener('click', onAction);
 document.getElementById('gate').addEventListener('submit', onSubmit);
 function openSheet(html) { const s = document.getElementById('sheet'); document.getElementById('sheet-inner').innerHTML = html; s.hidden = false; }
 function closeSheet() { document.getElementById('sheet').hidden = true; }
-document.getElementById('sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') closeSheet(); else onAction(e); });
+document.getElementById('sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') { closeSheet(); if (S.pendingBuy) { S.pendingBuy = false; save(); } } else onAction(e); });
 document.getElementById('sheet').addEventListener('submit', onSubmit);
 document.getElementById('sheet').addEventListener('input', onInput);
 document.getElementById('sheet').addEventListener('change', (e) => { if (onTweakChange(e)) return; const chip = e.target.closest('.chip'); if (chip && e.target.type === 'checkbox') chip.classList.toggle('on', e.target.checked); });
@@ -1423,14 +1602,14 @@ function onAction(e) {
   else if (a === 'settings-avoid-rm') { removeAvoidText(el.dataset.term); render(); }
   else if (a === 'intro-next') { introStep(INTRO.step + 1); }
   else if (a === 'intro-back') { introStep(Math.max(1, INTRO.step - 1)); }
-  else if (a === 'intro-done') { S.settings.onboarded = true; save(); closeIntro(); S.tab = 'plan'; planAdd = null; for (const wk of Object.values(S.weeks)) relayout(wk); render({ top: true }); }
+  else if (a === 'intro-done' || a === 'intro-auto') { S.settings.onboarded = true; save(); closeIntro(); S.tab = 'plan'; planAdd = null; for (const wk of Object.values(S.weeks)) relayout(wk); render({ top: true }); if (a === 'intro-auto') autoPlan(1); }
   else if (a === 'suggest-targets') { const resized = setTargets(P.kcalTargetFor(S.settings.weight, S.settings.goal), P.proteinTargetFor(S.settings.weight, S.settings.goal)); toast(`${S.settings.kcalTarget.toLocaleString()} kcal and ${S.settings.proteinTarget}g protein a day.${resized ? ' Portions resized to match.' : ''}`, 3500); }
   else if (a === 'sinc' || a === 'sdec') { w.snacks[id] = Math.max(0, (w.snacks[id] || 0) + (a === 'sinc' ? 1 : -1)); if (!w.snacks[id]) delete w.snacks[id]; save(); refreshPlan(rowSel(id)); }
   else if (a === 'fresh-default') { if (el.dataset.on === '1') S.freshDefault[id] = true; else delete S.freshDefault[id]; save(); render(); toast(el.dataset.on === '1' ? 'Made fresh each time, not batched' : 'Back on the batch list'); }
   else if (a === 'signout') { signOut().then(() => { gateScreen(); render(); }); }
   else if (a === 'gate-refresh') { recheckAccess(true); }
   else if (a === 'buy') { S.buyStarted = Date.now(); save(); }
-  else if (a === 'auth-mode') { e.preventDefault(); S.authMode = el.dataset.mode; gateScreen(); }
+  else if (a === 'auth-mode') { e.preventDefault(); S.authMode = el.dataset.mode; if (el.closest('#sheet')) accountSheet(el.dataset.mode); else gateScreen(); }
   else if (a === 'auth-forgot') {
     e.preventDefault(); const f = document.getElementById('signin-form'); const email = f?.email?.value?.trim(); const msg = f?.querySelector('#signin-msg');
     const show = (cls, text) => { if (msg) { msg.hidden = false; msg.className = `signin-msg ${cls}`; msg.textContent = text; } else toast(text); };
@@ -1438,6 +1617,15 @@ function onAction(e) {
     resetPassword(email).then(() => show('ok', `Reset link sent to ${email}. It can take a few minutes; check spam.`)).catch((err) => show('bad', `Couldn't send a reset link: ${err.message}`));
   }
   else if (a === 'gate-retry') { location.reload(); }
+  else if (a === 'trial') { trialSheet(); refreshMates(); }
+  else if (a === 'buy-open') { closeSheet(); buySheet(); }
+  else if (a === 'account') { accountSheet(el.dataset.mode || 'signup'); }
+  else if (a === 'mates-share') { shareMates(); }
+  else if (a === 'autoplan') { autoPlan(+(el.dataset.seed || 1)); }
+  else if (a === 'autoplan-keep') { closeSheet(); }
+  else if (a === 'share-week') { shareWeek(); }
+  else if (a === 'code-sheet') { openSheet(`<h3>Have a code?</h3><p class="small muted" style="margin:0 0 10px">From a friend, a club, a creator or the founder.</p><form id="code-form"><input class="field" id="gate-code" name="code" required placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" spellcheck="false" style="width:100%;font-size:18px;letter-spacing:.06em"><button class="btn block" type="submit" style="margin-top:10px">Use it</button><div id="code-msg" class="signin-msg" hidden></div></form><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Close</button>`); }
+  else if (a === 'copy-link') { navigator.clipboard?.writeText(el.dataset.url).then(() => toast('Link copied'), () => showText('Your link', el.dataset.url)); }
   else if (a === 'plan-more') { planMore = !planMore; justAdded.clear(); render(); if (planMore) document.getElementById('more-meals')?.scrollIntoView({ block: 'start' }); }
   else if (a === 'plan-filter') { S.planFilter = el.dataset.filter; save(); render(); const h = document.getElementById('pick-head'); if (h) h.scrollIntoView({ block: 'start' }); }
   else if (a === 'cup-tick') { const id = el.dataset.id; if (cup.ids.has(id) && w.pantry[id] !== undefined) { delete w.pantry[id]; delete (w.useUp || {})[id]; cup.ids.delete(id); } else { w.pantry[id] = true; cup.ids.add(id); } save(); holdPlace('.cupcheck', () => render()); const t = tillNow(w); if (t) toast(`Shop is now ${P.gbp(t.total)}`); } // the price card has scrolled away by now, so say the new price where the thumb is
@@ -1450,7 +1638,7 @@ function onAction(e) {
   else if (a === 'lib-remove') { S.library = S.library.filter((x) => x !== id); for (const wk of Object.values(S.weeks)) { delete wk.portions[id]; delete wk.snacks?.[id]; relayout(wk); } save(); closeSheet(); render(); toast('Removed from your recipes'); }
   else if (a === 'clear-pantry') { ask(`Untick everything for ${weekLabel(S.activeWeek).toLowerCase()}? Everything your meals need goes back on the shop list.`, 'Untick all').then((ok) => { if (ok) { const had = Object.keys(w.pantry); w.pantry = {}; w.useUp = {}; had.forEach(dropUseBy); useByOpen.clear(); save(); render(); toast('Pantry cleared'); } }); }
   else if (a === 'clear-week') { ask(`Clear every meal from ${weekLabel(S.activeWeek).toLowerCase()}?`, 'Clear week', true).then((ok) => { if (ok) { w.portions = {}; w.ticks = {}; relayout(); planAdd = null; render({ top: true }); } }); }
-  else if (a === 'close-sheet') closeSheet();
+  else if (a === 'close-sheet') { closeSheet(); if (S.pendingBuy) { S.pendingBuy = false; save(); } }
   else if (a === 'cell' && picked) { dropPicked(el); }
   else if (a === 'cell' && isPast(+el.dataset.day)) { pastCell(w, +el.dataset.day, el.dataset.slot); }
   else if (a === 'cell') {
@@ -1598,7 +1786,7 @@ function onSubmit(e) {
     const code = String(fd.get('code') || '').trim(); const msg = f.querySelector('#code-msg'); const b = f.querySelector('button[type=submit]');
     const show = (cls, text) => { msg.hidden = false; msg.className = `signin-msg ${cls}`; msg.textContent = text; };
     b.disabled = true;
-    redeemCode(code).then((d) => { show('ok', `Code accepted. You have ${d.plan === 'founder' ? 'founder access' : 'full access'}${d.expires_at ? ` until ${fmtDate(String(d.expires_at).slice(0, 10))}` : ''}.`); setTimeout(() => { gateScreen(); render(); }, 900); })
+    redeemCode(code).then((d) => { show('ok', `Code accepted. You have ${d.plan === 'founder' ? 'founder access' : 'full access'}${d.expires_at ? ` until ${fmtDate(String(d.expires_at).slice(0, 10))}` : ''}.`); setTimeout(() => { closeSheet(); gateScreen(); render(); }, 900); })
       .catch((err) => { b.disabled = false; show('bad', err.message || 'Code not accepted'); });
     return;
   }

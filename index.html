@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fuel</title>
-<meta name="description" content="Fuel: the meal-prep app for students. Tick meals, batch-cook once on Sunday, and shop at the cheapest supermarket for £4.99 one-off.">
+<meta name="description" content="FU£L, the meal-prep app for students. Plan high-protein meals, shop at the cheapest supermarket, cook it all on Sunday. First week free, then £4.99 once.">
 <link rel="icon" href="https://thefuelapp.github.io/app/icon-192.png"><link rel="apple-touch-icon" href="https://thefuelapp.github.io/app/apple-touch-icon.png">
 <!-- if someone adds the WEBSITE to their home screen, this makes the icon open the app -->
 <link rel="manifest" href="https://thefuelapp.github.io/app/manifest.json"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Fuel">
@@ -123,12 +123,17 @@ footer .mark { color:var(--ink) }
 .ticket.rv { transition-delay:var(--d) }
 @media (prefers-reduced-motion: reduce) { .rv { transform:none; opacity:1; transition:none } .hero .phone { animation:none } .sb-track i { transition:none } }
 @media (max-width: 900px) { .hero .wrap, .compare, .pricebox { grid-template-columns:1fr } .steps { grid-template-columns:1fr } .feats { grid-template-columns:1fr } .hero h1 { font-size:52px } nav.top .links { display:none } .phone-wrap { order:-1 } .phone { width:300px; height:650px } .phone .scr { transform:scale(.7826) } }
+.founder { padding:56px 0 8px } .founder .wrap { display:grid; grid-template-columns: 1fr 1.1fr; gap:44px; align-items:center }
+.founder-photo { margin:0; background:#fff; padding:12px 12px 10px; border-radius:22px; box-shadow:0 24px 60px rgba(21,19,43,.16); transform:rotate(-1.2deg) }
+.founder-photo img { width:100%; height:auto; display:block; border-radius:14px } .founder-photo figcaption { font:500 14px "JetBrains Mono", monospace; color:var(--mut); padding:10px 4px 2px }
+.founder-text h2 { font-size:clamp(34px,4.4vw,52px); margin:10px 0 14px } .founder-text p { color:var(--mut); font-size:18px; max-width:52ch } .founder-text .btn { margin-top:10px }
+@media (max-width: 900px) { .founder .wrap { grid-template-columns:1fr; gap:26px } .founder-photo { max-width:520px } }
 </style>
-<nav class="top" id="top"><div class="wrap"><a class="mark" href="#top" aria-label="Fuel home" style="text-decoration:none">FU<b>£</b>L</a><div class="links"><a href="#how">How it works</a><a href="#prices">Prices</a><a href="#recipes">Recipes</a><a href="#get">Get Fuel</a></div><a class="btn sun" href="#get" style="padding:10px 18px">£4.99, one-off</a></div></nav>
+<nav class="top" id="top"><div class="wrap"><a class="mark" href="#top" aria-label="Fuel home" style="text-decoration:none">FU<b>£</b>L</a><div class="links"><a href="#how">How it works</a><a href="#prices">Prices</a><a href="#recipes">Recipes</a><a href="#get">Get Fuel</a></div><a class="btn sun" href="https://thefuelapp.github.io/app/" data-app style="padding:10px 18px">Try it free</a></div></nav>
 <header class="hero"><div class="blob a"></div><div class="blob b"></div><div class="wrap">
-<div><div class="eyebrow">Meal prep for students</div><h1>Cook once.<br>Eat like an athlete.<br><em>About £40 a week.</em></h1>
-<p class="lead">Tick the meals you fancy. Fuel lays out your week, writes your Sunday cook list, and prices the whole shop at Aldi, Tesco, ASDA and Sainsbury's.</p>
-<div class="cta"><a class="btn" href="https://thefuelapp.github.io/app/">Get Fuel, £4.99</a><a class="btn ghost" href="#how">See how it works</a><small>One-off. No subscription. Works on iPhone and Android from a link.</small></div>
+<div><div class="eyebrow">Meal prep for students</div><h1>Plan.<br>Shop.<br><em>Cook.</em></h1>
+<p class="lead"><b>High-protein meals</b>, at <b>the cheapest price</b>, all cooked on Sunday, ready for the week. FU£L plans the week to your goal and budget and prices it at Aldi, Tesco, ASDA and Sainsbury's.</p>
+<div class="cta"><a class="btn" href="https://thefuelapp.github.io/app/" data-app>Plan your week free</a><a class="btn ghost" href="#how">See how it works</a><small>First week free. No account, no card. Then £4.99 once if you want to keep it. No subscription.</small></div>
 <div class="stat-strip"><div><b>184g</b><span>protein a day, on the week shown</span></div><div><b>£38.18</b><span>for 21 meals at Aldi, this week's food</span></div><div><b>119</b><span>recipes, 290 ingredients priced</span></div></div></div>
 <div class="phone-wrap"><div class="phone"><iframe class="scr" tabindex="-1" loading="lazy" title="Fuel screen" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en-GB&quot; class=&quot;is-standalone&quot;&gt;&lt;head&gt;
 &lt;meta charset=&quot;utf-8&quot;&gt;
@@ -752,7 +757,10 @@ html,body{overflow:hidden} *{animation:none!important;transition:none!important}
 
 &lt;/body&gt;&lt;/html&gt;"></iframe></div></div></div></header>
 
-<section id="how"><div class="wrap"><div class="sec-head rv"><div class="eyebrow">One Sunday, sorted till Saturday</div><h2>Plan. Shop. Cook.</h2><p>Three screens do the whole week. Every screen here is the real app, not a mock-up.</p></div>
+<section class="founder"><div class="wrap"><figure class="founder-photo rv"><img src="https://thefuelapp.github.io/app/img/sunday-tubs.jpg" onerror="this.onerror=null;this.src='../img/sunday-tubs.jpg'" alt="Fourteen tubs of chilli, coconut red curry and bang bang chicken from one Sunday cook" width="1000" height="987" loading="lazy"><figcaption>One Sunday, 27 Sep. 14 tubs.</figcaption></figure>
+<div class="founder-text rv"><div class="eyebrow">Made by a student, for students</div><h2>I built it for my own week.</h2><p>I'm Cam, a student and rugby player in Newcastle. I wanted high-protein food without the meal-deal bill, so I built FU£L to plan my week, find the cheapest shop and tell me what to cook on Sunday.</p><p>That's my cook from Sunday 27 September: chilli, coconut red curry and bang bang chicken, planned in the app, cooked in one go, eaten all week.</p><a class="btn" href="https://thefuelapp.github.io/app/" data-app>Plan your week free</a></div></div></section>
+
+<section id="how"><div class="wrap"><div class="sec-head rv"><div class="eyebrow">One Sunday, sorted till Saturday</div><h2>Three screens. One week.</h2><p>Three screens do the whole week. Every screen here is the real app, not a mock-up.</p></div>
 <div class="steps">
 <div class="step rv"><div class="phone"><iframe class="scr" tabindex="-1" loading="lazy" title="Fuel screen" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en-GB&quot; class=&quot;is-standalone&quot;&gt;&lt;head&gt;
 &lt;meta charset=&quot;utf-8&quot;&gt;
@@ -2663,7 +2671,7 @@ html,body{overflow:hidden} *{animation:none!important;transition:none!important}
 <div class="feat rv"><div class="ic">🥣</div><h3>Fresh or batched, your call</h3><p>Chicken, sweet potato and broccoli in the air fryer on the night? Flip any meal to "make fresh" and it leaves the Sunday batch.</p></div>
 </div></div></section>
 
-<section><div class="wrap"><div class="sec-head rv"><div class="eyebrow">First open</div><h2>Four questions, then your first week.</h2><p>Your goal and weight set protein and calorie targets. Your budget sits on the shop list. Anything you don't eat is hidden from day one.</p></div></div>
+<section><div class="wrap"><div class="sec-head rv"><div class="eyebrow">First open</div><h2>Four questions, then one tap.</h2><p>Your goal and weight set protein and calorie targets. Your budget sits on the shop list. Anything you don't eat is hidden from day one. Then tap <b>Plan my week for me</b> and the week fills itself, or pick every meal yourself.</p></div></div>
 <div class="strip rv"><div class="phone"><iframe class="scr" tabindex="-1" loading="lazy" title="Fuel screen" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en-GB&quot; class=&quot;is-standalone&quot;&gt;&lt;head&gt;
 &lt;meta charset=&quot;utf-8&quot;&gt;
 &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1, viewport-fit=cover&quot;&gt;
@@ -5707,18 +5715,29 @@ html,body{overflow:hidden} *{animation:none!important;transition:none!important}
 &lt;/body&gt;&lt;/html&gt;"></iframe></div></div></section>
 
 <section class="alt" id="get"><div class="wrap"><div class="pricebox">
-<div class="price-card rv"><div class="eyebrow" style="color:var(--sun)">Get Fuel</div><div class="big">£4.99<small>one-off</small></div>
+<div class="price-card rv"><div class="eyebrow" style="color:var(--sun)">Get FU£L</div><div class="big">Free<small>for your first week</small></div><p style="margin:-4px 0 14px;font-size:17px;opacity:.9">Then <b>£4.99 once</b> to keep it. Or free for life when 3 mates plan a week with your link.</p>
 <ul><li>All 119 recipes and every new one added</li><li>This week and next, with tubs carrying over</li><li>Prices at Aldi, Tesco, ASDA and Sainsbury's, item by item</li><li>Synced across your phone, laptop and a new phone</li><li>No subscription. Ever.</li></ul>
-<a class="btn sun" href="https://thefuelapp.github.io/app/">Open Fuel and create your account</a><p style="margin:12px 0 0;font-size:14px;opacity:.8">You pay inside the app once your account exists, so the purchase is tied to you.</p><p style="margin:8px 0 0;font-size:14px;opacity:.8">Got a code from a friend? Enter it on the first screen.</p><p style="margin:8px 0 0;font-size:14px;opacity:.8">On iPhone? <a href="#install" style="color:inherit;font-weight:700">Add it to your home screen first</a>, it takes ten seconds.</p></div>
+<a class="btn sun" href="https://thefuelapp.github.io/app/" data-app>Start your free week</a><p style="margin:12px 0 0;font-size:14px;opacity:.8">No account or card for the first week. If you keep it, you make an account and pay inside the app, so the purchase is tied to you.</p><p style="margin:8px 0 0;font-size:14px;opacity:.8">Got a code? Enter it in Settings, under Account.</p><p style="margin:8px 0 0;font-size:14px;opacity:.8">On iPhone? <a href="#install" style="color:inherit;font-weight:700">Add it to your home screen first</a>, it takes ten seconds.</p></div>
 <div class="install rv" id="install"><h3>Put it on your phone</h3><p style="color:var(--mut);margin:0 0 6px">Fuel isn't on the App Store yet, so it installs straight from the link. It takes about ten seconds and you get the real thing: its own icon, full screen, and it works in the shop with no signal.</p>
 <h3 style="font-size:18px;margin-top:18px">iPhone</h3><ol><li>Open <a href="https://thefuelapp.github.io/app/" style="color:inherit;font-weight:700">Fuel</a> in <b>Safari</b>.</li><li>Press <b>Share</b>.</li><li>Scroll down and press <b>Add to Home Screen</b>.</li><li>Press <b>Add</b>, then carry on in the app.</li></ol><p style="color:var(--mut);font-size:14px;margin:4px 0 0">Came from Instagram or TikTok? Tap <b>···</b> at the top, then <b>Open in external browser</b>, to get to Safari.</p>
 <h3 style="font-size:18px">Android (Chrome)</h3><ol><li>Open the link in Chrome.</li><li>Tap <b>Install Fuel</b> when the app offers it (or the browser menu → <b>Install app</b>).</li></ol>
 <div class="faq"><details><summary>Are the prices right?</summary><p>They're read from each supermarket's own website on the date shown next to them, and they're big-store prices. Convenience stores like Tesco Express charge more. Lidl doesn't publish prices online, so Lidl is blank until we have shelf photos.</p></details>
 <details><summary>Does it work if I don't eat certain things?</summary><p>Yes. The first screen asks what you don't eat and hides those recipes. You can change it any time in Settings.</p></details>
 <details><summary>Is it a subscription?</summary><p>No. £4.99 once. If Fuel ever stops, the unused part is refunded.</p></details>
+<details><summary>What happens after the free week?</summary><p>Your plan, recipes and shop lists stay put. To keep using FU£L you pay £4.99 once. Or, if 3 friends plan a week with your link (Settings → Account → Send my link), it's yours for life, free.</p></details>
 <details><summary>Is this medical advice?</summary><p>No. Protein and calorie figures are estimates from standard ingredient values. See a professional before changing your diet if you have a condition.</p></details></div></div>
 </div></div></section>
 <footer><div class="wrap"><span class="mark">FU<b>£</b>L</span><span>Batch-cook Sunday. Sorted till Saturday.</span><span style="margin-left:auto"><a href="https://thefuelapp.github.io/app/terms.html">Terms</a> · <a href="https://thefuelapp.github.io/app/privacy.html">Privacy</a> · <a href="https://thefuelapp.github.io/app/prices.html">The prices behind our posts</a></span></div></footer>
+<script type="module">
+// Counts the visit (anonymously) and keeps any ?r= / ?c= from the link, so a friend's or a creator's code follows the visitor into the app.
+// The app's links keep the same ?r= / ?c= too, so it survives "Open in Safari" from Instagram or TikTok.
+try {
+  const g = await import(location.pathname.startsWith('/site') ? '../growth.js' : './app/growth.js');
+  const a = g.captureAttribution(); g.track('visit');
+  const q = new URLSearchParams(); if (a.src) q.set('r', a.src); if (a.code) q.set('c', a.code);
+  if ([...q].length) document.querySelectorAll('a[data-app], a[href^="https://thefuelapp.github.io/app/"]').forEach((el) => { if (/\/app\/($|\?)/.test(el.getAttribute('href'))) el.href = el.getAttribute('href').split('?')[0] + '?' + q; });
+} catch {}
+</script>
 <script>
 (function(){
   const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
@@ -5727,4 +5746,4 @@ html,body{overflow:hidden} *{animation:none!important;transition:none!important}
 })();
 
 </script>
-<!-- deployed 2026-09-22T21:02:34Z -->
+<!-- deployed 2026-10-03T20:54:16Z -->

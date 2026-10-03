@@ -104,7 +104,63 @@ function draw(d, demo) {
   </tbody></table></div>
   <p class="note" style="margin-top:18px">Not counted here: visits to the website and money after Stripe's fees. Stripe's own dashboard has the exact payouts.</p>`;
   DAYS = days; chart();
+  main.insertAdjacentHTML('beforeend', '<div id="growth"><p class="note">Loading the free-week funnel…</p></div>');
+  loadGrowth(demo);
 }
+// ---------- since v81: the free week (no account needed), where people come from, mates and creators (supabase/growth.sql) ----------
+const STEPS = [['visit', 'Visited the website'], ['open', 'Opened the app'], ['setup', 'Started set-up'], ['planned', 'Planned a week (7+ meals)'], ['account', 'Made an account'], ['paid', 'Paid £4.99'], ['home', 'On their home screen'], ['shared', 'Shared their week or link']];
+const gbp = (p) => '£' + (p / 100).toFixed(2);
+function demoGrowth() {
+  return { days: 30, steps: { visit: 412, open: 233, setup: 171, planned: 96, account: 31, paid: 14, home: 58, shared: 22 }, planned_ever: 96,
+    by_source: [{ source: 'tt', visits: 210, opened: 120, setup: 88, planned: 51, accounts: 15, paid: 6, home: 30, shared: 9 }, { source: 'ig', visits: 120, opened: 66, setup: 50, planned: 27, accounts: 9, paid: 5, home: 17, shared: 8 }, { source: 'rugby', visits: 22, opened: 21, setup: 20, planned: 14, accounts: 6, paid: 3, home: 9, shared: 5 }, { source: 'direct', visits: 60, opened: 26, setup: 13, planned: 4, accounts: 1, paid: 0, home: 2, shared: 0 }],
+    creators: [{ code: 'JESS', name: 'Jess (sample)', handle: '@sample', email: 'sample@example.com', active: true, commission_pence: 200, promo_code: 'FREE-JESS', visits: 140, planned: 33, accounts: 9, sales: 6, on_hold_pence: 400, payable_pence: 600, paid_pence: 200, secret: 'demo' }],
+    mates: { codes: 40, with_a_mate: 12, unlocked: 3, claimed: 2 } };
+}
+async function loadGrowth(demo) {
+  const box = $('growth'); let g;
+  if (demo) g = demoGrowth();
+  else { const { data, error } = await db.rpc('owner_growth', { p_days: GDAYS }); if (error) { box.innerHTML = `<h2>The free week</h2><div class="card"><p class="note">${/owner_growth|schema cache|function/i.test(error.message) ? 'Not switched on yet: run <b>supabase/growth.sql</b> once in Supabase → SQL Editor.' : esc(error.message)}</p></div>`; return; } g = data; }
+  const st = g.steps || {}; const top = Math.max(1, st.visit || 0, st.open || 0);
+  const fr = (label, n, of) => `<div class="row"><span>${label}</span><div class="bar"><i style="width:${Math.max(2, Math.round(((n || 0) / top) * 100))}%"></i></div><span class="n">${n || 0}${of && label !== STEPS[0][1] ? ' · ' + pct(n || 0, of) : ''}</span></div>`; // bar: share of the top step; % : of the step above
+  const src = (g.by_source || []);
+  box.innerHTML = `<h2>The free week: every phone, no account needed <span class="seg" style="margin-left:10px;vertical-align:middle">${[7, 30, 90].map((n) => `<button data-gd="${n}" class="${GDAYS === n ? 'on' : ''}">${n} days</button>`).join('')}</span></h2>
+  <div class="grid big">
+    <div class="card stat sun"><b>${g.planned_ever || 0}</b><span>planned a week, ever</span><small>the goal: 100 by Sun 15 Nov</small></div>
+    <div class="card stat"><b>${st.open || 0}</b><span>opened the app</span><small>last ${g.days} days</small></div>
+    <div class="card stat navy"><b>${st.paid || 0}</b><span>paid</span><small>last ${g.days} days · ${pct(st.paid || 0, st.planned || 0)} of those who planned</small></div>
+  </div>
+  <div class="card funnel" style="margin-top:12px">${STEPS.map(([k, l], i) => fr(l, st[k], i === 0 ? top : (k === 'home' || k === 'shared' ? st.open : st[STEPS[i - 1][0]] || 0))).join('')}
+    <p class="note" style="margin:10px 0 0">Each step is counted once per phone, anonymously. Percentages are of the step above (home screen and shared: of everyone who opened the app). The biggest drop is the thing to fix next.</p></div>
+  <h2>Where they came from</h2><div class="card tablewrap"><table><thead><tr><th>Source</th><th>Visited</th><th>Opened</th><th>Set-up</th><th>Planned</th><th>Account</th><th>Paid</th></tr></thead><tbody>
+    ${src.map((x) => `<tr><td><b>${esc(x.source)}</b></td><td>${x.visits}</td><td>${x.opened}</td><td>${x.setup}</td><td><b>${x.planned}</b></td><td>${x.accounts}</td><td>${x.paid}</td></tr>`).join('') || '<tr><td colspan="7" class="note">Nothing yet.</td></tr>'}</tbody></table>
+    <p class="note" style="margin:10px 0 0">Tag your links so this fills in: <b>thefuelapp.github.io/?r=tt</b> in the TikTok bio, <b>?r=ig</b> on Instagram, <b>?r=rugby</b> in the squad chat, <b>?r=poster</b> on QR posters. "code" = came with a mate's or creator's code and no tag.</p></div>
+  <h2>Bring 3 mates</h2><div class="grid">
+    <div class="card stat"><b>${g.mates?.codes || 0}</b><span>people with a link</span></div><div class="card stat"><b>${g.mates?.with_a_mate || 0}</b><span>got at least 1 mate planning</span></div><div class="card stat lime"><b>${g.mates?.unlocked || 0}</b><span>reached 3: free for life</span><small>${g.mates?.claimed || 0} saved it to an account</small></div></div>
+  <h2>Creators</h2><div class="card tablewrap"><table><thead><tr><th>Creator</th><th>Code</th><th>Opened</th><th>Planned</th><th>Sales</th><th>On hold</th><th>To pay</th><th>Paid</th><th></th></tr></thead><tbody>
+    ${(g.creators || []).map((c) => `<tr><td><b>${esc(c.name || '')}</b><br><span class="note">${esc(c.handle || '')} ${c.email ? '· ' + esc(c.email) : ''}${c.active ? '' : ' · <b>paused</b>'}</span></td><td><span class="pill code">${esc(c.code)}</span><br><span class="note">${gbp(c.commission_pence)} a sale</span></td><td>${c.visits}</td><td>${c.planned}</td><td><b>${c.sales}</b></td><td>${gbp(c.on_hold_pence)}</td><td><b>${gbp(c.payable_pence)}</b></td><td>${gbp(c.paid_pence)}</td>
+      <td style="white-space:nowrap"><button class="ghost" data-copy="https://thefuelapp.github.io/?c=${esc(c.code)}">Copy link</button> <button class="ghost" data-copy="https://thefuelapp.github.io/app/partner.html#${esc(c.code)}.${esc(c.secret)}">Copy their dashboard</button> ${c.payable_pence ? `<button data-paid="${esc(c.code)}" data-amt="${c.payable_pence}">I've paid ${gbp(c.payable_pence)}</button>` : ''} <button class="ghost" data-toggle="${esc(c.code)}" data-active="${c.active ? 1 : 0}" data-comm="${c.commission_pence}">${c.active ? 'Pause' : 'Resume'}</button></td></tr>`).join('') || '<tr><td colspan="9" class="note">No creators yet. Add one below.</td></tr>'}</tbody></table>
+    <p class="note" style="margin:10px 0 0">A sale is held 14 days (refunds), then it's "to pay". Pay them by bank transfer, then press "I've paid". Their dashboard link shows them the same numbers, never who bought.</p></div>
+  <div class="card"><b>Add a creator</b><p class="note" style="margin:4px 0 10px">They get a link (thefuelapp.github.io/?c=CODE), a free lifetime code (FREE-CODE) and their own dashboard.</p>
+    <form id="addc" style="max-width:none;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))"><input name="name" placeholder="Name" required><input name="handle" placeholder="@handle"><input name="email" type="email" placeholder="Email (for paying them)"><input name="code" placeholder="CODE, e.g. JESS" required pattern="[A-Za-z0-9]{3,20}" style="text-transform:uppercase"><label class="note" style="display:flex;align-items:center;gap:8px;white-space:nowrap">£ a sale<input name="pounds" type="number" step="0.01" min="0" max="4.99" value="2.00" title="Commission per sale, £" style="width:100%"></label><button type="submit">Add creator</button></form><div id="addmsg"></div></div>`;
+  box.querySelectorAll('[data-gd]').forEach((b) => { b.onclick = () => { GDAYS = +b.dataset.gd; loadGrowth(demo); }; });
+  box.querySelectorAll('[data-copy]').forEach((b) => { b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.copy); const t = b.textContent; b.textContent = 'Copied'; setTimeout(() => { b.textContent = t; }, 1200); } catch { b.insertAdjacentHTML('afterend', `<div class="note" style="word-break:break-all">${esc(b.dataset.copy)}</div>`); } }; });
+  if (demo) return;
+  const fail = (m) => { const el = $('addmsg'); if (el) el.innerHTML = `<p class="err">${esc(m)}</p>`; };
+  // "I've paid" asks twice (tap, then "Sure? Tap again") so a stray tap can't mark money as sent.
+  box.querySelectorAll('[data-paid]').forEach((b) => { b.onclick = async () => { if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = `Sent ${gbp(+b.dataset.amt)}? Tap again`; setTimeout(() => { delete b.dataset.sure; b.textContent = `I've paid ${gbp(+b.dataset.amt)}`; }, 4000); return; } const { error } = await db.rpc('owner_mark_paid', { p_code: b.dataset.paid }); if (error) fail(error.message); else loadGrowth(false); }; });
+  box.querySelectorAll('[data-toggle]').forEach((b) => { b.onclick = async () => { const { error } = await db.rpc('owner_update_creator', { p_code: b.dataset.toggle, p_active: b.dataset.active !== '1', p_commission_pence: +b.dataset.comm, p_note: null }); if (error) fail(error.message); else loadGrowth(false); }; });
+  $('addc').onsubmit = async (e) => {
+    e.preventDefault(); const f = new FormData(e.target); const msg = $('addmsg');
+    const { data, error } = await db.rpc('owner_add_creator', { p_name: f.get('name'), p_handle: f.get('handle'), p_email: f.get('email'), p_code: f.get('code'), p_commission_pence: Math.round(+f.get('pounds') * 100), p_note: null });
+    if (error || !data?.ok) { msg.innerHTML = `<p class="err">${esc(error?.message || data?.error || 'Not added')}</p>`; return; }
+    const who = f.get('name'); await loadGrowth(false); const box2 = $('addmsg');
+    const link = `https://thefuelapp.github.io/?c=${data.code}`, dash = `https://thefuelapp.github.io/app/partner.html#${data.code}.${data.secret}`;
+    box2.innerHTML = `<div class="card" style="background:#fff3d6;margin-top:10px"><b>Added. Send ${esc(who)} these three things:</b><ol><li>Their link: <b>${esc(link)}</b></li><li>Their free lifetime code: <b>${esc(data.promo)}</b></li><li>Their dashboard: <b style="word-break:break-all">${esc(dash)}</b></li></ol><button class="ghost" id="copyall">Copy all three</button></div>`;
+    $('copyall').onclick = () => navigator.clipboard.writeText(`Your FU£L link: ${link}\nYour free lifetime code: ${data.promo} (in the app: Settings → Account → Save to an account → Have a code?)\nYour dashboard (live numbers and earnings): ${dash}\nPlease label posts about FU£L #ad.`).then(() => { $('copyall').textContent = 'Copied'; });
+    box2.scrollIntoView({ block: 'center' });
+  };
+}
+let GDAYS = 30;
 let RANGE = 14, DAYS = [];
 function chart() {
   const days = DAYS.slice(-RANGE); const top = Math.max(1, ...days.map((x) => x.signups)); const step = top <= 5 ? 1 : top <= 10 ? 2 : top <= 25 ? 5 : top <= 50 ? 10 : Math.ceil(top / 5 / 10) * 10; const max = Math.ceil((top * 1.12) / step) * step;   // headroom, so the number above the tallest bar stays inside the plot

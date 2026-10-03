@@ -58,6 +58,20 @@ async function loadEntitlement() {
   cloud.planExpires = data?.expires_at || null;
 }
 
+// Which code and source this account came with (first one wins; supabase/growth.sql). Quietly does nothing if growth.sql isn't in yet.
+export async function setReferral(code, src, anon) {
+  if (!cloud.user) return null;
+  const { data, error } = await cloud.client.rpc('set_referral', { p_code: code || null, p_src: src || null, p_anon: anon || null });
+  if (error) throw error; return data;
+}
+// Three mates planned a week with this phone's code: make it free for life on the account.
+export async function claimMates(code, secret) {
+  const { data, error } = await cloud.client.rpc('claim_mates', { p_code: code, p_secret: secret });
+  if (error) throw error;
+  if (data?.ok) { await loadEntitlement(); set({ status: 'signed-in' }); }
+  return data;
+}
+
 // Access = signed in with an active plan. With no cloud configured, the app is open (that's how it runs on a dev machine).
 export async function refreshAccess() { if (cloud.user) await loadEntitlement(); set({ status: cloud.user ? 'signed-in' : 'signed-out' }); }
 export function hasAccess() { return !cloud.enabled || !!cloud.plan; }
