@@ -5,7 +5,7 @@ import { anonId, captureAttribution, carryCodeToHomeScreen, attribution, track, 
 import { planWeek } from './autoplan.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v82';
+const APP_VERSION = 'v83';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -714,7 +714,7 @@ function autoPlan(seed = 1) {
     const raw = RAW(), pool = raw.filter((r) => !r.slots.includes('snack') && !isAvoided(r));
     const args = { P, ING: ING(), core: new Set(raw.filter((r) => r.core).map((r) => r.id)), days: liveDays(w), cookDay: w.cookDay, kcal: S.settings.kcalTarget, protein: S.settings.proteinTarget, budget: S.settings.budget,
       pantry: w.pantry || {}, resolve: resolveFor(w), choiceOf: (id) => { const it = ingById(id); return it?.choices?.length ? chosenFor(w, it) : null; }, seed, differentFrom: before };
-    let r = planWeek({ ...args, pool: pool.filter((x) => inLibrary(x.id)) });
+    let r = planWeek({ ...args, pool: before ? pool : pool.filter((x) => inLibrary(x.id)) }); // "Try another week" draws on every recipe they eat, so it really is another week
     if (!r || !r.ok) { const r2 = planWeek({ ...args, pool, seed: seed + 100 }); if (r2 && (!r || (r2.ok && !r.ok) || (!r.ok && r2.overBudget + r2.shortProtein < r.overBudget + r.shortProtein))) r = r2; } // widen to every recipe they eat
     hideHint();
     if (!r) { toast('Couldn’t build a week from what you eat. Tick meals yourself below.', 3500); return; }

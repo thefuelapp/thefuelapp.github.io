@@ -36,7 +36,7 @@ function splitsFor(n) {
  * @param o.resolve    id → id actually bought (thighs for breast, oat milk for milk)
  * @param o.choiceOf   generic id → the picked option(s) (frozen fruit), as shopNeeds splits them
  * @param o.seed       a different seed gives a different week
- * @param o.differentFrom  portions of the week just shown: "Try another week" is steered away from it (£1.50 per shared portion)
+ * @param o.differentFrom  portions of the week just shown: "Try another week" is steered away from it (£6 per main kept)
  * @param o.budgetMs   time budget for the search
  */
 export function planWeek(o) {
@@ -95,8 +95,8 @@ export function planWeek(o) {
     const fam = {}; for (const [id] of c.m) fam[mainProtein[id]] = (fam[mainProtein[id]] || 0) + 1; if (Object.values(fam).some((n) => n > 3)) problems.push('protein family');
     const short = Math.max(0, protein - r.st.avg), over = Math.max(0, P.round2(r.weekly - budget));
     const classics = [...c.b, ...c.m].reduce((t, [id, n]) => t + (core.has(id) ? n : 0), 0);
-    const shared = differentFrom ? [...c.b, ...c.m].reduce((t, [id, n]) => t + Math.min(n, differentFrom[id] || 0), 0) : 0;
-    const merit = r.total - 0.6 * classics - 0.3 * Math.max(0, Math.min(r.st.avg, cap) - protein) + 1.5 * shared;
+    const shared = differentFrom ? c.m.filter(([id]) => differentFrom[id]).length : 0; // mains kept from the week just shown (breakfast can stay)
+    const merit = r.total - 0.6 * classics - 0.3 * Math.max(0, Math.min(r.st.avg, cap) - protein) + 6 * shared;
     const score = merit + problems.length * 1000 + (over > 0 ? 200 + over * 50 : 0) + short * 20;
     return { ...r, problems, short, over, merit, score, ok: !problems.length && !short && !over, portions: portionsOf(c) };
   }
@@ -141,6 +141,9 @@ export function planWeek(o) {
       const moves = [];
       cur.m.forEach((_, i) => { for (const id of M) if (!inM.has(id)) { const d = clone(cur); d.m[i][0] = id; moves.push(d); } });
       cur.m.forEach((_, i) => cur.m.forEach((__, j) => { if (i !== j && cur.m[i][1] > 2 && cur.m[j][1] < 4) { const d = clone(cur); d.m[i][1]--; d.m[j][1]++; moves.push(d); } }));
+      const inB = new Set(cur.b.map(([id]) => id));
+      cur.b.forEach((_, i) => { for (const id of B) if (!inB.has(id)) { const d = clone(cur); d.b[i][0] = id; moves.push(d); } }); // breakfasts too
+      if (cur.b.length > 1) for (const keep of cur.b) moves.push({ b: bSplit(keep[0]), m: cur.m.map((x) => [...x]) });
       for (const d of moves) { const e2 = ev(d); if (e2.score < e.score - 1e-9) { cur = d; e = e2; improved = true; } }
     }
     best = e;
