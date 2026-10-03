@@ -5,7 +5,7 @@ import { anonId, captureAttribution, carryCodeToHomeScreen, attribution, track, 
 import { planWeek } from './autoplan.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v83';
+const APP_VERSION = 'v84';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -40,7 +40,7 @@ function freeWeekCard() {
   const left = trialLeft(), soon = left <= 2;
   return `<div class="freeweek ${soon ? 'soon' : ''}" id="freeweek"><div class="fw-top"><span class="fw-eyebrow">Free week · day ${trialDay()} of ${TRIAL_DAYS}</span><button class="fw-more" data-action="trial">How it works</button></div>${trialSegs()}
     <p>${soon ? `<b>${left === 1 ? 'Last free day.' : '2 free days left.'}</b> Keep your plan for ${esc(CONFIG.PRICE_LABEL || '£4.99')} once${GROWTH_OK ? ', or bring 3 mates and it\u2019s free' : ''}.` : `<b>Everything\u2019s unlocked until ${dayName(trialEnd())}.</b> No card, nothing to cancel.`}</p>
-    ${soon ? `<button class="btn block" data-action="buy-open">Keep FU£L · ${esc(CONFIG.PRICE_LABEL || '£4.99')} once</button>` : ''}</div>`;
+    <button class="btn block fw-upgrade" data-action="buy-open">Upgrade now · ${esc(CONFIG.PRICE_LABEL || '£4.99')} once<span>Yours for life. No subscription.</span></button></div>`;
 }
 const matesUnlocked = () => !!S.mate?.unlocked;
 const paidUp = () => cloud.enabled && hasAccess(); // an account with access: bought, a code, or claimed mates
@@ -1188,7 +1188,7 @@ function trialSheet() {
       ${GROWTH_OK ? `<li><b>Or free for life.</b> When 3 mates plan a week with your link.</li>` : ''}
     </ol>
     <p class="fw-promise">We never ask for a card during the free week, so you can't be charged by surprise. If you don't keep it, nothing happens.</p>
-    <button class="btn block" data-action="buy-open">Keep it now · ${price} once</button>${matesHtml(false)}
+    <button class="btn block" data-action="buy-open">Upgrade now · ${price} once</button>${matesHtml(false)}
     <button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">${left ? 'Carry on free' : 'Close'}</button>`);
 }
 // The small "Free week · 5 days left" pill in the top bar (tap: the sheet above). Gone once paid.
@@ -1308,7 +1308,7 @@ function renderSettings() {
   const st = S.settings;
   const goal = (k, l) => `<option value="${k}" ${st.goal === k ? 'selected' : ''}>${l}</option>`;
   const access = !cloud.enabled ? '' : paidUp() ? `Yours for life${cloud.planExpires ? ` until ${fmtDate(cloud.planExpires.slice(0, 10))}` : ''}` : matesUnlocked() ? 'Free for life: 3 mates planned a week' : trialLeft() ? `Free week, day ${trialDay()} of ${TRIAL_DAYS} · free until ${dayName(trialEnd())}` : 'Free week over';
-  const buyBtn = cloud.enabled && !paidUp() && !matesUnlocked() && CONFIG.CHECKOUT_URL ? `<button class="btn block" data-action="buy-open" style="margin-top:12px">Keep FU£L for life · ${esc(CONFIG.PRICE_LABEL || '£4.99')} once</button>` : '';
+  const buyBtn = cloud.enabled && !paidUp() && !matesUnlocked() && CONFIG.CHECKOUT_URL ? `<button class="btn block" data-action="buy-open" style="margin-top:12px">Upgrade now · ${esc(CONFIG.PRICE_LABEL || '£4.99')} once, for life</button>` : '';
   const extrasAcct = cloud.enabled && !paidUp() ? `${buyBtn}${matesUnlocked() ? '' : matesHtml(false)}` : '';
   const account = !cloud.enabled
     ? `<div class="acct"><div class="avatar">☺</div><div class="grow"><b>This phone only</b><span class="sub muted">Everything is saved here. Sign-in and sync switch on with the cloud project.</span></div></div>`
