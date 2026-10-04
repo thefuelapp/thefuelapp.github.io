@@ -70,12 +70,12 @@ async function load() {
   <h2>How it works</h2><div class="card small">
     <ul>
       <li>You earn <b>${gbp(d.commission_pence)}</b> for each purchase by someone whose first visit came through your link or code. Free weeks don't earn; purchases do, whenever they happen.</li>
-      <li>Each sale is held for <b>14 days</b> in case of a refund, then it's ready to pay. Cam pays what's ready by bank transfer, at least once a month.</li>
+      <li>Each sale is held for <b>14 days</b> in case of a refund, then it's ready to pay. Cam pays what's ready by bank transfer in the first week of each month.</li>
       <li>Refunded purchases are taken off. Buying through your own link doesn't count.</li>
       <li><b>Label every post about FU£L as an ad</b> (#ad at the start of the caption, or the platform's paid-partnership label). It's the law in the UK because you get free access and earn per sale.</li>
       <li>Only say what's true for you: no made-up savings, results or health claims.</li>
     </ul>
-    <p class="muted" style="margin:6px 0 0">Questions or payment details: reply to Cam's message.</p></div>`;
+    <p class="muted" style="margin:6px 0 0">The full <a href="creator-terms.html">creator terms</a>. Questions or payment details: reply to Cam's message.</p></div>`;
   $('copy').onclick = async () => { try { await navigator.clipboard.writeText(link); $('copy').textContent = 'Copied'; } catch { const r = document.createRange(); r.selectNodeContents($('lnk')); getSelection().removeAllRanges(); getSelection().addRange(r); } };
 }
 load();

@@ -156,7 +156,7 @@ async function loadGrowth(demo) {
     const who = f.get('name'); await loadGrowth(false); const box2 = $('addmsg');
     const link = `https://thefuelapp.github.io/?c=${data.code}`, dash = `https://thefuelapp.github.io/app/partner.html#${data.code}.${data.secret}`;
     box2.innerHTML = `<div class="card" style="background:#fff3d6;margin-top:10px"><b>Added. Send ${esc(who)} these three things:</b><ol><li>Their link: <b>${esc(link)}</b></li><li>Their free lifetime code: <b>${esc(data.promo)}</b></li><li>Their dashboard: <b style="word-break:break-all">${esc(dash)}</b></li></ol><button class="ghost" id="copyall">Copy all three</button></div>`;
-    $('copyall').onclick = () => navigator.clipboard.writeText(`Your FU£L link: ${link}\nYour free lifetime code: ${data.promo} (in the app: Settings → Account → Save to an account → Have a code?)\nYour dashboard (live numbers and earnings): ${dash}\nPlease label posts about FU£L #ad.`).then(() => { $('copyall').textContent = 'Copied'; });
+    $('copyall').onclick = () => navigator.clipboard.writeText(`Your FU£L link: ${link}\nYour free lifetime code: ${data.promo} (in the app: Settings → Account → Save to an account → Have a code?)\nYour dashboard (live numbers and earnings): ${dash}\nCreator terms: https://thefuelapp.github.io/app/creator-terms.html\nPlease label posts about FU£L #ad.`).then(() => { $('copyall').textContent = 'Copied'; });
     box2.scrollIntoView({ block: 'center' });
   };
 }
