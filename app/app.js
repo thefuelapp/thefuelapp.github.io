@@ -5,7 +5,7 @@ import { anonId, captureAttribution, carryCodeToHomeScreen, attribution, track, 
 import { planWeek } from './autoplan.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v84';
+const APP_VERSION = 'v85';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';

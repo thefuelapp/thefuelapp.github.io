@@ -800,3 +800,16 @@ label.field input, label.field select, label.field textarea { border: 1px solid 
 .freeweek .fw-upgrade { margin-top: 12px; background: var(--ink); color: #fff; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 16px; }
 .freeweek .fw-upgrade span { font-size: 12px; font-weight: 500; opacity: .7; }
 .freeweek.soon .fw-upgrade { background: var(--accent); }
+/* v85: every meal box in the week grid is the same size, with the same gap all round (Cameron, 4 Oct). Name: 2 lines max; protein: 1 line;
+   tag (freezer / made fresh / too old): 2 lines max; anything longer is cut with an ellipsis rather than making its row taller. */
+:root { --cellh: 104px; --gridgap: 6px; }
+.grid { gap: var(--gridgap); grid-auto-rows: auto; }
+.grid > .cell, .grid > .lbl { height: var(--cellh); min-height: 0; }
+.cell { justify-content: flex-start; gap: 3px; padding: 9px 7px 8px 10px; }
+.cell .cname { -webkit-line-clamp: 2; line-clamp: 2; flex: none; }
+.cell .cmeta { flex: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.cell .ctag { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; margin-top: auto; line-height: 1.2; }
+.cell.empty, .cell.off { justify-content: center; }
+.cell.empty { align-items: center; }
+@media (min-width: 560px) { :root { --cellh: 112px; --gridgap: 7px; } }
+:root { --cellh: 114px; } .cell .cname { -webkit-line-clamp: 3; line-clamp: 3; } @media (min-width: 560px) { :root { --cellh: 120px; } }
