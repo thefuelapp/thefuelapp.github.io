@@ -1,17 +1,31 @@
 import * as P from './planner.js';
 import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, refreshAccess, pullState, pushStateSoon, setReferral, claimMates } from './cloud.js';
-import { anonId, captureAttribution, carryCodeToHomeScreen, attribution, track, setOptOut, mateCode, savedMateCode, mateStatus, growthReady } from './growth.js';
+import { anonId, captureAttribution, carryCodeToHomeScreen, attribution, track, setOptOut, mateCode, savedMateCode, mateStatus, growthReady, codeKind } from './growth.js';
 import { planWeek } from './autoplan.js';
+import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v85';
+const APP_VERSION = 'v86';
+// One line per update, newest first: shown once on Home after an update and under More → What's new.
+const WHATS_NEW = [
+  ['v86', '24 Oct 2026', 'A Home tab that answers five questions, the Sunday check-in that plans next week from what happened, cook tonight when you join midweek, Shop led by the food number, light and dark, and a free week that always runs to a Sunday night.'],
+  ['v85', '3 Oct 2026', 'Every meal box in the week grid the same size.'],
+  ['v84', '3 Oct 2026', 'Upgrade button on the free-week card.'],
+  ['v82', '3 Oct 2026', 'A sharper look: paper background, one loud colour, icons on the tab bar.'],
+  ['v81', '3 Oct 2026', 'Free first week, Plan my week for me, share your week, bring 3 mates and it\u2019s free for life.'],
+];
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
-if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
+if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'home';
+// Light, dark, or follow the phone (v86). data-theme on <html> drives styles.css; the status-bar colour follows.
+const darkMQ = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
+const isDark = () => S.theme === 'dark' || (S.theme !== 'light' && !!darkMQ?.matches);
+function applyTheme() { document.documentElement.dataset.theme = S.theme || 'auto'; const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = isDark() ? '#0e0e11' : '#f5f3ee'; }
+applyTheme(); darkMQ?.addEventListener?.('change', () => { applyTheme(); if (document.getElementById('view')?.innerHTML) render(); });
 
 function load() {
-  const base = { tab: 'plan', activeWeek: null, weeks: {}, tubs: {}, customRecipes: [], customIngredients: [], inbox: [], settings: { portion: 1, weight: 85, goal: 'build', proteinTarget: 180, snackProtein: 24, budget: 50, avoid: [] } };
+  const base = { tab: 'home', activeWeek: null, weeks: {}, tubs: {}, customRecipes: [], customIngredients: [], inbox: [], settings: { portion: 1, weight: 85, goal: 'build', proteinTarget: 180, snackProtein: 24, budget: 50, avoid: [] } };
   try { return { ...base, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return base; }
 }
 function syncable() { const { tab, search, planSearch, planFilter, pantrySearch, pantryRestOpen, ideasOpen, ideaTag, ...rest } = S; return rest; }
@@ -23,33 +37,47 @@ function save() {
 }
 
 // ---------- the free first week, and who can use the app ----------
-// Everyone gets every feature free for 7 days from their first open: no account, no card. Then "Keep your plan: £4.99 once",
-// or free for life once 3 mates have planned a week with their code. The clock lives with the plan (and syncs with an account).
+// Everyone gets every feature free: no account, no card. Since v86 the clock starts at the first PLANNED week (7+ meals), not at
+// first open, and always ends on a Sunday night (insights.trialEndFor), so nobody is cut off mid-week with a list half ticked.
+// Then "Keep your plan: £4.99 once", or free for life once 3 mates have planned a week with their code. A creator's code makes
+// it 14 days (S.trial.days, from growth.js codeKind). Saves from before v86 keep S.stepPlanned as their planAt; the old end
+// (first open + 7 days) still counts if it is later, so nobody's free week got shorter.
 const TRIAL_DAYS = 7;
 function trialStart() { if (!S.trial?.start) { S.trial = { start: new Date().toISOString() }; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} } return S.trial.start; }
-function trialLeft() { const used = (Date.now() - Date.parse(trialStart())) / 86400000; return Math.max(0, Math.ceil(TRIAL_DAYS - used)); }
-const trialActive = () => trialLeft() > 0;
-const trialEnd = () => new Date(Date.parse(trialStart()) + TRIAL_DAYS * 86400000);
-const trialDay = () => Math.min(TRIAL_DAYS, TRIAL_DAYS - trialLeft() + 1);
-const dayName = (d) => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+const trialPlanAt = () => S.trial?.planAt || S.stepPlanned || null;
+function trialEnd() {
+  const t = S.trial || {}; const e = trialEndFor({ planAt: trialPlanAt(), planWeek: t.planWeek || null, days: t.days || TRIAL_DAYS }); if (!e) return null;
+  const old = t.start ? new Date(Date.parse(t.start) + TRIAL_DAYS * 86400000) : null; return old && old > e ? old : e;
+}
+function trialLeft() { const e = trialEnd(); if (!e) return TRIAL_DAYS; return Math.max(0, Math.ceil((e.getTime() - Date.now()) / 86400000)); }
+const trialActive = () => { const e = trialEnd(); return !e || Date.now() < e.getTime(); };
+const trialTotalDays = () => { const e = trialEnd(), a = trialPlanAt(); return e && a ? Math.max(TRIAL_DAYS, Math.round((e.getTime() - Date.parse(a)) / 86400000)) : TRIAL_DAYS; };
+const trialDay = () => Math.min(trialTotalDays(), Math.max(1, trialTotalDays() - trialLeft() + 1));
+const dayName = (d) => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '');
 const onTrial = () => cloud.enabled && !paidUp() && !matesUnlocked() && trialActive();
 // The free week, said plainly wherever it matters: which day you're on, when it ends, and that nothing is charged by itself.
-function trialSegs() { const d = trialDay(); return `<div class="fw-seg">${Array.from({ length: TRIAL_DAYS }, (_, i) => `<i class="${i < d ? 'on' : ''}${i === d - 1 ? ' now' : ''}"></i>`).join('')}</div>`; }
+function trialSegs() { const n = trialTotalDays(), d = trialEnd() ? trialDay() : 0; return `<div class="fw-seg" style="grid-template-columns:repeat(${n},1fr)">${Array.from({ length: n }, (_, i) => `<i class="${i < d ? 'on' : ''}${i === d - 1 ? ' now' : ''}"></i>`).join('')}</div>`; }
 function freeWeekCard() {
   if (!onTrial()) return '';
-  const left = trialLeft(), soon = left <= 2;
-  return `<div class="freeweek ${soon ? 'soon' : ''}" id="freeweek"><div class="fw-top"><span class="fw-eyebrow">Free week · day ${trialDay()} of ${TRIAL_DAYS}</span><button class="fw-more" data-action="trial">How it works</button></div>${trialSegs()}
-    <p>${soon ? `<b>${left === 1 ? 'Last free day.' : '2 free days left.'}</b> Keep your plan for ${esc(CONFIG.PRICE_LABEL || '£4.99')} once${GROWTH_OK ? ', or bring 3 mates and it\u2019s free' : ''}.` : `<b>Everything\u2019s unlocked until ${dayName(trialEnd())}.</b> No card, nothing to cancel.`}</p>
+  const left = trialLeft(), soon = !!trialEnd() && left <= 2;
+  const line = !trialEnd() ? `<b>Your free week starts when you plan one.</b> Every feature, no card, nothing to cancel.`
+    : soon ? `<b>${left === 1 ? 'Last free day.' : '2 free days left.'}</b> Keep your plan for ${esc(CONFIG.PRICE_LABEL || '£4.99')} once${GROWTH_OK ? ', or bring 3 mates and it’s free' : ''}.`
+    : `<b>Everything’s unlocked until ${dayName(trialEnd())}.</b> No card, nothing to cancel.`;
+  return `<div class="freeweek ${soon ? 'soon' : ''}" id="freeweek"><div class="fw-top"><span class="fw-eyebrow">${trialEnd() ? `Free week · day ${trialDay()} of ${trialTotalDays()}` : `Free week${S.trial?.days === 14 ? ' · 14 days' : ''}`}</span><button class="fw-more" data-action="trial">How it works</button></div>${trialSegs()}
+    <p>${line}</p>
     <button class="btn block fw-upgrade" data-action="buy-open">Upgrade now · ${esc(CONFIG.PRICE_LABEL || '£4.99')} once<span>Yours for life. No subscription.</span></button></div>`;
 }
 const matesUnlocked = () => !!S.mate?.unlocked;
 const paidUp = () => cloud.enabled && hasAccess(); // an account with access: bought, a code, or claimed mates
 function canUse() { return !cloud.enabled || hasAccess() || trialActive() || matesUnlocked(); }
-// "Planned a week" (the goal the launch plan counts): a week with at least 7 meals in it.
+// "Planned a week" (the goal the launch plan counts): a week with at least 7 meals in it. It also starts the free-week clock.
 function notePlanned() {
   if (S.stepPlanned) return;
-  if (!Object.values(S.weeks || {}).some((w) => Object.values(w.portions || {}).reduce((t, n) => t + n, 0) >= 7)) return;
-  S.stepPlanned = new Date().toISOString(); track('planned');
+  const key = Object.keys(S.weeks || {}).sort().find((k) => Object.values(S.weeks[k].portions || {}).reduce((t, n) => t + n, 0) >= 7);
+  if (!key) return;
+  S.stepPlanned = new Date().toISOString(); S.trial = { ...(S.trial || {}), planAt: S.stepPlanned, planWeek: key }; track('planned');
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {}
+  refreshTrialPill();
 }
 
 // ING(), RAW(), weekFactor() and REC() are asked for dozens of times per tap, so each remembers its last answer and rebuilds only when what it is made from changes.
@@ -162,7 +190,7 @@ function pantryIds(w) {
 }
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const hue = (id) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
-const cellStyle = (id) => `background:hsl(${hue(id)} 78% 94%);color:hsl(${hue(id)} 50% 20%);box-shadow:inset 3px 0 0 hsl(${hue(id)} 68% 56%);`; // v82: soft tint, a colour edge
+const cellStyle = (id) => (isDark() ? `background:hsl(${hue(id)} 30% 17%);color:hsl(${hue(id)} 75% 84%);box-shadow:inset 3px 0 0 hsl(${hue(id)} 70% 58%)` : `background:hsl(${hue(id)} 78% 94%);color:hsl(${hue(id)} 50% 20%);box-shadow:inset 3px 0 0 hsl(${hue(id)} 68% 56%);`); // v82: soft tint, a colour edge
 
 // ---------- weeks ----------
 const iso = (d) => d.toISOString().slice(0, 10);
@@ -170,6 +198,8 @@ function mondayOf(date) { const d = new Date(Date.UTC(date.getFullYear(), date.g
 const DAY_FULL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 // The date you actually cook for this week: a Sunday cook is the Sunday before the week starts.
 function cookDate(w, key) { return w.cookDay === 6 ? addDays(key, -1) : addDays(key, w.cookDay); }
+// "today (Tue 20 Oct)", "tomorrow (Wed 21 Oct)" or "on Sunday 18 Oct": the cook day as a person would say it.
+function cookLabel(w, key) { const c = cookDate(w, key), t = todayISO(); const d = `${new Date(c + 'T00:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'UTC' })} ${fmtDate(c)}`; return c === t ? `today, ${d}` : c === addDays(t, 1) ? `tomorrow, ${d}` : c < t ? `on ${d} (gone: pick a day below)` : `on ${d}`; }
 function addDays(isoDate, n) { const d = new Date(isoDate + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return iso(d); }
 // '20 Sep 2026' or '6–13 Sep 2026' from ISO dates (the house style says 'Sep', the locale says 'Sept')
 function dateRange(dates) { const v = [...new Set(dates.filter(Boolean))].sort(); if (!v.length) return ''; const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -221,8 +251,8 @@ function setupWeeks() {
   }
   // migrate v1 single-week state
   if (S.portions) { S.weeks[thisMon] = { portions: S.portions, grid: S.grid, overflow: S.overflow || [], cookDay: S.cookDay || 0, ticks: S.ticks || {} }; delete S.portions; delete S.grid; delete S.overflow; delete S.cookDay; delete S.ticks; }
-  for (const k of Object.keys(S.weeks)) if (k < thisMon) delete S.weeks[k];
-  if (!S.weeks[thisMon]) { const w = blankWeek(); const t = (new Date().getDay() + 6) % 7; for (let i = 0; i < t; i++) w.days[i] = false; S.weeks[thisMon] = w; } // first open mid-week: the days already gone are off
+  { const keepFrom = addDays(thisMon, -7); for (const k of Object.keys(S.weeks)) if (k < keepFrom) delete S.weeks[k]; } // last week stays one more week, for the Sunday check-in
+  if (!S.weeks[thisMon]) { const w = blankWeek(); const t = (new Date().getDay() + 6) % 7; for (let i = 0; i < t; i++) w.days[i] = false; if (t > 0) w.cookDay = t; S.weeks[thisMon] = w; } // first open mid-week: the days already gone are off, and the cook is today (not the Sunday that has gone)
   if (!S.weeks[nextMon]) { S.weeks[nextMon] = blankWeek(); carryStaples(S.weeks[thisMon], S.weeks[nextMon]); }
   // First open late in the week (Fri/Sat): the week worth planning is the one that starts on Sunday.
   if (!S.weeks[S.activeWeek]) S.activeWeek = !S.activeWeek && [0, 5, 6].includes(new Date().getDay()) ? nextMon : thisMon;
@@ -282,6 +312,7 @@ function noteOpen() {
 async function boot() {
   // Where this device came from (?r=tt, ?c=CODE) is kept from its first visit; each step is counted once per device, anonymously.
   captureAttribution(); carryCodeToHomeScreen(); setOptOut(() => S.settings?.countSteps === false); trialStart();
+  { const a = attribution(); if (a.code && !S.trial?.codeAsked) codeKind(a.code).then((k) => { S.trial = { ...(S.trial || {}), codeAsked: true }; if (k?.kind === 'creator') { S.trial.days = 14; S.trial.codeName = k.name || ''; } save(); refreshTrialPill(); }).catch(() => {}); } // a creator's code: 14 free days, and the set-up screen says whose
   { const m = savedMateCode(); if (m && !S.mate) S.mate = { ...m }; else if (S.mate?.code && !m) try { localStorage.setItem('fuel:mate', JSON.stringify({ code: S.mate.code, secret: S.mate.secret })); } catch {} }
   track('open'); if (isStandalone()) track('home');
   try {
@@ -362,11 +393,83 @@ function markTabs() { const w = W(); if (!w) return; const d = { plan: Object.va
 function render(opts = {}) {
   if (S.tab !== 'shop') { saveUndo = null; saveOpen = false; } // leaving Shop drops the Undo: the week may be edited elsewhere
   const view = document.getElementById('view'); const y = view.scrollTop;
-  document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === S.tab)); markTabs();
-  const page = ({ plan: renderPlan, cook: renderCook, shop: renderShop, recipes: renderRecipes, pantry: renderPantry, settings: renderSettings })[S.tab] || renderPlan;
+  document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === S.tab || (b.dataset.tab === 'more' && ['recipes', 'pantry', 'settings'].includes(S.tab)))); markTabs();
+  const page = ({ home: renderHome, more: renderMore, plan: renderPlan, cook: renderCook, shop: renderShop, recipes: renderRecipes, pantry: renderPantry, settings: renderSettings })[S.tab] || renderHome;
   view.classList.toggle('has-dock', page === renderPlan); // Plan ends in the sticky dock: #view's bottom padding is taken off the sticky area, which left the dock floating 48px above the tab bar
   document.getElementById('view').innerHTML = `<div class="brandbar">${S.tab === 'settings' ? '' : `<button class="gear" data-action="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>`}<span class="wordmark" aria-label="Fuel">FU<b>£</b>L</span>${S.tab === 'settings' ? '' : trialPill()}</div>` + page();
   view.scrollTop = opts.top ? 0 : y;
+}
+
+// ----- Home (v86): one card per question. Am I on budget? Am I hitting protein? Do I need to cook? Is it working over the term? What's next? -----
+// One point per week for the spend chart: a till total from a check-in or a ticked-off shop counts as real (filled); a planned week's list price is hollow.
+function spendSeries() {
+  const log = S.spendLog || {}; const pts = [];
+  for (const k of [...new Set([...Object.keys(log), ...Object.keys(S.weeks)])].sort()) {
+    const v = log[k];
+    if (v && v.total > 0) { pts.push({ key: k, total: v.weekly ?? v.total, kind: v.source === 'till' ? 'till' : 'shop', meals: v.meals || 0 }); continue; }
+    const wk = S.weeks[k]; if (!wk || !wk.grid || !Object.values(wk.portions || {}).some((n) => n > 0)) continue;
+    const c = shopTotals(wk).chosen; if (c && c.lines.length) pts.push({ key: k, total: c.weekly, kind: 'list', meals: P.gridStats(wk.grid, REC(), ING(), snackExtra(wk), wk.days).filled });
+  }
+  return pts.slice(-8);
+}
+function sparkline(pts, { refY = null, H = 92, W = 300 } = {}) {
+  const pad = 16; const vals = pts.map((p) => p.v); const maxY = Math.max(refY || 0, ...vals) * 1.12 || 1, minY = refY != null ? 0 : Math.min(...vals) * 0.98;
+  const x = (i) => (pts.length === 1 ? W / 2 : pad + (i * (W - 2 * pad)) / (pts.length - 1)); const y = (v) => H - 16 - (((v - minY) / (maxY - minY || 1)) * (H - 34));
+  const line = pts.map((p, i) => `${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+  const dots = pts.map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="4" class="${p.hollow ? 'hollow' : ''}"><title>${esc(p.title || '')}</title></circle>`).join('');
+  const labels = pts.map((p, i) => `<text x="${x(i).toFixed(1)}" y="${H - 2}" text-anchor="${i === 0 && pts.length > 1 ? 'start' : i === pts.length - 1 && pts.length > 1 ? 'end' : 'middle'}">${esc(p.label)}</text>`).join('');
+  const last = pts[pts.length - 1]; const lastLabel = `<text x="${x(pts.length - 1).toFixed(1)}" y="${(y(last.v) - 9).toFixed(1)}" text-anchor="end" class="val">${esc(last.valLabel || '')}</text>`;
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${refY != null ? `<line x1="0" x2="${W}" y1="${y(refY).toFixed(1)}" y2="${y(refY).toFixed(1)}" class="refline"/>` : ''}<polyline points="${line}"/>${dots}${labels}${lastLabel}</svg>`;
+}
+function renderHome() {
+  const w = W(); const recipes = REC(), ing = ING(); const st0 = S.settings;
+  const head = `<h1>${weekLabel(S.activeWeek)}</h1>${freeWeekCard()}${weekSwitch()}`;
+  const due = checkinWeeks();
+  let next = due.length ? `<div class="card next due"><div class="ic">✓</div><div class="grow"><b>Sunday check-in: ${due[0] === S.thisMon ? 'this week' : `week of ${fmtDate(due[0])}`}</b><span class="sub muted">Three taps, under a minute. Next week plans itself from it.</span></div><button class="btn small" data-action="checkin-start" data-week="${due[0]}">Check in</button></div>` : '';
+  const wn = S.seenVersion !== APP_VERSION ? `<div class="card whatsnew"><span class="lbl">New in ${APP_VERSION}</span><p class="small" style="margin:4px 0 8px">${esc(WHATS_NEW[0][2])}</p><button class="btn ghost small" data-action="whatsnew-seen">Got it</button></div>` : '';
+  const planned = Object.values(w.portions || {}).some((n) => n > 0) || Object.keys(lockedCells(w)).length;
+  if (!planned) return `${head}${next}<div class="card numcard"><h3>Your targets</h3><div class="stat-grid"><div class="stat"><b>${st0.proteinTarget}g</b><span>protein a day</span></div><div class="stat"><b>${(st0.kcalTarget || 0).toLocaleString()}</b><span>kcal a day</span></div><div class="stat"><b>£${st0.budget}</b><span>a week</span></div></div><button class="btn block" style="margin-top:16px" data-action="autoplan">Plan my week for me</button><button class="btn ghost block" style="margin-top:8px" data-action="go-tab" data-to="plan">Choose meals myself</button></div>${wn}`;
+  const st = P.gridStats(liveGrid(w), recipes, ing, snackExtra(w), liveDays(w)); const c = shopTotals(w).chosen; const budget = st0.budget, target = st0.proteinTarget;
+  const food = c ? c.weekly : 0; const pm = mealCost(food, st.filled); const over = food > budget + 0.004;
+  const live = w.days.map((on, i) => on && !isPast(i)); const lowDays = st.perDay.map((p, i) => ({ p, i })).filter(({ p, i }) => live[i] && p < target);
+  const hero = `<div class="card homehero"><div class="row"><div class="grow"><span class="lbl">Food at ${c ? esc(P.SHOP_NAMES[c.shop]) : '—'}</span><b class="hbig">${P.gbp(food)}<small>/ ${P.gbp(budget)}</small></b><div class="hbar"><i class="${over ? 'over' : ''}" style="width:${budget ? Math.min(100, Math.round((food / budget) * 100)) : 0}%"></i></div><span class="hint">${over ? `${P.gbp(food - budget)} over budget` : `${P.gbp(budget - food)} under budget`}${pm ? ` · ${P.gbp(pm)} a meal` : ''}</span></div><div class="grow"><span class="lbl">Protein a day</span><b class="hbig">${st.avg}g<small>/ ${target}</small></b><div class="hbar"><i class="pink" style="width:${target ? Math.min(100, Math.round((st.avg / target) * 100)) : 0}%"></i></div><span class="hint">${lowDays.length ? `${lowDays.length} day${lowDays.length > 1 ? 's' : ''} short` : 'Every day on target'}</span></div></div></div>`;
+  const daysLeft = live.filter(Boolean).length; const freezer = Object.values(S.tubs || {}).reduce((t, n) => t + n, 0);
+  const tubsCard = `<div class="card"><div class="row"><div class="grow"><span class="lbl">Meals to go</span><b class="mid">${st.filled}</b><span class="sub muted">${daysLeft} day${daysLeft === 1 ? '' : 's'} left${S.activeWeek === S.thisMon && todayIdx() > 0 ? ', from today' : ''}</span></div><div class="grow"><span class="lbl">In the freezer</span><b class="mid">${freezer}</b><span class="sub muted">${freezer ? `tub${freezer > 1 ? 's' : ''} · tap an empty slot to use one` : 'no spare tubs'}</span></div></div></div>`;
+  const max = Math.max(target * 1.2, ...st.perDay);
+  const bars = st.perDay.map((p, i) => `<div class="bar ${p < target ? 'low' : ''} ${live[i] ? '' : 'off'}"><b>${live[i] ? p : ''}</b><i style="height:${Math.round((p / max) * 100)}%"></i></div>`).join('');
+  const first = lowDays[0]; const fixLine = first ? `${DAY_FULL[first.i]} is ${target - first.p}g short: a snack fixes it.` : 'Green is on target.';
+  const protCard = `<div class="card"><span class="lbl">Protein a day · target ${target}g</span><div class="bars" style="margin-top:22px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div><p class="small muted" style="margin:6px 0 0">${fixLine}</p></div>`;
+  const pts = spendSeries(); let spend = '';
+  if (pts.length) {
+    const logged = pts.filter((p) => p.kind !== 'list'); const spent = logged.reduce((t, p) => t + p.total, 0), meals = logged.reduce((t, p) => t + (p.meals || 0), 0);
+    const svg = sparkline(pts.map((p) => ({ v: p.total, hollow: p.kind === 'list', label: fmtDate(p.key), title: `${fmtDate(p.key)}: ${P.gbp(p.total)} (${p.kind === 'till' ? 'till' : p.kind === 'shop' ? 'shop ticked off' : 'list price'})`, valLabel: P.gbp(p.total) })), { refY: budget });
+    spend = `<div class="card"><span class="lbl">Spend by week · budget ${P.gbp(budget)}</span>${svg}<p class="small muted" style="margin:4px 0 0">Filled dot: the till, or a shop ticked off. Hollow: the list price.${logged.length ? ` ${logged.length} week${logged.length > 1 ? 's' : ''} logged: ${P.gbp(spent)}${meals ? `, ${meals} meals, ${P.gbp(spent / meals)} a meal` : ''}. Tesco meal deal £3.85, Clubcard price (Which?, 2026).` : ''}</p></div>`;
+  }
+  let weight = ''; const wt = weightTrend(S.weights);
+  if (wt) {
+    const goalName = { build: 'building muscle', lean: 'staying lean', lose: 'losing fat', eatwell: 'eating well' }[st0.goal] || st0.goal;
+    const svg = sparkline(wt.points.slice(-8).map((p) => ({ v: p.kg, label: fmtDate(p.date), title: `${fmtDate(p.date)}: ${p.kg} kg`, valLabel: `${p.kg} kg` })));
+    const sug = st0.adjustTargets === false ? null : adjustSuggestion(st0.goal, S.weights, todayISO(), S.adjSnooze);
+    const verdict = wt.points.length < 3 || wt.days < 21 ? `${wt.points.length} weigh-in${wt.points.length > 1 ? 's' : ''}. After 3 weeks there's enough to read a trend.` : sug ? '' : st0.goal === 'build' ? `Up ${wt.change} kg over ${wt.days} days: moving the right way for ${goalName}.` : st0.goal === 'lose' ? `${wt.change} kg over ${wt.days} days: moving the right way for ${goalName}.` : `${wt.change >= 0 ? '+' : ''}${wt.change} kg over ${wt.days} days.`;
+    weight = `<div class="card"><div class="row"><span class="grow lbl">Weight · ${goalName}</span><button class="btn ghost small" data-action="weigh-add">Add today</button></div>${svg}<p class="small muted" style="margin:4px 0 0">${esc(verdict)}</p></div>`
+      + (sug ? `<div class="card adjust"><span class="lbl">A nudge, if you want it</span><p class="small" style="margin:4px 0 8px">${esc(sug.reason)} For ${goalName}, the usual move is ${sug.kcal > 0 ? '+' : '−'}200 kcal a day: every portion and the shop list resize. A rule of thumb, not medical advice.</p><div class="row" style="gap:8px"><button class="btn small" data-action="adjust-yes" data-kcal="${sug.kcal}">Yes, ${sug.kcal > 0 ? 'add' : 'take off'} 200 kcal</button><button class="btn ghost small" data-action="adjust-later">Not now</button></div></div>` : '');
+  }
+  if (!next) {
+    const nxt = S.weeks[S.nextMon]; const nextPlanned = Object.values(nxt?.portions || {}).some((n) => n > 0);
+    if (S.activeWeek === S.thisMon && todayIdx() >= 5 && !nextPlanned) next = `<div class="card next"><div class="ic">→</div><div class="grow"><b>This week's nearly done</b><span class="sub muted">Plan next week now so Sunday's cook and shop are sorted.</span></div><button class="btn small" data-action="go-tab" data-to="plan" data-week="${S.nextMon}">Plan</button></div>`;
+    else { const rs = P.runSheet(weekCounts(w, { fresh: freshMap(w), skipFresh: true }), recipes); if (rs.list.length) next = `<div class="card next"><div class="ic">${P.DAYS[w.cookDay][0]}</div><div class="grow"><b>Cook ${cookLabel(w, S.activeWeek)}</b><span class="sub muted">${rs.list.length} recipe${rs.list.length === 1 ? '' : 's'}, about ${rs.minutes} min. Then the Sunday check-in plans next week.</span></div><button class="btn small" data-action="go-tab" data-to="cook">Cook</button></div>`; }
+  }
+  return `${head}${next}${hero}${tubsCard}${protCard}${spend}${weight}${wn}`;
+}
+// ----- More: everything that isn't a step. Recipes, Pantry and Settings are the same pages as before, reached from here. -----
+function renderMore() {
+  const due = checkinWeeks();
+  const btn = (to, title, sub) => `<button class="morebtn" data-action="go-tab" data-to="${to}"><span class="grow"><b>${title}</b><span class="sub muted">${sub}</span></span><span class="chev">›</span></button>`;
+  return `<h1>More</h1>
+  <div class="card morelist">${btn('recipes', 'Recipes', `${REC().filter((r) => inLibrary(r.id)).length} in your list · find more ideas · type one in`)}${btn('pantry', 'Pantry', 'What you\u2019ve got, use-by dates, what this week needs')}${btn('settings', 'Settings', 'Account, targets, budget, look, backups')}</div>
+  <h2>Sunday check-in</h2><div class="card">${due.map((k) => `<button class="btn block" data-action="checkin-start" data-week="${k}" style="margin-bottom:8px">Check in on ${k === S.thisMon ? 'this week' : `the week of ${fmtDate(k)}`}</button>`).join('')}${due.includes(S.thisMon) ? '' : `<button class="btn ghost block" data-action="checkin-start" data-week="${S.thisMon}">${(S.checkins || {})[S.thisMon] ? 'This week is checked in · do it again' : 'Check in on this week early'}</button>`}<p class="small muted" style="margin:8px 0 0">Three taps: what got eaten, what the shop came to, how the portions felt. Next week is planned from it, and the app learns which meals to keep.</p></div>
+  <h2>What's new</h2><div class="card">${WHATS_NEW.map(([v, d, t]) => `<div class="line"><span class="grow"><span class="name">${v} · ${d}</span><span class="sub">${esc(t)}</span></span></div>`).join('')}</div>
+  <p class="small muted" style="text-align:center">${esc(CONFIG.APP_NAME)} ${APP_VERSION} · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></p>`;
 }
 
 // ----- Plan -----
@@ -465,17 +568,25 @@ function planTop(w) {
   const hasGrid = chosen.length || tubs.length || Object.keys(lockedCells(w)).length;
   const tips = (S.tips && S.tips.plan) ? '' : `<div class="card tipcard"><h3>How Fuel works</h3><ol class="tips"><li><b>Plan.</b> Tick the meals you fancy. Fuel fits them into your week.</li><li><b>Shop.</b> Your list is priced at four supermarkets. Buy from the cheapest.</li><li><b>Cook.</b> Batch cook on ${DAY_FULL[w.cookDay]}, box it up, and the week is sorted.</li></ol><p class="small">Targets, budget and milk are under the ⚙ gear, top right.</p><button class="btn small" data-action="tip-done" data-tip="plan">Got it</button></div>`;
   const limitNote = st.filled < st.slots / 2 ? '' : weekFactor(w) >= 2.5 ? `These meals come to ${st.avgKcal.toLocaleString()} kcal a day even at the biggest portion size, under your ${kcalT.toLocaleString()} target. Add a snack or another meal to close the gap.` : weekFactor(w) <= 0.6 ? `These meals come to ${st.avgKcal.toLocaleString()} kcal a day even at the smallest portion size, over your ${kcalT.toLocaleString()} target. Drop a snack or a meal.` : '';
+  // Joined midweek? Say so, and offer tonight / tomorrow as the cook day (the default is already today for a week that has started).
+  let midweek = '';
+  const goneDays = S.activeWeek === S.thisMon ? todayIdx() : 0;
+  if (goneDays > 0 && goneDays < 6 && chosen.length) {
+    const rs = P.runSheet(weekCounts(w, { fresh: fm, skipFresh: true }), recipes); const t = todayIdx();
+    const chips = []; for (let i = t; i < 7; i++) if (w.days[i]) chips.push(`<button class="chip ${w.cookDay === i ? 'on' : ''}" data-action="cookday" data-day="${i}">${i === t ? 'Tonight' : i === t + 1 ? 'Tomorrow' : P.DAYS[i]}</button>`);
+    midweek = `<div class="card midweek"><b>Started on a ${DAY_FULL[t]}?</b><p class="small muted" style="margin:4px 0 8px">Cook ${cookLabel(w, S.activeWeek)}: ${rs.list.length} recipe${rs.list.length === 1 ? '' : 's'}, about ${rs.minutes} min. ${goneDays} day${goneDays > 1 ? 's' : ''} gone, so ${st.slots} meals.</p><div class="chip-row">${chips.join('')}</div></div>`;
+  }
   const head = `<div class="card ${chosen.length ? 'numcard' : ''}"><h3>Your numbers</h3>` + (chosen.length
     ? `<div class="stat-grid"><div class="stat"><b>${st.filled}<span>/${st.slots}</span></b><span>${gone ? 'meals to go' : 'meals planned'}</span></div><div class="stat"><b>${st.avg}g</b><span>protein a day<br>target ${target}g</span></div><div class="stat"><b>${st.avgKcal.toLocaleString()}</b><span>kcal a day<br>target ${kcalT.toLocaleString()}</span></div></div>
     ${limitNote ? `<p class="small muted" style="margin-top:8px">${limitNote}</p>` : ''}
     <div class="bars" style="margin-top:26px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div>
     <p class="small muted">Protein a day. Green is on target.</p>`
     : `<p><b>Nothing planned yet.</b></p><p class="small muted">Pick a few meals and Fuel fits them into your week.</p><button class="btn block" style="margin-top:10px" data-action="autoplan">Plan my week for me</button><button class="btn ghost block" style="margin-top:8px" data-action="plan-add">Choose meals myself</button>`) + `${tubHtml}</div>`;
-  return `${tips}${nudge}${dueOnPlan().length ? useUpCard(w, true) : ''}${head}
+  return `${tips}${nudge}${midweek}${dueOnPlan().length ? useUpCard(w, true) : ''}${head}
   ${hasGrid ? `<div class="card gridcard"><h3>Your week</h3><ul class="gridhelp"><li><b>Tap a meal</b> to swap it, move it or skip it. The ✕ under a day skips the whole day.</li></ul>${gridHtml}
     ${snackBar(w)}
     <p class="small muted" style="margin:12px 0 4px">Which day do you batch cook?</p>
-    <div class="day-pick">${P.DAYS.map((d, i) => `<button data-action="cookday" data-day="${i}" class="${w.cookDay === i ? 'on' : ''}">${d}</button>`).join('')}</div>
+    <div class="day-pick">${P.DAYS.map((d, i) => { const gone = S.activeWeek === S.thisMon && (i === 6 ? todayIdx() > 0 : isPast(i)); return `<button data-action="cookday" data-day="${i}" class="${w.cookDay === i ? 'on' : ''}${gone ? ' gone' : ''}" ${gone ? 'disabled' : ''} title="${i === 6 ? 'The Sunday before the week' : ''}">${d}</button>`; }).join('')}</div>
     <div class="row" style="margin-top:10px;flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-action="relayout">Re-arrange the week</button><button class="btn ghost small" data-action="clear-week">Clear week</button>${st.filled ? '<button class="btn ghost small" data-action="share-week">Share my week</button>' : ''}</div></div>` : ''}
   ${installCard()}${overflow}${lateWarnings(w)}`;
 }
@@ -622,7 +733,7 @@ function renderCook() {
     </details>`;
   }).join('');
   return `${head}
-  <div class="card"><h3>Batch cook on ${dayFull} ${cookOn}</h3><p class="small muted" style="margin:0 0 8px">About ${rs.minutes} min. Longest first, the rest alongside.</p><ol class="steps cooklist">${sheet}</ol>
+  <div class="card"><h3>Batch cook ${cookLabel(w, S.activeWeek)}</h3><p class="small muted" style="margin:0 0 8px">About ${rs.minutes} min. Longest first, the rest alongside.</p><ol class="steps cooklist">${sheet}</ol>
   ${fresh.length ? `<h4 class="sub">Made fresh on the day</h4><ul class="clean">${freshList}</ul>` : ''}
   ${usesRice ? `<p class="small muted" style="margin-top:10px">Rice: freeze cooked rice the same day unless it's eaten within 24 hours.</p>` : ''}</div>
   <h2>Recipes <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">tap one to open it</span></h2>
@@ -705,14 +816,15 @@ function shopTotals(w, { recipes = recFor(w), all = false, thigh = S.settings.pr
 function tillNow(w, o) { const t = shopTotals(w, o); return Object.keys(t.needsAll).length && t.chosen ? { shop: t.chosen.shop, total: t.chosen.comparable, stock: t.chosen.stock } : null; }
 
 // ----- "Plan my week for me": one tap fills a sensible week to the person's targets, budget and dislikes (autoplan.js) -----
-function autoPlan(seed = 1) {
+function autoPlan(seed = 1, opts = {}) {
   if (S.activeWeek === S.thisMon && W().days.filter((on, i) => on && !isPast(i)).length < 2) { S.activeWeek = S.nextMon; toast('This week is nearly over, so here is next week.'); }
   const w = W(); const before = seed > 1 && Object.keys(w.portions || {}).length ? { ...w.portions } : null; // "Try another week": steer away from this one
   if (S.activeWeek === S.thisMon) for (let i = 0; i < 7; i++) if (isPast(i) && !P.SLOTS.some((sl) => P.isRecipeCell(w.grid?.[i]?.[sl]))) w.days[i] = false; // gone, empty days: nothing to plan
   toast('Planning your week…', 4000);
   setTimeout(() => {
-    const raw = RAW(), pool = raw.filter((r) => !r.slots.includes('snack') && !isAvoided(r));
-    const args = { P, ING: ING(), core: new Set(raw.filter((r) => r.core).map((r) => r.id)), days: liveDays(w), cookDay: w.cookDay, kcal: S.settings.kcalTarget, protein: S.settings.proteinTarget, budget: S.settings.budget,
+    const raw = RAW(), learn = learnFromMeals(S.meals); // what the Sunday check-ins taught us: skipped-twice mains are left out, eaten-every-time ones get a nudge
+    const pool = raw.filter((r) => !r.slots.includes('snack') && !isAvoided(r) && !(learn.dropped.has(r.id) && r.slots[0] !== 'breakfast'));
+    const args = { P, ING: ING(), core: new Set(raw.filter((r) => r.core).map((r) => r.id)), liked: learn.liked, days: liveDays(w), cookDay: w.cookDay, kcal: S.settings.kcalTarget, protein: S.settings.proteinTarget, budget: S.settings.budget,
       pantry: w.pantry || {}, resolve: resolveFor(w), choiceOf: (id) => { const it = ingById(id); return it?.choices?.length ? chosenFor(w, it) : null; }, seed, differentFrom: before };
     let r = planWeek({ ...args, pool: before ? pool : pool.filter((x) => inLibrary(x.id)) }); // "Try another week" draws on every recipe they eat, so it really is another week
     if (!r || !r.ok) { const r2 = planWeek({ ...args, pool, seed: seed + 100 }); if (r2 && (!r || (r2.ok && !r.ok) || (!r.ok && r2.overBudget + r2.shortProtein < r.overBudget + r.shortProtein))) r = r2; } // widen to every recipe they eat
@@ -720,27 +832,38 @@ function autoPlan(seed = 1) {
     if (!r) { toast('Couldn’t build a week from what you eat. Tick meals yourself below.', 3500); return; }
     for (const id of Object.keys(r.portions)) if (S.library && !S.library.includes(id)) S.library.push(id);
     w.portions = { ...r.portions }; w.overflow = []; relayout(w); planAdd = false; planMore = false; S.tab = 'plan'; save(); render({ top: true });
-    autoPlanSheet(r, seed);
+    const changed = [...(opts.changed || [])]; const nm = (id) => shortName(recById(id)).toLowerCase();
+    const kept = Object.keys(r.portions).filter((id) => learn.liked.has(id)); if (kept.length) changed.push(`Kept ${kept.map(nm).join(', ')}: eaten every time.`);
+    const dropped = [...learn.dropped].filter((id) => inLibrary(id) && recById(id)); if (dropped.length) changed.push(`Left out ${dropped.map(nm).join(', ')}: skipped twice. Still in your list if you want it back.`);
+    const tubs = Object.values(S.tubs || {}).reduce((t, n) => t + n, 0); if (tubs) changed.push(`${tubs} freezer tub${tubs > 1 ? 's' : ''} to use first: tap an empty slot in the week.`);
+    if (seed > 1) changed.push('A different week from the last one.');
+    autoPlanSheet(r, seed, { changed });
   }, 40);
 }
-function autoPlanSheet(r, seed) {
+// v86: the result is the share card itself (what people post), what the plan learned, and the 3-mates deal. extra.changed = lines for "What changed".
+async function autoPlanSheet(r, seed, extra = {}) {
   const w = W(); const st = P.gridStats(liveGrid(w), REC(), ING(), snackExtra(w), liveDays(w)); const c = shopTotals(w).chosen; if (!c) return;
   const food = c.weekly, stock = c.stock, shop = P.SHOP_NAMES[c.shop];
   const notes = [];
   if (food > S.settings.budget + 0.004) notes.push(`£${S.settings.budget} is tight for ${st.filled} high-protein meals, so this is the cheapest sensible week FU£L could find.`);
   if (st.avg < S.settings.proteinTarget) notes.push(`It comes to ${S.settings.proteinTarget - st.avg}g a day under your protein target. A snack closes the gap.`);
+  let img = `<div class="stat-grid" style="margin:10px 0 12px"><div class="stat"><b>${st.filled}</b><span>meals</span></div><div class="stat"><b>${st.avg}g</b><span>protein a day</span></div><div class="stat"><b>${P.gbp(food)}</b><span>food at ${esc(shop)}</span></div></div>`;
+  try { const card = await drawShareCard(w); if (card) img = `<img class="sharecard" src="${URL.createObjectURL(card.blob)}" alt="My week: ${st.filled} meals, ${P.gbp(food)} of food at ${esc(shop)}, ${st.avg}g protein a day">`; } catch {}
+  const changed = (extra.changed || []).filter(Boolean);
   openSheet(`<h3>Your week is planned</h3>
-    <div class="stat-grid" style="margin:10px 0 12px"><div class="stat"><b>${st.filled}</b><span>meals</span></div><div class="stat"><b>${st.avg}g</b><span>protein a day</span></div><div class="stat"><b>${P.gbp(food)}</b><span>food at ${esc(shop)}</span></div></div>
-    ${stock > 0.004 ? `<p class="small">Starting from an empty cupboard adds <b>${P.gbp(stock)}</b> of stock-ups that last for weeks: oil, spices, rice and the like. On Shop, tap what you've already got and the price drops.</p>` : ''}
+    ${img}
+    ${stock > 0.004 ? `<p class="small">A first shop adds <b>${P.gbp(stock)}</b> of basics that last for weeks: oil, spices, rice and the like. On Shop, tap what you've already got and it drops.</p>` : ''}
     ${notes.map((n) => `<p class="small muted">${n}</p>`).join('')}
+    ${changed.length ? `<div class="changed"><span class="lbl">What changed</span><ul class="clean small">${changed.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
     <p class="small muted">Tap any meal in the week to swap it.</p>
-    <div class="stack" style="margin-top:12px"><button class="btn block" data-action="autoplan-keep">Looks good</button><button class="btn ghost block" data-action="autoplan" data-seed="${seed + 1}">Try another week</button><button class="btn ghost block" data-action="share-week">Share my week</button></div>`);
+    ${matesHtml(false)}
+    <div class="stack" style="margin-top:12px"><button class="btn block" data-action="share-week">Share my week</button><button class="btn ghost block" data-action="autoplan-keep">Looks good</button><button class="btn ghost block" data-action="autoplan" data-seed="${seed + 1}">Try another week</button></div>`);
 }
 
 // ----- Share card: a picture of this week's real numbers, for a Story, with the person's own link -----
-async function shareWeek() {
-  const w = W(); const st = P.gridStats(liveGrid(w), REC(), ING(), snackExtra(w), liveDays(w)); const c = shopTotals(w).chosen;
-  if (!st.filled || !c) { toast('Plan some meals first'); return; }
+async function drawShareCard(w) {
+  const st = P.gridStats(liveGrid(w), REC(), ING(), snackExtra(w), liveDays(w)); const c = shopTotals(w).chosen;
+  if (!st.filled || !c) return null;
   let code = S.mate?.code || ''; if (!code && cloud.enabled) { try { const m = await mateCode(); S.mate = { ...(S.mate || {}), ...m }; save(); code = m.code; } catch {} }
   const url = `${shareBase()}${code ? `?c=${code}` : ''}`;
   const meals = Object.entries(w.portions).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => [(recById(id)?.name || id).replace(/\s*\([^)]*\)/g, ''), n]);
@@ -765,9 +888,12 @@ async function shareWeek() {
   g.fillStyle = '#fff'; g.font = '700 48px Inter, sans-serif'; g.fillText('Planned in FU£L. First week free.', 90, 1745);
   g.fillStyle = sun; g.font = '600 42px Inter, sans-serif'; g.fillText(url.replace('https://', ''), 90, 1820);
   g.fillStyle = 'rgba(255,255,255,.6)'; g.font = '500 30px Inter, sans-serif'; g.fillText(`Prices checked ${dateRange(listDates(shopTotals(w), c))}`, 90, 1880);
-  const blob = await new Promise((res) => cv.toBlob(res, 'image/png')); if (!blob) { toast('Couldn’t make the picture'); return; }
-  const file = new File([blob], 'my-fuel-week.png', { type: 'image/png' });
-  const text = `My week: ${st.filled} meals, ${P.gbp(c.weekly)} of food at ${P.SHOP_NAMES[c.shop]}, ${st.avg}g protein a day. Planned in FU£L:`;
+  const blob = await new Promise((res) => cv.toBlob(res, 'image/png')); if (!blob) return null;
+  return { blob, url, text: `My week: ${st.filled} meals, ${P.gbp(c.weekly)} of food at ${P.SHOP_NAMES[c.shop]}, ${st.avg}g protein a day. Planned in FU£L:` };
+}
+async function shareWeek() {
+  const card = await drawShareCard(W()); if (!card) { toast('Plan some meals first'); return; }
+  const { blob, url, text } = card; const file = new File([blob], 'my-fuel-week.png', { type: 'image/png' });
   try { if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], text, url }); track('shared'); return; } } catch (e) { if (e?.name === 'AbortError') return; }
   const src = URL.createObjectURL(blob);
   openSheet(`<h3>Your week, ready to post</h3><p class="small muted">Press and hold the picture to save it, then add it to your Story with your link.</p><img src="${src}" alt="My week in FU£L" style="width:100%;border-radius:14px;margin:8px 0;box-shadow:0 4px 18px rgba(27,26,46,.15)"><button class="btn block" data-action="copy-link" data-url="${esc(url)}">Copy my link</button><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Done</button>`);
@@ -859,12 +985,12 @@ function renderShop() {
   const split = P.cheapestSplit(needs, ing);
   const budget = S.settings.budget;
   // The budget is judged on the one total. If only one-off stock-ups push it over we say so kindly (amber, not red): next week is just the food.
-  const verdict = P.budgetVerdict(chosen.comparable, chosen.stock, budget);
+  const verdict = P.budgetVerdict(chosen.weekly, 0, budget); // v86: the budget is judged on the week's food; one-off basics are shown on their own
   const oldest = ranked.map((b) => b.oldest).filter(Boolean).sort()[0];
   // shop picker: one chip per shop, total on it
   const chips = ranked.map((b) => {
     const dead = b.unpriced.length === b.missing.length && b.lines.length === 0;
-    return `<button class="shopchip ${b === chosen ? 'on' : ''} ${dead ? 'dead' : ''}" data-action="pick-shop" data-shop="${b.shop}"><span>${P.SHOP_NAMES[b.shop]}</span><b>${b.lines.length ? P.gbp(b.comparable) : '—'}</b>${b === bestWeek && b.lines.length ? '<i>cheapest</i>' : b.unpriced.length ? `<i>${b.unpriced.length} unpriced</i>` : b.notSold.length ? `<i>${b.notSold.length} not sold here</i>` : '<i>&nbsp;</i>'}</button>`;
+    return `<button class="shopchip ${b === chosen ? 'on' : ''} ${dead ? 'dead' : ''}" data-action="pick-shop" data-shop="${b.shop}"><span>${P.SHOP_NAMES[b.shop]}</span><b>${b.lines.length ? P.gbp(b.weekly) : '—'}</b>${b === bestWeek && b.lines.length ? '<i>cheapest</i>' : b.unpriced.length ? `<i>${b.unpriced.length} unpriced</i>` : b.notSold.length ? `<i>${b.notSold.length} not sold here</i>` : '<i>&nbsp;</i>'}</button>`;
   }).join('');
   // the list for the chosen shop
   const online = { tesco: (q) => `https://www.tesco.com/groceries/en-GB/search?query=${encodeURIComponent(q)}`, asda: (q) => `https://www.asda.com/groceries/search/${encodeURIComponent(q)}`, sainsburys: (q) => `https://www.sainsburys.co.uk/gol-ui/SearchResults/${encodeURIComponent(q)}` };
@@ -925,25 +1051,32 @@ function renderShop() {
   const cupMine = [...cup.ids].filter((id) => w.pantry[id] !== undefined);
   let cupHtml = '';
   if (!w.done && !w.cupChecked && !startedShop && (cupOrder.length || cupMine.length)) {
-    cup.base ??= chosen.comparable; const off = P.round2(cup.base - chosen.comparable); const shown = cupOrder.slice(0, 14);
+    cup.base ??= chosen.comparable; const off = P.round2(cup.base - chosen.comparable);
+    const basics = chosen.stock > 0.004; const shown = basics ? cupOrder.filter((x) => isStock(x.id)).slice(0, 16) : cupOrder.slice(0, 14); // v86: a first shop leads with the one-off basics, named as such
     const chipName = (id) => esc((ingById(id)?.name || id).replace(/\s*\([^)]*\)/g, ''));
-    cupHtml = `<div class="card cupcheck"><h3>Already got any of this?${off > 0 ? ` <b class="cupoff">${P.gbp(off)} off</b>` : ''}</h3><p class="small muted" style="margin:0 0 6px">Tap it and it comes off your shop.</p>
+    cupHtml = `<div class="card cupcheck"><h3>${basics ? `First-time basics · ${P.gbp(chosen.stock)}` : 'Already got any of this?'}${off > 0 ? ` <b class="cupoff">${P.gbp(off)} off</b>` : ''}</h3><p class="small muted" style="margin:0 0 6px">${basics ? 'Oil, rice, spices, stock. They last for weeks and next week they\u2019re in your Pantry. Tap what you\u2019ve already got.' : 'Tap it and it comes off your shop.'}</p>
     <div class="chip-row">${cupMine.map((id) => `<button class="chip on" data-action="cup-tick" data-id="${id}">✓ ${chipName(id)}</button>`).join('')}${shown.map((x) => `<button class="chip" data-action="cup-tick" data-id="${x.id}" data-cost="${x.cost}">${chipName(x.id)}${x.cost ? `<small>${P.gbp(x.cost)}</small>` : ''}</button>`).join('')}</div>
     
+    ${basics ? `<p class="small muted" style="margin:8px 0 0">Basics to buy: <b>${P.gbp(chosen.stock)}</b> · At the till with the food: <b>${P.gbp(chosen.comparable)}</b></p>` : ''}
     <div class="row" style="gap:8px;margin-top:8px"><button class="btn small grow" data-action="cup-done">${cupMine.length ? `Done · shop is now ${P.gbp(chosen.comparable)}` : 'Nothing, I need it all'}</button><button class="btn ghost small grow" data-action="go-pantry">${cupOrder.length > shown.length ? `See all ${cupOrder.length + cupMine.length}` : 'Full cupboard'}</button></div></div>`;
   }
-  const verdictLine = verdict.state === 'ok' ? `${P.gbp(verdict.left)} under budget` : verdict.state === 'stock' ? `${P.gbp(verdict.over)} over, only because of one-off stock-ups` : `${P.gbp(verdict.over)} over budget. <a href="#" data-action="open-save"><b>Where can I save?</b></a>`;
-  const inc = [chosen.stock ? `${P.gbp(chosen.stock)} of stock-ups that last weeks` : '', chosen.elsewhere ? `${P.gbp(chosen.elsewhere)} from another shop (${P.SHOP_NAMES[chosen.shop]} doesn't sell it)` : ''].filter(Boolean).join(' and ');
+  const verdictLine = verdict.state === 'ok' ? `${P.gbp(verdict.left)} under your ${P.gbp(budget)}` : `${P.gbp(verdict.over)} over your ${P.gbp(budget)}. <a href="#" data-action="open-save"><b>Where can I save?</b></a>`;
+  const inc = [chosen.stock ? `${P.gbp(chosen.stock)} of one-off basics that last weeks` : '', chosen.elsewhereWeek ? `${P.gbp(chosen.elsewhereWeek)} from another shop (${P.SHOP_NAMES[chosen.shop]} doesn't sell it)` : ''].filter(Boolean).join(' and ');
+  const others = ranked.filter((b) => b !== chosen && b.lines.length).map((b) => `${P.SHOP_NAMES[b.shop]} ${P.gbp(b.weekly)}`).join(' · ');
+  // The two numbers people screenshot: the cheapest protein on the list, and what a meal works out at (the meal deal is a reference, not a claim).
+  const stS = P.gridStats(liveGrid(w), recipes, ing, snackExtra(w), liveDays(w)); const cp = cheapestProtein(chosen.lines.filter((l) => ['protein', 'dairy'].includes(ingById(l.id)?.category)), ingById); const pm = mealCost(chosen.weekly, stS.filled);
+  const factsHtml = cp || pm ? `<div class="card shopfacts"><div class="row">${cp ? `<div class="grow"><span class="lbl">Cheapest protein this week</span><b class="mid">30g for ${cp.pencePer30g >= 100 ? P.gbp(cp.pencePer30g / 100) : `${cp.pencePer30g}p`}</b><span class="sub muted">${esc(cp.name.replace(/\s*\([^)]*\)/g, '').toLowerCase())}</span></div>` : ''}${pm ? `<div class="grow"><span class="lbl">A meal</span><b class="mid">${P.gbp(pm)}</b><span class="sub muted">Tesco meal deal £3.85, Clubcard price (Which?, 2026)</span></div>` : ''}</div></div>` : '';
   // Cameron (21 Sep): "there's so much stuff in the way". The page is now: already got it? → THE price → where to shop → the list → extras → next. Everything else is a closed fold or gone.
   return `${shopTop}
   ${doneBox}
   ${cupHtml}
-  <div class="card shophead"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.comparable)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]}</span></span><span class="muted small">budget ${P.gbp(budget)}</span></div>
-    <div class="budget ${verdict.state === 'over' ? 'over' : verdict.state === 'stock' ? 'low' : ''}"><i style="width:${verdict.pct}%"></i></div>
-    <p class="small muted">${verdictLine}</p>
-    ${inc ? `<p class="small muted stockline">Includes ${inc}.</p>` : ''}
+  <div class="card shophead"><span class="lbl">This week's food</span><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.weekly)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]} · ${weekCount} item${weekCount === 1 ? '' : 's'}</span></span></div>
+    <div class="budget ${verdict.state === 'over' ? 'over' : ''}"><i style="width:${verdict.pct}%"></i></div>
+    <p class="small muted">${verdictLine}${others ? ` Same list: ${others}.` : ''}</p>
+    ${inc ? `<p class="small muted stockline">At the till: <b>${P.gbp(chosen.comparable)}</b>, with ${inc}.</p>` : ''}
     <div class="shopchips">${chips}</div>
   </div>
+  ${factsHtml}
   ${whyHtml}
   ${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
   <h2>${P.SHOP_NAMES[chosen.shop]} list <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">${done}/${weekCount} ticked</span></h2>
@@ -971,6 +1104,75 @@ async function pastCell(w, day, slot) {
     toast(placed ? `Frozen and put into next week: ${placed}` : 'Frozen. Tap an empty slot next week to use it');
   } else toast('Marked as not eaten');
   save(); render();
+}
+// ----- The Sunday check-in (v86): three taps on Sunday, and next week is planned from what actually happened -----
+// CI is the check-in under way; nothing is saved until the last tap. S.checkins[week], S.meals (eaten/skipped per recipe), S.weights,
+// S.spendLog (the till total) and S.tubs (uneaten portions that freeze) are what it leaves behind.
+let CI = null;
+function checkinWeeks() { const t = (new Date().getDay() + 6) % 7; return Object.keys(S.weeks).filter((k) => k <= S.thisMon && checkinDue({ weekKey: k, thisMon: S.thisMon, todayIdx: t, planned: Object.values(S.weeks[k].portions || {}).some((n) => n > 0), hasCheckin: !!(S.checkins || {})[k] })).sort(); }
+function checkinStart(key) {
+  const w = S.weeks[key]; if (!w) { toast('Nothing to check in'); return; } if (!w.grid) relayout(w);
+  const planned = {}; w.grid.forEach((d) => { for (const sl of P.SLOTS) { const v = d[sl]; const rid = P.isRecipeCell(v) ? v : P.isTub(v) ? P.tubRecipe(v) : null; if (rid && recById(rid)) planned[rid] = (planned[rid] || 0) + 1; } });
+  if (!Object.keys(planned).length) { toast('Nothing was planned that week'); return; }
+  const c = shopTotals(w).chosen;
+  CI = { week: key, step: 1, planned, eaten: { ...planned }, out: 0, till: w.done?.total ?? null, listPrice: c ? c.comparable : null, shop: w.done?.shop || c?.shop || 'aldi', shopName: c ? P.SHOP_NAMES[c.shop] : '', items: c ? c.lines.length : 0, portions: 'same', weight: '' };
+  checkinStep(1);
+}
+function checkinMealsAfter() { const m = JSON.parse(JSON.stringify(S.meals || {})); for (const [rid, p] of Object.entries(CI.planned)) { const e = CI.eaten[rid] || 0; const x = (m[rid] ||= { eaten: 0, skipped: 0, weeks: 0 }); x.eaten += e; x.skipped += Math.max(0, p - e); x.weeks = (x.weeks || 0) + (e > 0 ? 1 : 0); } return m; }
+function checkinTarget() { return CI.week < S.thisMon ? S.thisMon : S.nextMon; } // "next week" after last week's check-in is this week
+function checkinPreview() {
+  const learn = learnFromMeals(checkinMealsAfter()); const out = []; const nm = (id) => shortName(recById(id)).toLowerCase();
+  const kept = Object.keys(CI.planned).filter((id) => learn.liked.has(id)); if (kept.length) out.push(`Keep ${kept.map(nm).join(', ')}: eaten every time.`);
+  const dropped = Object.keys(CI.planned).filter((id) => learn.dropped.has(id)); if (dropped.length) out.push(`Leave out ${dropped.map(nm).join(', ')}: skipped twice. Still in your list.`);
+  const tubs = Object.entries(CI.planned).reduce((t, [rid, p]) => t + (recById(rid)?.freezer ? Math.max(0, p - (CI.eaten[rid] || 0)) : 0), 0) + Object.values(S.tubs || {}).reduce((t, n) => t + n, 0);
+  if (tubs) out.push(`Use ${tubs} freezer tub${tubs > 1 ? 's' : ''} first, so you buy less.`);
+  if (CI.out) out.push(`You ate out ${CI.out >= 3 ? '3 or more times' : CI.out === 1 ? 'once' : 'twice'}: mark a meal "out" next week and the shop drops.`);
+  if (CI.portions === 'more') out.push('Portions about 10% bigger, and the shop list with them.'); if (CI.portions === 'less') out.push('Portions about 10% smaller.');
+  if (!out.length) out.push('Plan a fresh week to your targets and budget.');
+  return out;
+}
+function checkinStep(n) {
+  CI.step = n; const label = CI.week === S.thisMon ? 'this week' : `the week of ${fmtDate(CI.week)}`;
+  const dots = `<div class="ci-steps">${[1, 2, 3].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</div>`;
+  let body = '';
+  if (n === 1) {
+    const rows = Object.entries(CI.planned).map(([rid, p]) => { const e = CI.eaten[rid] || 0; return `<div class="line ci-row"><span class="grow"><span class="name">${esc(recById(rid)?.name || rid)}</span><span class="sub">planned ×${p}${e < p ? ` · <b class="ci-skip">${p - e} not eaten</b>` : ' · all eaten'}</span></span><span class="stepper ${e ? '' : 'zero'}"><button data-action="checkin-eaten" data-id="${rid}" data-d="-1">−</button><b>${e}</b><button data-action="checkin-eaten" data-id="${rid}" data-d="1" ${e >= p ? 'disabled' : ''}>+</button></span></div>`; }).join('');
+    const uneaten = Object.entries(CI.planned).map(([rid, p]) => [rid, p - (CI.eaten[rid] || 0)]).filter(([, k]) => k > 0);
+    const freeze = uneaten.filter(([rid]) => recById(rid)?.freezer), bin = uneaten.filter(([rid]) => !recById(rid)?.freezer); const nm = (rid) => shortName(recById(rid)).toLowerCase();
+    body = `<h3>How did ${label} go?</h3><p class="small muted">Pre-filled from your week. Turn down anything you didn't eat.</p><div class="card list ci-list">${rows}</div>
+      ${uneaten.length ? `<div class="card"><span class="lbl">Not eaten</span><p class="small" style="margin:4px 0 0">${freeze.length ? `${freeze.map(([rid, k]) => `${k} ${nm(rid)}`).join(', ')}: into the freezer as tubs, offered first next week.` : ''}${bin.length ? ` ${bin.map(([rid, k]) => `${k} ${nm(rid)}`).join(', ')}: ${bin.length === 1 && bin[0][1] === 1 ? 'that one doesn\u2019t' : 'those don\u2019t'} freeze, so just a skip.` : ''}</p></div>` : ''}
+      <div class="card"><span class="lbl">Ate out or got a takeaway?</span><div class="chip-row" style="margin-top:6px">${[0, 1, 2, 3].map((k) => `<button class="chip ${CI.out === k ? 'on' : ''}" data-action="checkin-out" data-n="${k}">${k === 3 ? '3+' : k === 1 ? '1 time' : k}</button>`).join('')}</div><p class="small muted" style="margin:6px 0 0">Only so next week's plan isn't bigger than you need.</p></div>
+      <button class="btn block" data-action="checkin-next">Next</button><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Not now</button>`;
+  } else if (n === 2) {
+    const log = Object.values(S.spendLog || {}).filter((v) => v && v.total > 0); const tot = log.reduce((t, v) => t + v.total, 0);
+    body = `<h3>What did the shop come to?</h3><p class="small muted">Off the receipt. It makes your spend chart real.</p>
+      <div class="card"><span class="lbl">The list said</span><div><b class="mid">${CI.listPrice != null ? P.gbp(CI.listPrice) : '—'}</b> <span class="small muted">at ${esc(CI.shopName)} · ${CI.items} item${CI.items === 1 ? '' : 's'}</span></div>
+        <input class="big" id="ci-till" type="number" inputmode="decimal" step="0.01" min="0" placeholder="£ at the till" value="${CI.till != null ? CI.till : ''}" style="margin-top:10px;width:100%;font-size:22px;text-align:center"><p class="small muted" style="margin:6px 0 0">Type the till total, or leave it and the list price counts.</p></div>
+      <div class="card"><span class="lbl">Where did you shop?</span><div class="chip-row" style="margin-top:6px">${['aldi', 'tesco', 'sainsburys', 'asda', 'lidl', 'other'].map((k) => `<button class="chip ${CI.shop === k ? 'on' : ''}" data-action="checkin-shop" data-shop="${k}">${k === 'other' ? 'Other' : P.SHOP_NAMES[k]}</button>`).join('')}</div></div>
+      ${log.length ? `<div class="card"><span class="lbl">So far this term</span><div class="row" style="margin-top:6px"><div class="grow"><b class="mid">${P.gbp(tot)}</b><span class="sub muted">${log.length} week${log.length > 1 ? 's' : ''} of food</span></div><div class="grow"><b class="mid">${P.gbp(tot / log.length)}</b><span class="sub muted">a week on average</span></div></div></div>` : ''}
+      <button class="btn block" data-action="checkin-next">Next</button><button class="btn ghost block" data-action="checkin-skip-till" style="margin-top:8px">Skip, no receipt</button><button class="btn ghost block" data-action="checkin-back" style="margin-top:8px">Back</button>`;
+  } else {
+    const nextPlanned = Object.values(S.weeks[checkinTarget()]?.portions || {}).some((k) => k > 0);
+    const rule = S.settings.goal === 'build' ? 'Build muscle: if your weight is flat for 3 weeks, FU£L offers +200 kcal a day and every portion resizes.' : S.settings.goal === 'lose' ? 'Lose fat: if your weight hasn\u2019t moved in 3 weeks, FU£L offers −200 kcal a day.' : 'Kept for your trend on Home.';
+    body = `<h3>How were the portions?</h3><p class="small muted">This sizes next week.</p>
+      <div class="card"><div class="chip-row">${[['less', 'Too much'], ['same', 'Just right'], ['more', 'Not enough']].map(([k, l]) => `<button class="chip ${CI.portions === k ? 'on' : ''}" data-action="checkin-portions" data-p="${k}">${l}</button>`).join('')}</div><p class="small muted" style="margin:6px 0 0">"Not enough" adds about 10% to every portion next week, and the shop list follows. "Too much" takes 10% off.</p></div>
+      <div class="card"><span class="lbl">Weight today · optional</span><input class="big" id="ci-weight" type="number" inputmode="decimal" step="0.1" min="30" max="200" placeholder="kg" value="${CI.weight}" style="margin-top:8px;width:100%;font-size:22px;text-align:center"><p class="small muted" style="margin:6px 0 0">${rule} A rule of thumb, not medical advice, and never changed without your say-so.</p></div>
+      <div class="card"><span class="lbl">Next week will</span><ul class="clean small" style="margin:6px 0 0">${checkinPreview().map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>
+      <button class="btn block" data-action="checkin-plan">${nextPlanned ? 'Done' : 'Plan next week'}</button><button class="btn ghost block" data-action="checkin-back" style="margin-top:8px">Back</button>`;
+  }
+  openSheet(`${dots}${body}`);
+}
+function checkinReadInputs() { const t = document.getElementById('ci-till'); if (t) CI.till = t.value === '' ? null : +t.value; const wgt = document.getElementById('ci-weight'); if (wgt) CI.weight = wgt.value; }
+function checkinFinish() {
+  const key = CI.week, w = S.weeks[key], today = todayISO();
+  S.meals = checkinMealsAfter();
+  S.tubs ||= {}; for (const [rid, p] of Object.entries(CI.planned)) { const k = p - (CI.eaten[rid] || 0); if (k > 0 && recById(rid)?.freezer) S.tubs[rid] = (S.tubs[rid] || 0) + k; }
+  const till = CI.till != null && CI.till >= 0 ? P.round2(CI.till) : null; const total = till ?? CI.listPrice;
+  S.spendLog ||= {}; if (total != null) S.spendLog[key] = { ...(S.spendLog[key] || {}), shop: CI.shop, total, weekly: till ?? (w?.done?.weekly ?? total), budget: S.settings.budget, date: S.spendLog[key]?.date || today, source: till != null ? 'till' : 'list', meals: Object.values(CI.planned).reduce((t, n) => t + n, 0) };
+  const kg = +CI.weight; if (kg >= 30 && kg <= 200) { S.weights = (S.weights || []).filter((x) => x.date !== today); S.weights.push({ date: today, kg: Math.round(kg * 10) / 10 }); S.weights.sort((a, b) => a.date.localeCompare(b.date)); S.weights = S.weights.slice(-60); }
+  if (CI.portions !== 'same') setTargets(Math.round((S.settings.kcalTarget * (CI.portions === 'more' ? 1.1 : 0.9)) / 50) * 50, S.settings.proteinTarget);
+  S.checkins ||= {}; S.checkins[key] = { at: new Date().toISOString(), planned: { ...CI.planned }, eaten: { ...CI.eaten }, out: CI.out, till, shop: CI.shop, portions: CI.portions, weight: kg >= 30 ? kg : null };
+  track('checkin'); save();
 }
 // First-time tip cards, one per tab. Dismissed with "Got it" (S.tips[key]); "Show the tips again" in Settings clears them.
 const TIPS = {
@@ -1181,10 +1383,11 @@ function trialSheet() {
   const price = esc(CONFIG.PRICE_LABEL || '£4.99');
   if (paidUp() || matesUnlocked()) { openSheet(`<h3>FU£L is yours for life</h3><p class="small muted">${paidUp() ? esc(cloud.user?.email || '') : 'Three mates planned a week with your link.'}</p><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Close</button>`); return; }
   const left = trialLeft();
-  openSheet(`<h3>${left ? `Free week: day ${trialDay()} of ${TRIAL_DAYS}` : 'Your free week has ended'}</h3>${left ? trialSegs() : ''}
+  const e = trialEnd(), days = S.trial?.days || TRIAL_DAYS;
+  openSheet(`<h3>${!e ? `Your free ${days === 14 ? 'fortnight' : 'week'}` : left ? `Free week: day ${trialDay()} of ${trialTotalDays()}` : 'Your free week has ended'}</h3>${e && left ? trialSegs() : ''}
     <ol class="fw-steps">
-      <li><b>Days 1 to 7: everything's free.</b> Every recipe, the shop prices, the cook plan. No account, no card.</li>
-      <li><b>${left ? `After ${dayName(trialEnd())}` : 'Now'}: keep it for ${price}, once.</b> Not a subscription. Nothing renews, ever.</li>
+      <li><b>${!e ? `Plan a week and your free ${days} days start.` : `Days 1 to ${trialTotalDays()}: everything's free.`}</b> Every recipe, the shop prices, the cook plan. No account, no card.${!e ? ' The clock only starts once you have a week planned, and it always runs to a Sunday night.' : ''}</li>
+      <li><b>${!e ? 'After that' : left ? `After ${dayName(e)}` : 'Now'}: keep it for ${price}, once.</b> Not a subscription. Nothing renews, ever.</li>
       ${GROWTH_OK ? `<li><b>Or free for life.</b> When 3 mates plan a week with your link.</li>` : ''}
     </ol>
     <p class="fw-promise">We never ask for a card during the free week, so you can't be charged by surprise. If you don't keep it, nothing happens.</p>
@@ -1192,7 +1395,7 @@ function trialSheet() {
     <button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">${left ? 'Carry on free' : 'Close'}</button>`);
 }
 // The small "Free week · 5 days left" pill in the top bar (tap: the sheet above). Gone once paid.
-function trialPill() { if (!cloud.enabled || paidUp() || matesUnlocked()) return ''; const left = trialLeft(); return `<button class="trialpill ${left <= 2 ? 'soon' : ''}" data-action="trial">${left ? `Free · ${left} day${left > 1 ? 's' : ''} left` : 'Free week over'}</button>`; }
+function trialPill() { if (!cloud.enabled || paidUp() || matesUnlocked()) return ''; const left = trialLeft(); const e = trialEnd(); return `<button class="trialpill ${e && left <= 2 ? 'soon' : ''}" data-action="trial">${!e ? `Free week${S.trial?.days === 14 ? ' · 14 days' : ''}` : left ? `Free until ${dayName(e)}` : 'Free week over'}</button>`; }
 function refreshTrialPill() { const b = document.querySelector('.brandbar .trialpill'); const html = S.tab === 'settings' ? '' : trialPill(); if (b) b.outerHTML = html || ''; else if (html) document.querySelector('.brandbar')?.insertAdjacentHTML('beforeend', html); }
 // After any sign-in: say which code this account came with (once), make three mates' unlock permanent, count the step.
 async function afterSignIn() {
@@ -1307,7 +1510,7 @@ function moneyCard() {
 function renderSettings() {
   const st = S.settings;
   const goal = (k, l) => `<option value="${k}" ${st.goal === k ? 'selected' : ''}>${l}</option>`;
-  const access = !cloud.enabled ? '' : paidUp() ? `Yours for life${cloud.planExpires ? ` until ${fmtDate(cloud.planExpires.slice(0, 10))}` : ''}` : matesUnlocked() ? 'Free for life: 3 mates planned a week' : trialLeft() ? `Free week, day ${trialDay()} of ${TRIAL_DAYS} · free until ${dayName(trialEnd())}` : 'Free week over';
+  const access = !cloud.enabled ? '' : paidUp() ? `Yours for life${cloud.planExpires ? ` until ${fmtDate(cloud.planExpires.slice(0, 10))}` : ''}` : matesUnlocked() ? 'Free for life: 3 mates planned a week' : !trialEnd() ? `Free ${S.trial?.days === 14 ? 'fortnight' : 'week'} · starts when you plan a week` : trialLeft() ? `Free week, day ${trialDay()} of ${trialTotalDays()} · free until ${dayName(trialEnd())}` : 'Free week over';
   const buyBtn = cloud.enabled && !paidUp() && !matesUnlocked() && CONFIG.CHECKOUT_URL ? `<button class="btn block" data-action="buy-open" style="margin-top:12px">Upgrade now · ${esc(CONFIG.PRICE_LABEL || '£4.99')} once, for life</button>` : '';
   const extrasAcct = cloud.enabled && !paidUp() ? `${buyBtn}${matesUnlocked() ? '' : matesHtml(false)}` : '';
   const account = !cloud.enabled
@@ -1326,6 +1529,12 @@ function renderSettings() {
     </div>
     <label class="field">Goal<select data-setting-str="goal">${goal('build', 'Build muscle')}${goal('lean', 'Stay lean and strong')}${goal('lose', 'Lose fat, keep muscle')}${goal('eatwell', 'Just eat well')}</select></label>
     <p class="small muted" style="margin:8px 0 0">Change your goal or weight and your daily targets and portion sizes change with it.</p>
+    ${S.loan ? `<p class="small muted" style="margin:6px 0 0">£${S.loan.perWeek} a week from £${S.loan.left} till ${fmtDate(S.loan.until)}. <a href="#" data-action="loan-clear">Forget this</a></p>` : ''}
+  </div>
+  <h2>Look</h2><div class="card"><div class="chip-row">${[['auto', 'Follow phone'], ['light', 'Light'], ['dark', 'Dark']].map(([k, l]) => `<button class="chip ${(S.theme || 'auto') === k ? 'on' : ''}" data-action="theme" data-theme="${k}">${l}</button>`).join('')}</div></div>
+  <h2>Weigh-ins</h2><div class="card">
+    <label class="check"><input type="checkbox" data-setting-bool="adjustTargets" ${st.adjustTargets === false ? '' : 'checked'}><span>Offer to adjust my targets from my weight<span class="sub">Build muscle: flat for 3 weeks → +200 kcal offered. Lose fat: not moving → −200. Only ever a suggestion you tap, never automatic. A rule of thumb, not medical advice.</span></span></label>
+    <div class="row" style="margin-top:10px;gap:8px;align-items:center"><span class="grow small muted">${(() => { const t = weightTrend(S.weights); return t ? `Last weigh-in ${t.latest} kg on ${fmtDate(t.points[t.points.length - 1].date)} · ${t.points.length} logged` : 'No weigh-ins yet. The Sunday check-in asks, or add one here.'; })()}</span><button class="btn ghost small" data-action="weigh-add">Add</button></div>
   </div>
   <h2>Daily targets</h2><div class="card">
     <p class="small muted" style="margin:0 0 10px">Calories set the portion size: meals are scaled so the week lands on this number, and the shop list scales with them. Protein is what you aim for.</p>
@@ -1350,6 +1559,7 @@ function renderSettings() {
     <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-action="intro">Show the intro again</button><button class="btn ghost small" data-action="tips-again">Show the tips again</button><button class="btn ghost small" data-action="export">Copy backup</button><button class="btn ghost small" data-action="import">Paste backup</button></div>
     <button class="btn danger block" data-action="reset" style="margin-top:12px">Reset everything</button>
   </div>
+  <h2>What's new</h2><div class="card">${WHATS_NEW.map(([v, d, t]) => `<div class="line"><span class="grow"><span class="name">${v} · ${d}</span><span class="sub">${esc(t)}</span></span></div>`).join('')}</div>
   <p class="small muted" style="text-align:center">${esc(CONFIG.APP_NAME)} ${APP_VERSION} · prices checked ${dateRange(DATA.priceDates || [])} · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></p>
   <p class="small muted screenfacts" style="text-align:center;font-size:11px;opacity:.7;margin-top:-6px">${esc(screenFacts())}</p>`;
 }
@@ -1428,19 +1638,22 @@ function introStep(n) {
   const wt = S.settings.weight || 85; const g = INTRO.goal || 'build'; const picked = INTRO.goal; // nothing looks chosen until they choose
   const budgets = [30, 40, 50, 60];
   const step = {
-    1: `<div class="logo wordmark" aria-label="Fuel">FU<b>£</b>L</div>${cloud.enabled && !paidUp() ? '<p class="freeline">Free for 7 days · no account · no card</p>' : ''}${gateInstallHint()}<h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${picked === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
-    2: `<h1>How much do you weigh?</h1><p>Kilos, roughly. Your daily protein and calorie targets come from this and your goal. Portions are sized to fit your calories.</p><input class="big" type="number" id="intro-weight" inputmode="numeric" value="${wt}" min="40" max="160"><div class="stat-row"><div><b id="iw-p">${P.proteinTargetFor(wt, g)}g</b><span>protein a day</span></div><div><b id="iw-f">${P.kcalTargetFor(wt, g).toLocaleString()}</b><span>kcal a day</span></div></div><button class="go" data-action="intro-weight">Next</button><button class="back" data-action="intro-back">Back</button>`,
-    3: `<h1>Weekly food budget?</h1><p>The shop list always shows what's left against it.</p><div class="chips">${budgets.map((b) => `<button class="opt ${S.settings.budget === b ? 'on' : ''}" data-action="intro-budget" data-budget="${b}">£${b}</button>`).join('')}</div><p style="margin-bottom:6px">Or type your own</p><input class="big" type="number" id="intro-budget" inputmode="numeric" placeholder="£" min="10" max="300"><button class="go" data-action="intro-budget-custom">Next</button><button class="back" data-action="intro-back">Back</button>`,
+    1: `<div class="logo wordmark" aria-label="Fuel">FU<b>£</b>L</div>${cloud.enabled && !paidUp() ? `<p class="freeline">${S.trial?.codeName ? esc(S.trial.codeName) + '\u2019s code · ' : ''}Free for ${S.trial?.days || TRIAL_DAYS} days · no account · no card</p>` : ''}${gateInstallHint()}<h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${picked === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
+    2: `<h1>How much do you weigh?</h1><p>Kilos, roughly. Your daily protein and calorie targets come from this and your goal. Portions are sized to fit your calories.</p><input class="big" type="number" id="intro-weight" inputmode="decimal" placeholder="kg" value="${S.settings.onboarded ? wt : ''}" min="30" max="200"><div class="stat-row"><div><b id="iw-p">${S.settings.onboarded ? `${P.proteinTargetFor(wt, g)}g` : '—'}</b><span>protein a day</span></div><div><b id="iw-f">${S.settings.onboarded ? P.kcalTargetFor(wt, g).toLocaleString() : '—'}</b><span>kcal a day</span></div></div><button class="go" data-action="intro-weight">Next</button><button class="back" data-action="intro-back">Back</button>`,
+    3: `<h1>Weekly food budget?</h1><p>The shop list always shows what's left against it.</p><div class="chips">${budgets.map((b) => `<button class="opt ${S.settings.budget === b ? 'on' : ''}" data-action="intro-budget" data-budget="${b}">£${b}</button>`).join('')}</div><p style="margin-bottom:6px">Or type your own</p><input class="big" type="number" id="intro-budget" inputmode="numeric" placeholder="£" min="10" max="300"><p style="margin:14px 0 6px">Or work it out from what's left</p><div class="row" style="gap:8px"><input class="big grow" type="number" id="intro-loan-left" inputmode="numeric" placeholder="£ left" value="${S.loan?.left || ''}" style="margin:0"><input class="big grow" type="date" id="intro-loan-until" value="${S.loan?.until || ''}" style="margin:0;font-size:16px"></div><p class="small" id="intro-loan-out" style="margin:8px 0 0;min-height:1.4em"></p><button class="go" data-action="intro-budget-custom">Next</button><button class="back" data-action="intro-back">Back</button>`,
     4: `<h1>Anything you don't eat?</h1><p>Recipes with these are hidden. Tap all that apply.</p><div class="chips">${Object.entries(AVOID).map(([k, v]) => `<button class="opt ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><p style="margin:16px 0 6px">Anything else? Allergies, or things you just don't like.</p><div class="row"><input class="big grow" id="intro-avoid-text" data-enter="intro-avoid-add" placeholder="e.g. mushrooms" autocapitalize="none" style="font-size:18px;text-align:left;margin:0"><button class="go" style="width:auto;margin:0;padding:14px 18px;font-size:16px" data-action="intro-avoid-add">Add</button></div>${avoidTextChips('intro-avoid-rm')}<p style="margin:16px 0 6px">Which milk?</p><div class="chips">${[['milk', 'Dairy'], ['oat_milk', 'Oat'], ['almond_milk', 'Almond'], ['soya_milk', 'Soya']].map(([k, l]) => `<button class="opt ${(S.settings.milk || 'milk') === k ? 'on' : ''}" data-action="intro-milk" data-id="${k}">${l}</button>`).join('')}</div><button class="go" data-action="intro-next">Next</button><button class="back" data-action="intro-back">Back</button>`,
-    5: `<h1>You're set.</h1><p>Fuel is three steps. The numbers on the bar at the bottom follow them.</p><ol class="introsteps"><li><b>Plan.</b> Tick the meals you want. We fit them into your week.</li><li><b>Shop.</b> Your list, priced at four supermarkets.</li><li><b>Cook.</b> One batch cook, then box it up.</li></ol><div class="stat-row"><div><b>${S.settings.proteinTarget}g</b><span>protein a day</span></div><div><b>${(S.settings.kcalTarget || 0).toLocaleString()}</b><span>kcal a day</span></div><div><b>£${S.settings.budget}</b><span>a week</span></div></div>${onTrial() ? `<div class="freebox"><b>Free until ${dayName(trialEnd())}.</b> Every feature. No card, nothing to cancel.</div>` : ''}<p class="small">Meals are sized to your calorie target. Change that, your milk or your budget any time under the <b>⚙ gear</b>, top right.</p><button class="go" data-action="intro-auto">Plan my week for me</button><button class="go ghostgo" data-action="intro-done">I'll pick my own meals</button><button class="back" data-action="intro-back">Back</button>`,
+    5: `<h1>You're set.</h1><p>Fuel is three steps. The numbers on the bar at the bottom follow them.</p><ol class="introsteps"><li><b>Plan.</b> Tick the meals you want. We fit them into your week.</li><li><b>Shop.</b> Your list, priced at four supermarkets.</li><li><b>Cook.</b> One batch cook, then box it up.</li></ol><div class="stat-row"><div><b>${S.settings.proteinTarget}g</b><span>protein a day</span></div><div><b>${(S.settings.kcalTarget || 0).toLocaleString()}</b><span>kcal a day</span></div><div><b>£${S.settings.budget}</b><span>a week</span></div></div>${onTrial() ? `<div class="freebox"><b>${trialEnd() ? `Free until ${dayName(trialEnd())}.` : `Your first ${S.trial?.days === 14 ? '14 days are' : 'week is'} free, from the day you plan it.`}</b> Every feature. No card, nothing to cancel.</div>` : ''}<p class="small">Meals are sized to your calorie target. Change that, your milk or your budget any time under the <b>⚙ gear</b>, top right.</p><button class="go" data-action="intro-auto">Plan my week for me</button><button class="go ghostgo" data-action="intro-done">I'll pick my own meals</button><button class="back" data-action="intro-back">Back</button>`,
   }[n];
   el.innerHTML = `<div class="wrap">${dots}${step}</div>`; el.hidden = false;
   const wIn = document.getElementById('intro-weight');
-  if (wIn) wIn.addEventListener('input', () => { const v = +wIn.value || wt; document.getElementById('iw-p').textContent = P.proteinTargetFor(v, g) + 'g'; document.getElementById('iw-f').textContent = P.kcalTargetFor(v, g).toLocaleString(); });
+  if (wIn) wIn.addEventListener('input', () => { const v = +wIn.value; const ok = v >= 30 && v <= 200; document.getElementById('iw-p').textContent = ok ? P.proteinTargetFor(v, g) + 'g' : '—'; document.getElementById('iw-f').textContent = ok ? P.kcalTargetFor(v, g).toLocaleString() : '—'; });
+  el.querySelectorAll('#intro-loan-left, #intro-loan-until').forEach((inp) => inp.addEventListener('input', introLoanPreview));
   // Enter / Go on a keyboard behaves like the Next button.
   el.querySelectorAll('input.big').forEach((inp) => inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); (inp.dataset.enter ? el.querySelector(`[data-action="${inp.dataset.enter}"]`) : el.querySelector('button.go'))?.click(); } }));
   if (wIn) { wIn.focus(); wIn.select(); }
 }
+// "£480 until 9 Jan": the budget step works out the week (insights.loanBudget) as they type.
+function introLoanPreview() { const l = +document.getElementById('intro-loan-left')?.value, u = document.getElementById('intro-loan-until')?.value, out = document.getElementById('intro-loan-out'); if (!out) return null; const r = l && u ? loanBudget(l, u, todayISO()) : null; out.innerHTML = r ? `${r.weeks} week${r.weeks > 1 ? 's' : ''} → <b>£${r.perWeek} a week</b> for food. Next uses it.` : l && u ? 'That date has already passed.' : l || u ? 'Fill in both and FU£L works out the week.' : ''; return r; }
 function closeIntro() { const el = document.getElementById('intro'); el.hidden = true; el.innerHTML = ''; }
 document.getElementById('intro').addEventListener('click', onAction);
 document.getElementById('gate').addEventListener('click', onAction);
@@ -1583,6 +1796,27 @@ function onAction(e) {
   else if (a === 'useby-meals') { pantryBase = null; S.activeWeek = S.thisMon; S.tab = 'plan'; planAdd = null; save(); render({ top: true }); document.getElementById('useup-card')?.scrollIntoView({ block: 'start' }); }
   else if (a === 'useup') { w.useUp ||= {}; if (w.useUp[id]) delete w.useUp[id]; else { w.useUp[id] = true; if (w.pantry[id] === undefined) w.pantry[id] = true; } save(); render(); }
   else if (a === 'pick-shop') { w.shop = el.dataset.shop; save(); render(); }
+  else if (a === 'theme') { S.theme = el.dataset.theme; applyTheme(); save(); render(); }
+  else if (a === 'loan-clear') { e.preventDefault(); delete S.loan; save(); render(); }
+  else if (a === 'whatsnew-seen') { S.seenVersion = APP_VERSION; save(); render(); }
+  else if (a === 'adjust-yes') { const d = +el.dataset.kcal; setTargets(S.settings.kcalTarget + d, S.settings.proteinTarget); S.adjSnooze = addDays(todayISO(), 21); save(); render(); toast(`${S.settings.kcalTarget.toLocaleString()} kcal a day. Portions and the shop list resized.`, 3500); }
+  else if (a === 'adjust-later') { S.adjSnooze = addDays(todayISO(), 7); save(); render(); }
+  else if (a === 'weigh-add') { askText('Weight today (kg)', 'e.g. 85.4').then((v) => { const kg = parseFloat(String(v ?? '').replace(',', '.')); if (v === null) return; if (!(kg >= 30 && kg <= 200)) { toast('Between 30 and 200 kg'); return; } const t = todayISO(); S.weights = (S.weights || []).filter((x) => x.date !== t); S.weights.push({ date: t, kg: Math.round(kg * 10) / 10 }); S.weights.sort((x, y) => x.date.localeCompare(y.date)); S.weights = S.weights.slice(-60); save(); render(); toast(`${kg} kg logged`); }); }
+  else if (a === 'checkin-start') { const k = el.dataset.week || checkinWeeks()[0] || S.thisMon; checkinStart(k); }
+  else if (a === 'checkin-eaten' && CI) { const p = CI.planned[id] || 0; CI.eaten[id] = Math.max(0, Math.min(p, (CI.eaten[id] || 0) + +el.dataset.d)); checkinStep(1); }
+  else if (a === 'checkin-out' && CI) { CI.out = +el.dataset.n; checkinStep(1); }
+  else if (a === 'checkin-shop' && CI) { checkinReadInputs(); CI.shop = el.dataset.shop; checkinStep(2); }
+  else if (a === 'checkin-portions' && CI) { checkinReadInputs(); CI.portions = el.dataset.p; checkinStep(3); }
+  else if (a === 'checkin-next' && CI) { checkinReadInputs(); if (CI.step === 2 && CI.till != null && !(CI.till >= 0 && CI.till < 1000)) { toast('Type the till total in pounds, or leave it'); return; } checkinStep(CI.step + 1); }
+  else if (a === 'checkin-skip-till' && CI) { CI.till = null; checkinStep(3); }
+  else if (a === 'checkin-back' && CI) { checkinReadInputs(); checkinStep(Math.max(1, CI.step - 1)); }
+  else if (a === 'checkin-plan' && CI) {
+    checkinReadInputs(); const kg = +CI.weight; if (CI.weight !== '' && !(kg >= 30 && kg <= 200)) { toast('Weight between 30 and 200 kg, or leave it blank'); return; }
+    const changed = checkinPreview(); const target = checkinTarget(); checkinFinish(); closeSheet(); CI = null;
+    const nextPlanned = Object.values(S.weeks[target]?.portions || {}).some((k) => k > 0);
+    if (nextPlanned) { S.tab = 'home'; S.activeWeek = target; save(); render({ top: true }); toast('Checked in. Next week is already planned.'); }
+    else { S.activeWeek = target; S.tab = 'plan'; planAdd = null; save(); render({ top: true }); autoPlan(1, { changed }); }
+  }
   else if (a === 'save-switch') applySave(el.dataset.key);
   else if (a === 'save-all') applySave(null);
   else if (a === 'save-undo') undoSave();
@@ -1613,7 +1847,10 @@ function onAction(e) {
   else if (a === 'intro-goal') { INTRO.goal = el.dataset.goal; S.settings.goal = INTRO.goal; bustCaches(); save(); introStep(2); }
   else if (a === 'intro-weight') { const v = +document.getElementById('intro-weight').value; if (!(v >= 30 && v <= 200)) { toast('Enter a weight between 30 and 200 kg'); return; } S.settings.weight = v; S.settings.proteinTarget = P.proteinTargetFor(v, INTRO.goal || S.settings.goal); S.settings.kcalTarget = P.kcalTargetFor(v, INTRO.goal || S.settings.goal); bustCaches(); save(); introStep(3); }
   else if (a === 'intro-budget') { S.settings.budget = +el.dataset.budget; save(); introStep(4); }
-  else if (a === 'intro-budget-custom') { const raw = document.getElementById('intro-budget').value.trim(); const v = raw ? +raw : S.settings.budget; if (!(v >= 10 && v <= 300)) { toast('Type a budget between £10 and £300, or tap one above'); return; } S.settings.budget = v; save(); introStep(4); } // Next with nothing typed keeps the highlighted amount
+  else if (a === 'intro-budget-custom') {
+    const l = +document.getElementById('intro-loan-left')?.value, u = document.getElementById('intro-loan-until')?.value;
+    if (l || u) { const loan = l && u ? loanBudget(l, u, todayISO()) : null; if (!loan) { toast(l && u ? 'That date has already passed' : 'Fill in both: money left and the date'); return; } S.settings.budget = loan.perWeek; S.loan = { left: l, until: u, perWeek: loan.perWeek, set: todayISO() }; save(); introStep(4); return; }
+    const raw = document.getElementById('intro-budget').value.trim(); const v = raw ? +raw : S.settings.budget; if (!(v >= 10 && v <= 300)) { toast('Type a budget between £10 and £300, or tap one above'); return; } S.settings.budget = v; delete S.loan; save(); introStep(4); } // Next with nothing typed keeps the highlighted amount
   else if (a === 'intro-milk') { S.settings.milk = id; bustCaches(); save(); el.parentElement.querySelectorAll('.opt').forEach((b) => b.classList.toggle('on', b === el)); }
   else if (a === 'intro-avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); el.classList.toggle('on'); }
   else if (a === 'intro-avoid-add') { if (addAvoidText('intro-avoid-text')) introStep(4); else toast('Type something first'); }

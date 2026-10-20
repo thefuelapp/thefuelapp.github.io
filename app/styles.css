@@ -813,3 +813,155 @@ label.field input, label.field select, label.field textarea { border: 1px solid 
 .cell.empty { align-items: center; }
 @media (min-width: 560px) { :root { --cellh: 112px; --gridgap: 7px; } }
 :root { --cellh: 114px; } .cell .cname { -webkit-line-clamp: 3; line-clamp: 3; } @media (min-width: 560px) { :root { --cellh: 120px; } }
+
+/* ============================================================================================================================
+   v86 (20 Oct 2026): Home, the Sunday check-in, More, Shop led by the food number, and a dark theme.
+   Light stays the v82 paper look. Dark follows the phone (or Settings → Look) through data-theme on <html>.
+   ============================================================================================================================ */
+.lbl { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.mid { display: block; font-family: var(--display); font-weight: 800; font-size: 24px; letter-spacing: -.03em; line-height: 1.05; }
+.mid + .sub, .mid + .small { display: block; margin-top: 2px; }
+.card .sub.muted { display: block; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+/* Home */
+.homehero { background: var(--ink); color: #fff; border-color: var(--ink); padding: 18px 16px 16px; }
+.homehero .lbl { color: rgba(255, 255, 255, .55); }
+.homehero .hbig { display: block; font-family: var(--display); font-weight: 800; font-size: 30px; letter-spacing: -.03em; line-height: 1; white-space: nowrap; }
+.homehero .hbig small { font-family: Inter, sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 0; opacity: .6; margin-left: 5px; }
+.homehero .hbar { height: 7px; border-radius: 7px; background: rgba(255, 255, 255, .1); margin-top: 10px; overflow: hidden; }
+.homehero .hbar i { display: block; height: 100%; border-radius: 7px; background: #3ddc97; }
+.homehero .hbar i.pink { background: var(--accent); } .homehero .hbar i.over { background: var(--accent); }
+.homehero .hint { display: block; margin-top: 6px; font-size: 12px; color: rgba(255, 255, 255, .65); }
+.homehero .row { gap: 14px; }
+.card.next { display: flex; align-items: center; gap: 12px; }
+.card.next .ic { flex: none; width: 40px; height: 40px; border-radius: 12px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 800; font-size: 17px; }
+.card.next b { display: block; font-size: 15px; letter-spacing: -.01em; }
+.card.next .sub.muted { font-size: 12.5px; }
+.card.next.due { border-color: var(--accent); background: var(--accent-soft); }
+.card.next .btn.small { flex: none; }
+.spark { display: block; width: 100%; height: 92px; margin-top: 6px; overflow: visible; }
+.spark polyline { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.spark circle { fill: var(--accent); stroke: var(--panel); stroke-width: 2; } .spark circle.hollow { fill: var(--panel); stroke: var(--accent); }
+.spark text { font-family: Inter, sans-serif; font-size: 9.5px; fill: var(--muted); font-weight: 600; } .spark text.val { fill: var(--text); font-size: 10.5px; font-weight: 700; }
+.spark .refline { stroke: var(--edge); stroke-width: 1; stroke-dasharray: 3 3; }
+.card.whatsnew { border-color: var(--mint); }
+.card.adjust { border-color: var(--accent); }
+.card .bars .bar b { color: var(--muted); }
+/* More */
+.morelist { padding: 4px 6px; }
+.morebtn { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 14px 10px; color: var(--text); font: inherit; }
+.morebtn:last-child { border-bottom: 0; }
+.morebtn b { display: block; font-size: 16px; letter-spacing: -.01em; } .morebtn .sub.muted { font-size: 12.5px; }
+.morebtn .chev { color: var(--muted); font-size: 22px; line-height: 1; }
+/* Plan: joined midweek */
+.card.midweek { border-color: var(--accent); }
+.day-pick button.gone { opacity: .35; text-decoration: line-through; }
+/* Shop: the two numbers people screenshot */
+.shopfacts .row { gap: 14px; align-items: flex-start; }
+.shopfacts .mid { font-size: 22px; }
+/* the planned sheet: the share card itself */
+img.sharecard { display: block; width: 100%; border-radius: 14px; margin: 8px 0 10px; box-shadow: 0 4px 18px rgba(20, 18, 42, .15); }
+.changed { background: var(--panel-2); border-radius: 14px; padding: 10px 12px; margin: 8px 0; }
+.changed ul { margin: 4px 0 0; padding-left: 18px; } .changed li { margin: 3px 0; }
+/* the Sunday check-in */
+.ci-steps { display: flex; gap: 5px; margin: 0 0 14px; } .ci-steps i { flex: 1; height: 4px; border-radius: 4px; background: var(--panel-2); } .ci-steps i.on { background: var(--ink); }
+.ci-list { padding: 4px 12px; } .ci-row .stepper { flex: none; } .ci-skip { color: #b8860b; }
+.sheet-inner .card { box-shadow: none; }
+.sheet-inner input.big { width: 100%; border: 1.5px solid var(--edge); border-radius: 14px; padding: 12px; background: var(--panel); color: var(--text); font-family: var(--display); font-weight: 800; letter-spacing: -.02em; }
+
+/* ---------- Dark: the same app at night. Tokens first, then every hard-coded light colour above ---------- */
+:root[data-theme=dark] { --bg: #0e0e11; --panel: #18181d; --panel-2: #212128; --line: #26262d; --edge: #2a2a32; --text: #f5f5f7; --muted: #9a9aa6; --ink: #1b1b22; --accent-soft: #2a1a21; --mint-soft: #10281c; --shadow: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme=light]) { --bg: #0e0e11; --panel: #18181d; --panel-2: #212128; --line: #26262d; --edge: #2a2a32; --text: #f5f5f7; --muted: #9a9aa6; --ink: #1b1b22; --accent-soft: #2a1a21; --mint-soft: #10281c; --shadow: none; } }
+:root[data-theme=dark], :root:not([data-theme=light]) { color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme=light]) { color-scheme: dark; } } :root[data-theme=dark] { color-scheme: dark; } :root[data-theme=light] { color-scheme: light; }
+/* the rules below apply when the resolved theme is dark: either chosen, or following a dark phone */
+:root[data-theme=dark] body, :root[data-theme=dark] html { background: var(--bg); }
+.dk-chip-on { background: #f5f5f7; color: #14122a; border-color: #f5f5f7; }
+
+/* chosen dark */
+:root[data-theme=dark] .wtabs { background: var(--panel-2); } :root[data-theme=dark] .wtabs button.on { background: var(--panel); color: var(--text); box-shadow: none; }
+:root[data-theme=dark] .fw-seg i { background: var(--panel-2); } :root[data-theme=dark] .fw-seg i.now { background: var(--accent); } :root[data-theme=dark] #intro .dots i { background: var(--panel-2); } :root[data-theme=dark] #intro .dots i.on { background: #f5f5f7; } :root[data-theme=dark] .ci-steps i.on { background: #f5f5f7; }
+:root[data-theme=dark] .chip.on, :root[data-theme=dark] .pickfilters .chip.on, :root[data-theme=dark] .day-pick button.on, :root[data-theme=dark] #intro .opt.on, :root[data-theme=dark] .btn.sun, :root[data-theme=dark] .plandock .btn.sun, :root[data-theme=dark] .freeweek .fw-upgrade, :root[data-theme=dark] .tipcard .btn, :root[data-theme=dark] .seg button.on { background: #f5f5f7; color: #14122a; border-color: #f5f5f7; }
+:root[data-theme=dark] #intro .opt.on small { color: rgba(20, 18, 42, .65); }
+:root[data-theme=dark] .btn.ghost { background: var(--panel); color: var(--text); border-color: var(--edge); }
+:root[data-theme=dark] .btn.danger { background: #2a1218; color: #ff7a9a; border-color: #4a1a26; }
+:root[data-theme=dark] .numcard, :root[data-theme=dark] .homehero { background: #1b1b22; border-color: #2a2a32; } :root[data-theme=dark] .numcard .bar { background: rgba(255, 255, 255, .06); }
+:root[data-theme=dark] .tipcard { background: var(--panel); color: var(--text); border-color: var(--edge); }
+:root[data-theme=dark] #tabs { background: #121216; border-top: 1px solid #1f1f26; } :root[data-theme=dark] #tabs button i { background: rgba(255, 255, 255, .12); }
+:root[data-theme=dark] .plandock { background: rgba(24, 24, 29, .94); color: var(--text); border-color: var(--edge); box-shadow: 0 10px 30px rgba(0, 0, 0, .5); } :root[data-theme=dark] .plandock .btn.ghost { background: var(--panel-2); color: var(--text); }
+:root[data-theme=dark] .sheet-inner { background: var(--panel); color: var(--text); } :root[data-theme=dark] .sheet-inner::before { background: #3a3a44; } :root[data-theme=dark] #sheet { background: rgba(0, 0, 0, .6); }
+:root[data-theme=dark] .sheet-inner input:not([type=checkbox]):not([type=range]), :root[data-theme=dark] .sheet-inner select, :root[data-theme=dark] .card input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=date]), :root[data-theme=dark] .search, :root[data-theme=dark] label.field input, :root[data-theme=dark] label.field select, :root[data-theme=dark] label.field textarea, :root[data-theme=dark] .ing-row select, :root[data-theme=dark] .ing-row input, :root[data-theme=dark] input.big, :root[data-theme=dark] #gate input.big, :root[data-theme=dark] #intro input.big, :root[data-theme=dark] .pickhead .search { background: var(--panel-2); color: var(--text); border-color: var(--edge); }
+:root[data-theme=dark] input[type=date] { color-scheme: dark; }
+:root[data-theme=dark] hr, :root[data-theme=dark] .recipe-row, :root[data-theme=dark] .line, :root[data-theme=dark] .check, :root[data-theme=dark] ul.clean li, :root[data-theme=dark] ul.store li, :root[data-theme=dark] .cmp-row { border-color: #26262d; }
+:root[data-theme=dark] .card.pickcard .recipe-row.pick { background: var(--panel); border-color: var(--edge); } :root[data-theme=dark] .card.pickcard .recipe-row.pick.on { background: var(--accent-soft); border-color: var(--accent); }
+:root[data-theme=dark] .cell { box-shadow: none; } :root[data-theme=dark] .cell.empty { background: var(--panel); border-color: #3a3a44; } :root[data-theme=dark] .cell.past { background: var(--panel-2); color: var(--muted); } :root[data-theme=dark] .cell.off { background: repeating-linear-gradient(135deg, #1b1b22 0 6px, #16161b 6px 12px); }
+:root[data-theme=dark] .grid .dayx { background: var(--panel-2); color: var(--text); } :root[data-theme=dark] .grid .lbl { color: var(--text); }
+:root[data-theme=dark] .badge { background: var(--panel-2); color: var(--muted); } :root[data-theme=dark] .badge.ok { background: var(--mint-soft); color: #4fe39b; } :root[data-theme=dark] .badge.warn { background: #3a2b00; color: #ffc531; } :root[data-theme=dark] .badge.bad { background: #3a0f1c; color: #ff7a9a; }
+:root[data-theme=dark] .warn-box { background: #2b2210; color: var(--text); } :root[data-theme=dark] .bad-box { background: #2b1118; color: var(--text); } :root[data-theme=dark] .done-box { background: var(--mint-soft); color: #4fe39b; }
+:root[data-theme=dark] .budget { background: var(--panel-2); } :root[data-theme=dark] .cupcheck { background: var(--panel); border-color: var(--edge); } :root[data-theme=dark] .cupcheck .chip { background: var(--panel-2); }
+:root[data-theme=dark] .shopchip { background: var(--panel); border-color: var(--edge); color: var(--text); } :root[data-theme=dark] .shopchip.on { border-color: #f5f5f7; }
+:root[data-theme=dark] .stat { background: var(--panel-2); color: var(--text); } :root[data-theme=dark] .endcard { background: var(--panel-2); border-color: #3a3a44; }
+:root[data-theme=dark] .fold, :root[data-theme=dark] .shop-card { background: var(--panel); border-color: var(--edge); box-shadow: none; }
+:root[data-theme=dark] details.pantry-group summary { background: var(--panel); border-color: var(--edge); }
+:root[data-theme=dark] .pantryprice { background: #1b1b22; }
+:root[data-theme=dark] .stepper { background: var(--panel-2); } :root[data-theme=dark] .stepper.zero b { color: var(--muted); }
+:root[data-theme=dark] .macro { background: var(--panel-2); } :root[data-theme=dark] .signin-msg, :root[data-theme=dark] #gate .signin-msg { background: var(--panel-2); color: var(--text); } :root[data-theme=dark] .signin-msg.ok { background: var(--mint-soft); color: #4fe39b; } :root[data-theme=dark] .signin-msg.bad { background: #3a0f1c; color: #ff7a9a; }
+:root[data-theme=dark] #intro, :root[data-theme=dark] #gate { background: var(--bg); color: var(--text); } :root[data-theme=dark] #intro .opt, :root[data-theme=dark] #gate .gcard, :root[data-theme=dark] #intro .gcard { background: var(--panel); border-color: var(--edge); color: var(--text); box-shadow: none; }
+:root[data-theme=dark] #intro .stat-row div { background: var(--panel); border-color: var(--edge); } :root[data-theme=dark] #gate .price { background: #f5f5f7; color: #14122a; border-color: #f5f5f7; } :root[data-theme=dark] #gate .price small { color: rgba(20, 18, 42, .7); } :root[data-theme=dark] #gate .price .go { background: var(--accent); color: #fff; }
+:root[data-theme=dark] #intro .go.ghostgo { background: var(--panel); color: var(--text); border-color: var(--edge); }
+:root[data-theme=dark] #intro .freeline, :root[data-theme=dark] .freebox, :root[data-theme=dark] .fw-promise { background: var(--mint-soft); color: #4fe39b; } :root[data-theme=dark] .freebox b { color: #7af0b8; }
+:root[data-theme=dark] #gate .logo, :root[data-theme=dark] #intro .logo, :root[data-theme=dark] .brandbar .wordmark { color: var(--text); }
+:root[data-theme=dark] .brandbar .trialpill, :root[data-theme=dark] .brandbar .gear { background: var(--panel); border-color: var(--edge); color: var(--text); }
+:root[data-theme=dark] .card.matescard { background: var(--panel-2); }
+:root[data-theme=dark] #hint { background: #f5f5f7; color: #14122a; }
+:root[data-theme=dark] .gridhelp { background: var(--panel-2); } :root[data-theme=dark] .chip.more { background: var(--panel-2); border-color: var(--panel-2); }
+:root[data-theme=dark] .changed { background: var(--panel-2); }
+:root[data-theme=dark] img.sharecard { box-shadow: 0 4px 18px rgba(0, 0, 0, .5); }
+:root[data-theme=dark] .card.next.due { background: var(--accent-soft); }
+:root[data-theme=dark] .spark circle { stroke: var(--panel); } :root[data-theme=dark] .spark circle.hollow { fill: var(--panel); }
+:root[data-theme=dark] .ci-skip { color: #ffc531; }
+:root[data-theme=dark] #statusband { background: var(--bg); } :root[data-theme=dark] html.is-ios-app { background: var(--bg); }
+/* following a dark phone */
+@media (prefers-color-scheme: dark) {
+:root:not([data-theme=light]) .wtabs { background: var(--panel-2); } :root:not([data-theme=light]) .wtabs button.on { background: var(--panel); color: var(--text); box-shadow: none; }
+:root:not([data-theme=light]) .fw-seg i { background: var(--panel-2); } :root:not([data-theme=light]) .fw-seg i.now { background: var(--accent); } :root:not([data-theme=light]) #intro .dots i { background: var(--panel-2); } :root:not([data-theme=light]) #intro .dots i.on { background: #f5f5f7; } :root:not([data-theme=light]) .ci-steps i.on { background: #f5f5f7; }
+:root:not([data-theme=light]) .chip.on, :root:not([data-theme=light]) .pickfilters .chip.on, :root:not([data-theme=light]) .day-pick button.on, :root:not([data-theme=light]) #intro .opt.on, :root:not([data-theme=light]) .btn.sun, :root:not([data-theme=light]) .plandock .btn.sun, :root:not([data-theme=light]) .freeweek .fw-upgrade, :root:not([data-theme=light]) .tipcard .btn, :root:not([data-theme=light]) .seg button.on { background: #f5f5f7; color: #14122a; border-color: #f5f5f7; }
+:root:not([data-theme=light]) #intro .opt.on small { color: rgba(20, 18, 42, .65); }
+:root:not([data-theme=light]) .btn.ghost { background: var(--panel); color: var(--text); border-color: var(--edge); }
+:root:not([data-theme=light]) .btn.danger { background: #2a1218; color: #ff7a9a; border-color: #4a1a26; }
+:root:not([data-theme=light]) .numcard, :root:not([data-theme=light]) .homehero { background: #1b1b22; border-color: #2a2a32; } :root:not([data-theme=light]) .numcard .bar { background: rgba(255, 255, 255, .06); }
+:root:not([data-theme=light]) .tipcard { background: var(--panel); color: var(--text); border-color: var(--edge); }
+:root:not([data-theme=light]) #tabs { background: #121216; border-top: 1px solid #1f1f26; } :root:not([data-theme=light]) #tabs button i { background: rgba(255, 255, 255, .12); }
+:root:not([data-theme=light]) .plandock { background: rgba(24, 24, 29, .94); color: var(--text); border-color: var(--edge); box-shadow: 0 10px 30px rgba(0, 0, 0, .5); } :root:not([data-theme=light]) .plandock .btn.ghost { background: var(--panel-2); color: var(--text); }
+:root:not([data-theme=light]) .sheet-inner { background: var(--panel); color: var(--text); } :root:not([data-theme=light]) .sheet-inner::before { background: #3a3a44; } :root:not([data-theme=light]) #sheet { background: rgba(0, 0, 0, .6); }
+:root:not([data-theme=light]) .sheet-inner input:not([type=checkbox]):not([type=range]), :root:not([data-theme=light]) .sheet-inner select, :root:not([data-theme=light]) .card input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=date]), :root:not([data-theme=light]) .search, :root:not([data-theme=light]) label.field input, :root:not([data-theme=light]) label.field select, :root:not([data-theme=light]) label.field textarea, :root:not([data-theme=light]) .ing-row select, :root:not([data-theme=light]) .ing-row input, :root:not([data-theme=light]) input.big, :root:not([data-theme=light]) #gate input.big, :root:not([data-theme=light]) #intro input.big, :root:not([data-theme=light]) .pickhead .search { background: var(--panel-2); color: var(--text); border-color: var(--edge); }
+:root:not([data-theme=light]) input[type=date] { color-scheme: dark; }
+:root:not([data-theme=light]) hr, :root:not([data-theme=light]) .recipe-row, :root:not([data-theme=light]) .line, :root:not([data-theme=light]) .check, :root:not([data-theme=light]) ul.clean li, :root:not([data-theme=light]) ul.store li, :root:not([data-theme=light]) .cmp-row { border-color: #26262d; }
+:root:not([data-theme=light]) .card.pickcard .recipe-row.pick { background: var(--panel); border-color: var(--edge); } :root:not([data-theme=light]) .card.pickcard .recipe-row.pick.on { background: var(--accent-soft); border-color: var(--accent); }
+:root:not([data-theme=light]) .cell { box-shadow: none; } :root:not([data-theme=light]) .cell.empty { background: var(--panel); border-color: #3a3a44; } :root:not([data-theme=light]) .cell.past { background: var(--panel-2); color: var(--muted); } :root:not([data-theme=light]) .cell.off { background: repeating-linear-gradient(135deg, #1b1b22 0 6px, #16161b 6px 12px); }
+:root:not([data-theme=light]) .grid .dayx { background: var(--panel-2); color: var(--text); } :root:not([data-theme=light]) .grid .lbl { color: var(--text); }
+:root:not([data-theme=light]) .badge { background: var(--panel-2); color: var(--muted); } :root:not([data-theme=light]) .badge.ok { background: var(--mint-soft); color: #4fe39b; } :root:not([data-theme=light]) .badge.warn { background: #3a2b00; color: #ffc531; } :root:not([data-theme=light]) .badge.bad { background: #3a0f1c; color: #ff7a9a; }
+:root:not([data-theme=light]) .warn-box { background: #2b2210; color: var(--text); } :root:not([data-theme=light]) .bad-box { background: #2b1118; color: var(--text); } :root:not([data-theme=light]) .done-box { background: var(--mint-soft); color: #4fe39b; }
+:root:not([data-theme=light]) .budget { background: var(--panel-2); } :root:not([data-theme=light]) .cupcheck { background: var(--panel); border-color: var(--edge); } :root:not([data-theme=light]) .cupcheck .chip { background: var(--panel-2); }
+:root:not([data-theme=light]) .shopchip { background: var(--panel); border-color: var(--edge); color: var(--text); } :root:not([data-theme=light]) .shopchip.on { border-color: #f5f5f7; }
+:root:not([data-theme=light]) .stat { background: var(--panel-2); color: var(--text); } :root:not([data-theme=light]) .endcard { background: var(--panel-2); border-color: #3a3a44; }
+:root:not([data-theme=light]) .fold, :root:not([data-theme=light]) .shop-card { background: var(--panel); border-color: var(--edge); box-shadow: none; }
+:root:not([data-theme=light]) details.pantry-group summary { background: var(--panel); border-color: var(--edge); }
+:root:not([data-theme=light]) .pantryprice { background: #1b1b22; }
+:root:not([data-theme=light]) .stepper { background: var(--panel-2); } :root:not([data-theme=light]) .stepper.zero b { color: var(--muted); }
+:root:not([data-theme=light]) .macro { background: var(--panel-2); } :root:not([data-theme=light]) .signin-msg, :root:not([data-theme=light]) #gate .signin-msg { background: var(--panel-2); color: var(--text); } :root:not([data-theme=light]) .signin-msg.ok { background: var(--mint-soft); color: #4fe39b; } :root:not([data-theme=light]) .signin-msg.bad { background: #3a0f1c; color: #ff7a9a; }
+:root:not([data-theme=light]) #intro, :root:not([data-theme=light]) #gate { background: var(--bg); color: var(--text); } :root:not([data-theme=light]) #intro .opt, :root:not([data-theme=light]) #gate .gcard, :root:not([data-theme=light]) #intro .gcard { background: var(--panel); border-color: var(--edge); color: var(--text); box-shadow: none; }
+:root:not([data-theme=light]) #intro .stat-row div { background: var(--panel); border-color: var(--edge); } :root:not([data-theme=light]) #gate .price { background: #f5f5f7; color: #14122a; border-color: #f5f5f7; } :root:not([data-theme=light]) #gate .price small { color: rgba(20, 18, 42, .7); } :root:not([data-theme=light]) #gate .price .go { background: var(--accent); color: #fff; }
+:root:not([data-theme=light]) #intro .go.ghostgo { background: var(--panel); color: var(--text); border-color: var(--edge); }
+:root:not([data-theme=light]) #intro .freeline, :root:not([data-theme=light]) .freebox, :root:not([data-theme=light]) .fw-promise { background: var(--mint-soft); color: #4fe39b; } :root:not([data-theme=light]) .freebox b { color: #7af0b8; }
+:root:not([data-theme=light]) #gate .logo, :root:not([data-theme=light]) #intro .logo, :root:not([data-theme=light]) .brandbar .wordmark { color: var(--text); }
+:root:not([data-theme=light]) .brandbar .trialpill, :root:not([data-theme=light]) .brandbar .gear { background: var(--panel); border-color: var(--edge); color: var(--text); }
+:root:not([data-theme=light]) .card.matescard { background: var(--panel-2); }
+:root:not([data-theme=light]) #hint { background: #f5f5f7; color: #14122a; }
+:root:not([data-theme=light]) .gridhelp { background: var(--panel-2); } :root:not([data-theme=light]) .chip.more { background: var(--panel-2); border-color: var(--panel-2); }
+:root:not([data-theme=light]) .changed { background: var(--panel-2); }
+:root:not([data-theme=light]) img.sharecard { box-shadow: 0 4px 18px rgba(0, 0, 0, .5); }
+:root:not([data-theme=light]) .card.next.due { background: var(--accent-soft); }
+:root:not([data-theme=light]) .spark circle { stroke: var(--panel); } :root:not([data-theme=light]) .spark circle.hollow { fill: var(--panel); }
+:root:not([data-theme=light]) .ci-skip { color: #ffc531; }
+:root:not([data-theme=light]) #statusband { background: var(--bg); } :root:not([data-theme=light]) html.is-ios-app { background: var(--bg); }
+}

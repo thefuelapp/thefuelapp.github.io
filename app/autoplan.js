@@ -29,6 +29,7 @@ function splitsFor(n) {
  * @param o.ING        every ingredient (with the user's own)
  * @param o.pool       recipes the person can be given (already filtered for what they don't eat), unscaled
  * @param o.core       Set of recipe ids that are the app's core recipes (nudged towards)
+ * @param o.liked      Set of recipe ids the person has eaten every time at a Sunday check-in (nudged towards, v86)
  * @param o.days       which days to fill (7 booleans)
  * @param o.cookDay    the week's batch-cook day
  * @param o.kcal, o.protein, o.budget  the person's targets and weekly budget
@@ -40,7 +41,7 @@ function splitsFor(n) {
  * @param o.budgetMs   time budget for the search
  */
 export function planWeek(o) {
-  const { P, ING, pool, core = new Set(), days, cookDay = 6, kcal, protein, budget = Infinity, pantry = {}, resolve = (id) => id, choiceOf = () => null, seed = 1, budgetMs = 1600, differentFrom = null } = o;
+  const { P, ING, pool, core = new Set(), liked = new Set(), days, cookDay = 6, kcal, protein, budget = Infinity, pantry = {}, resolve = (id) => id, choiceOf = () => null, seed = 1, budgetMs = 1600, differentFrom = null } = o;
   const t0 = Date.now();
   const ingById = Object.fromEntries(ING.map((i) => [i.id, i]));
   const recById = Object.fromEntries(pool.map((r) => [r.id, r]));
@@ -94,7 +95,7 @@ export function planWeek(o) {
     if (r.grid.some((d, i) => days[i] && d.lunch && d.lunch === d.dinner)) problems.push('same lunch and dinner');
     const fam = {}; for (const [id] of c.m) fam[mainProtein[id]] = (fam[mainProtein[id]] || 0) + 1; if (Object.values(fam).some((n) => n > 3)) problems.push('protein family');
     const short = Math.max(0, protein - r.st.avg), over = Math.max(0, P.round2(r.weekly - budget));
-    const classics = [...c.b, ...c.m].reduce((t, [id, n]) => t + (core.has(id) ? n : 0), 0);
+    const classics = [...c.b, ...c.m].reduce((t, [id, n]) => t + (core.has(id) ? n : 0), 0) + c.m.reduce((t, [id, n]) => t + (liked.has(id) ? n * 0.7 : 0), 0); // a liked main counts like a core one (0.6 × 0.7 ≈ £0.42 a portion)
     const shared = differentFrom ? c.m.filter(([id]) => differentFrom[id]).length : 0; // mains kept from the week just shown (breakfast can stay)
     const merit = r.total - 0.6 * classics - 0.3 * Math.max(0, Math.min(r.st.avg, cap) - protein) + 6 * shared;
     const score = merit + problems.length * 1000 + (over > 0 ? 200 + over * 50 : 0) + short * 20;

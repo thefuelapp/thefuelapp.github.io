@@ -76,6 +76,13 @@ export async function mateStatus() {
   const r = await rpc('mate_status', { p_code: m.code, p_secret: m.secret });
   return r?.ok ? r : null;
 }
+// What kind of code the device arrived with: a creator's code earns a longer free week, and the first screen says whose it is.
+// Asked once per code and kept; a 404 (growth-2.sql not run yet) or any other failure means "don't know", so nothing changes.
+export async function codeKind(code) {
+  if (!ON || !code) return null;
+  try { const c = JSON.parse(store.get('fuel:codekind') || 'null'); if (c?.code === code) return c.info; } catch {}
+  try { const r = await rpc('code_kind', { p_code: code }); const info = r?.ok ? { kind: r.kind, name: r.name || '' } : null; store.set('fuel:codekind', JSON.stringify({ code, info })); return info; } catch { return null; }
+}
 // Is supabase/growth.sql in yet? (A made-up code gets {ok:false} back once it is, a 404 before.) Asked once per session.
 let ready = null;
 export function growthReady() {
