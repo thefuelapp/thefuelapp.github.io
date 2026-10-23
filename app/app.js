@@ -6,9 +6,10 @@ import { planWeek } from './autoplan.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v86';
+const APP_VERSION = 'v87';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
+  ['v87', '23 Oct 2026', 'New here? The app opens on Plan with one button, Plan my week for me, until your first week is planned.'],
   ['v86', '24 Oct 2026', 'A Home tab that answers five questions, the Sunday check-in that plans next week from what happened, cook tonight when you join midweek, Shop led by the food number, light and dark, and a free week that always runs to a Sunday night.'],
   ['v85', '3 Oct 2026', 'Every meal box in the week grid the same size.'],
   ['v84', '3 Oct 2026', 'Upgrade button on the free-week card.'],
@@ -25,7 +26,7 @@ function applyTheme() { document.documentElement.dataset.theme = S.theme || 'aut
 applyTheme(); darkMQ?.addEventListener?.('change', () => { applyTheme(); if (document.getElementById('view')?.innerHTML) render(); });
 
 function load() {
-  const base = { tab: 'home', activeWeek: null, weeks: {}, tubs: {}, customRecipes: [], customIngredients: [], inbox: [], settings: { portion: 1, weight: 85, goal: 'build', proteinTarget: 180, snackProtein: 24, budget: 50, avoid: [] } };
+  const base = { tab: 'plan', activeWeek: null, weeks: {}, tubs: {}, customRecipes: [], customIngredients: [], inbox: [], settings: { portion: 1, weight: 85, goal: 'build', proteinTarget: 180, snackProtein: 24, budget: 50, avoid: [] } };
   try { return { ...base, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return base; }
 }
 function syncable() { const { tab, search, planSearch, planFilter, pantrySearch, pantryRestOpen, ideasOpen, ideaTag, ...rest } = S; return rest; }
@@ -58,7 +59,7 @@ const onTrial = () => cloud.enabled && !paidUp() && !matesUnlocked() && trialAct
 // The free week, said plainly wherever it matters: which day you're on, when it ends, and that nothing is charged by itself.
 function trialSegs() { const n = trialTotalDays(), d = trialEnd() ? trialDay() : 0; return `<div class="fw-seg" style="grid-template-columns:repeat(${n},1fr)">${Array.from({ length: n }, (_, i) => `<i class="${i < d ? 'on' : ''}${i === d - 1 ? ' now' : ''}"></i>`).join('')}</div>`; }
 function freeWeekCard() {
-  if (!onTrial()) return '';
+  if (!onTrial() || !trialEnd()) return ''; // v87: nothing about free weeks or upgrading until they have planned a week (the clock only starts then)
   const left = trialLeft(), soon = !!trialEnd() && left <= 2;
   const line = !trialEnd() ? `<b>Your free week starts when you plan one.</b> Every feature, no card, nothing to cancel.`
     : soon ? `<b>${left === 1 ? 'Last free day.' : '2 free days left.'}</b> Keep your plan for ${esc(CONFIG.PRICE_LABEL || '£4.99')} once${GROWTH_OK ? ', or bring 3 mates and it’s free' : ''}.`
@@ -70,6 +71,8 @@ function freeWeekCard() {
 const matesUnlocked = () => !!S.mate?.unlocked;
 const paidUp = () => cloud.enabled && hasAccess(); // an account with access: bought, a code, or claimed mates
 function canUse() { return !cloud.enabled || hasAccess() || trialActive() || matesUnlocked(); }
+// v87: someone who has never put a meal in any week is still "new". New people open on Plan (not Home) and see one clear first step.
+const everPlanned = () => !!S.stepPlanned || Object.values(S.weeks || {}).some((w) => Object.values(w.portions || {}).some((n) => n > 0));
 // "Planned a week" (the goal the launch plan counts): a week with at least 7 meals in it. It also starts the free-week clock.
 function notePlanned() {
   if (S.stepPlanned) return;
@@ -323,6 +326,9 @@ async function boot() {
     return;
   }
   setupWeeks();
+  // v87: until the first week is planned, the app opens on Plan (Home has nothing to answer yet), and "what's new" is only for people who were here before
+  if (!everPlanned() && S.tab === 'home') S.tab = 'plan';
+  if (!S.settings.onboarded) S.seenVersion = APP_VERSION;
   document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { justAdded.clear(); if (b.dataset.tab !== S.tab) pantryBase = null; S.tab = b.dataset.tab; planAdd = null; save(); render({ top: true }); } });
   const v = document.getElementById('view');
   v.addEventListener('click', onAction); v.addEventListener('change', onChange); v.addEventListener('input', onInput);
@@ -528,6 +534,7 @@ function snackBar(w) {
 function planDock(w) {
   if (!planAdd) return `<div class="plandock two" id="plan-dock"><button class="btn ghost" data-action="plan-add">+ Add meals</button><button class="btn sun" data-action="go-tab" data-to="shop">Next: Shop</button></div>`;
   const st = P.gridStats(liveGrid(w), REC(), ING(), snackExtra(w), liveDays(w));
+  if (!st.filled && !everPlanned()) return ''; // v87: a new person's first screen has one instruction (the start card), not a second one in the dock
   if (!st.filled) return `<div class="plandock" id="plan-dock"><span class="grow"><b>Tick a meal to start</b><small>It goes straight into your week.</small></span></div>`;
   return `<div class="plandock" id="plan-dock"><span class="grow"><b>${st.filled >= st.slots ? `${st.slots} of ${st.slots} · week full` : `${st.filled} of ${st.slots} meals picked`}</b><small>${(w.overflow || []).length ? `Some portions won't fit` : `${st.avg}g protein · target ${S.settings.proteinTarget}g`}</small></span><button class="btn sun" data-action="plan-week">See my week</button></div>`;
 }
@@ -635,8 +642,13 @@ function renderPlan() {
   const nBreak = visible.filter((r) => r.slots[0] === 'breakfast').length, nMain = visible.length - nBreak, nSnack = recipes.filter((r) => r.slots.includes('snack') && inLibrary(r.id) && !isAvoided(r)).length;
   const filterChips = `<div class="chip-row pickfilters">${[['all', 'All'], ['breakfast', `Breakfasts · ${nBreak}`], ['mains', `Mains · ${nMain}`], ['snack', `Snacks · ${nSnack}`]].map(([k, l]) => `<button class="chip ${filt === k ? 'on' : ''}" data-action="plan-filter" data-filter="${k}">${l}</button>`).join('')}${moreCount ? `<button class="chip more" data-action="plan-more">+ More meals · ${moreCount}</button>` : ''}</div>`;
   const nothing = q && !visible.some((r) => r.name.toLowerCase().includes(q)) && !snacks.length ? `<p class="muted">Nothing called "${esc(S.planSearch)}" in your recipes. Try Recipes → Find more meal ideas.</p>` : '';
-  return `<h1>Plan</h1>${stepLine(1, planAdd ? 'Tick the meals you want this week.' : `Here's your week. Tap a meal to change it.`)}${freeWeekCard()}${weekSwitch()}<div id="plan-top">${planTop(w)}</div>
-  <div class="card pickhead" id="pick-head"><h3>Choose your meals</h3>${Object.values(w.portions).some((n) => n > 0) ? '' : `<button class="btn block autoplanbtn" data-action="autoplan">Plan my week for me</button><p class="small muted" style="margin:6px 0 10px">One tap fills the week to your targets and budget. Or tick meals yourself below.</p>`}${filterChips}</div>
+  // v87: someone who has never planned sees ONE first step (the start card), then the meal list as the other way to do it
+  const st0 = S.settings;
+  const head = !everPlanned()
+    ? `<div class="card starthero" id="pick-head"><h3>Plan your week</h3><p class="small muted" style="margin:2px 0 12px">Your targets: <b>${st0.proteinTarget}g protein</b> a day · <b>${(st0.kcalTarget || 0).toLocaleString()} kcal</b> · <b>£${st0.budget}</b> a week</p><button class="btn block autoplanbtn" data-action="autoplan">Plan my week for me</button><p class="small muted" style="margin:8px 0 0">One tap fills your week to those targets and prices it at Aldi, Tesco, Sainsbury's and ASDA. Swap any meal after.</p></div><h2 class="orpick">Or pick the meals yourself</h2>${filterChips}`
+    : `<div class="card pickhead" id="pick-head"><h3>Choose your meals</h3>${Object.values(w.portions).some((n) => n > 0) ? '' : `<button class="btn block autoplanbtn" data-action="autoplan">Plan my week for me</button><p class="small muted" style="margin:6px 0 10px">One tap fills the week to your targets and budget. Or tick meals yourself below.</p>`}${filterChips}</div>`;
+  return `<h1>Plan</h1>${stepLine(1, !everPlanned() ? 'Plan your week first. Shop and Cook come next.' : planAdd ? 'Tick the meals you want this week.' : `Here's your week. Tap a meal to change it.`)}${freeWeekCard()}${weekSwitch()}<div id="plan-top">${planTop(w)}</div>
+  ${head}
   <div id="plan-sug">${planSug(w)}</div>
   <div id="plan-pick">${nothing}${filt === 'snack' ? snackHtml : ''}${group('breakfast', 'Breakfasts')}${group('mains', 'Mains (lunch or dinner)')}
   ${filt === 'snack' ? '' : snackHtml}
@@ -675,7 +687,8 @@ function refreshPlan(anchor = '.grid') {
       const hadFocus = rowEl.contains(document.activeElement); rowEl.replaceWith(fresh);
       if (hadFocus) fresh.querySelector('input.tick')?.focus({ preventScroll: true });
     });
-    const dock = document.getElementById('plan-dock'); if (dock) { const h = planDock(w); if (dock.outerHTML !== h) dock.outerHTML = h; }
+    const dock = document.getElementById('plan-dock'); const dh = planDock(w);
+    if (dock) { if (dock.outerHTML !== dh) dock.outerHTML = dh; } else if (dh) document.getElementById('view').insertAdjacentHTML('beforeend', dh); // v87: a new person has no dock until the first tick
   });
   markTabs();
 }
@@ -1859,7 +1872,7 @@ function onAction(e) {
   else if (a === 'settings-avoid-rm') { removeAvoidText(el.dataset.term); render(); }
   else if (a === 'intro-next') { introStep(INTRO.step + 1); }
   else if (a === 'intro-back') { introStep(Math.max(1, INTRO.step - 1)); }
-  else if (a === 'intro-done' || a === 'intro-auto') { S.settings.onboarded = true; S.tips ||= {}; S.tips.plan = true; /* the last set-up screen just showed the same three steps */ save(); closeIntro(); S.tab = 'plan'; planAdd = null; for (const wk of Object.values(S.weeks)) relayout(wk); render({ top: true }); if (a === 'intro-auto') autoPlan(1); }
+  else if (a === 'intro-done' || a === 'intro-auto') { S.settings.onboarded = true; S.seenVersion = APP_VERSION; S.tips ||= {}; S.tips.plan = true; /* the last set-up screen just showed the same three steps */ save(); closeIntro(); S.tab = 'plan'; planAdd = null; for (const wk of Object.values(S.weeks)) relayout(wk); render({ top: true }); if (a === 'intro-auto') autoPlan(1); }
   else if (a === 'suggest-targets') { const resized = setTargets(P.kcalTargetFor(S.settings.weight, S.settings.goal), P.proteinTargetFor(S.settings.weight, S.settings.goal)); toast(`${S.settings.kcalTarget.toLocaleString()} kcal and ${S.settings.proteinTarget}g protein a day.${resized ? ' Portions resized to match.' : ''}`, 3500); }
   else if (a === 'sinc' || a === 'sdec') { w.snacks[id] = Math.max(0, (w.snacks[id] || 0) + (a === 'sinc' ? 1 : -1)); if (!w.snacks[id]) delete w.snacks[id]; save(); refreshPlan(rowSel(id)); }
   else if (a === 'fresh-default') { if (el.dataset.on === '1') S.freshDefault[id] = true; else delete S.freshDefault[id]; save(); render(); toast(el.dataset.on === '1' ? 'Made fresh each time, not batched' : 'Back on the batch list'); }
