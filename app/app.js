@@ -219,8 +219,9 @@ const cellStyle = (id) => mealStyle(id);   // the old name, kept for the snack c
 const cookShort = (w) => { const c = cookDate(w, S.activeWeek); return `${DAY_FULL[new Date(c + 'T00:00:00Z').getUTCDay() === 0 ? 6 : new Date(c + 'T00:00:00Z').getUTCDay() - 1]} ${fmtDate(c)}`; };
 // The cook-day chips: Tonight / Tomorrow for this week, day names otherwise; gone days disabled (Sunday = the Sunday before the week).
 function cookDayChips(w) {
-  const t = S.activeWeek === S.thisMon ? todayIdx() : -1;
-  return `<div class="day-pick">${P.DAYS.map((d, i) => { const gone = S.activeWeek === S.thisMon && (i === 6 ? todayIdx() > 0 : isPast(i)); const label = i === t ? 'Tonight' : i === t + 1 ? 'Tomorrow' : d; return `<button data-action="cookday" data-day="${i}" class="${w.cookDay === i ? 'on' : ''}${gone ? ' gone' : ''}" ${gone ? 'disabled' : ''} title="${i === 6 ? 'The Sunday before the week' : ''}">${label}</button>`; }).join('')}</div>`;
+  const t = todayISO(), tm = addDays(t, 1);
+  const days = [6, 0, 1, 2, 3, 4, 5].map((i) => ({ i, date: i === 6 ? addDays(S.activeWeek, -1) : addDays(S.activeWeek, i) })); // in date order: a Sunday cook is the Sunday before the week
+  return `<div class="day-pick">${days.map(({ i, date }) => { const gone = date < t; const label = date === t ? 'Tonight' : date === tm ? 'Tomorrow' : P.DAYS[i]; return `<button data-action="cookday" data-day="${i}" class="${w.cookDay === i ? 'on' : ''}${gone ? ' gone' : ''}" ${gone ? 'disabled' : ''} title="${i === 6 ? 'The Sunday before the week' : ''}">${label}</button>`; }).join('')}</div>`;
 }
 // The date you actually cook for this week: a Sunday cook is the Sunday before the week starts.
 function cookDate(w, key) { return w.cookDay === 6 ? addDays(key, -1) : addDays(key, w.cookDay); }
