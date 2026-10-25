@@ -364,3 +364,19 @@ export function useByState(dateISO, todayISO, soonDays = 3) {
 }
 export const useByDay = (dateISO, todayISO) => { const d = daysBetween(todayISO, dateISO); return d === 0 ? 'today' : d === 1 ? 'tomorrow' : DAYS[(new Date(dateISO + 'T00:00:00Z').getUTCDay() + 6) % 7]; };
 export function useByLabel(dateISO, todayISO) { const s = useByState(dateISO, todayISO); return !s || s.state === 'ok' ? '' : s.state === 'past' ? 'Past its date' : s.days === 0 ? 'Use today' : `Use by ${useByDay(dateISO, todayISO)}`; }
+
+// v88: one bright solid colour per meal. bg + a text colour that reads on it. Same id → same colour everywhere;
+// inside one week two ids that hash to the same colour are told apart (the later one, sorted, takes the next free one).
+export const MEAL_COLOURS = [['#ffd60a', '#14122a'], ['#7c3aed', '#ffffff'], ['#ff7a1a', '#ffffff'], ['#2f7bff', '#ffffff'], ['#17c964', '#06301a'], ['#ff2e7e', '#ffffff'], ['#0ea5a6', '#ffffff'], ['#e63946', '#ffffff']];
+const colourIndex = (id) => { let h = 7; for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % MEAL_COLOURS.length; };
+export function mealColour(id) { const [bg, fg] = MEAL_COLOURS[colourIndex(id)]; return { bg, fg }; }
+export function mealColours(ids) {
+  const out = new Map(), taken = new Set();
+  for (const id of [...new Set(ids)].sort()) {
+    let i = colourIndex(id), tries = 0;
+    while (taken.has(i) && tries < MEAL_COLOURS.length) { i = (i + 1) % MEAL_COLOURS.length; tries++; }
+    taken.add(i); const [bg, fg] = MEAL_COLOURS[i]; out.set(id, { bg, fg });
+  }
+  return out;
+}
+export const dayProteinState = (protein, target, live) => (!live ? 'off' : protein >= target ? 'ok' : 'low');

@@ -971,3 +971,162 @@ img.sharecard { display: block; width: 100%; border-radius: 14px; margin: 8px 0 
 .starthero h3 { font-family: "Bricolage Grotesque", Inter, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.02em; margin: 0 0 2px; color: var(--text); text-transform: none; }
 .starthero .autoplanbtn { padding: 16px; font-size: 17px; }
 h2.orpick { font-size: 12px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin: 22px 0 8px; }
+
+/* ============================================================================================================================
+   v88 (25 Oct 2026): clear at a glance. Type floor 12px, 44px controls, words not symbols, A+ wording (labels with icons,
+   chips, ticks, colours), one solid colour per meal, the week on one screen. Later rules win, so this block only raises sizes
+   and adds the new pieces; nothing above is deleted. Spec: docs/superpowers/specs/2026-10-25-v88-clarity-design.md
+   ============================================================================================================================ */
+body { font-size: 16px; }
+h1 { font-size: 28px; margin: 2px 0 6px; } h3 { font-size: 17px; }
+.small, p.small, .small.muted, .muted.small, .card .sub.muted, .line .sub, .recipe-row .meta, .check .sub, label.field .sub, .morebtn .sub.muted, .card.next .sub.muted, .warn-box, .bad-box, .gridhelp, .snackbar, .macro, .ing-list, ul.store li, .tbl, .done-box, .stepline, .freeweek p, .matescard small, .matedots, .fw-steps li, .fw-promise, .shophead .sub, .shophead .stockline, .cupcheck .chip, .signin-msg, #intro .opt small, .homehero .hint, details.pantry-rest > summary small, .useby, .tipcard ol.tips li, .cmp-name, .card.list .line .sub { font-size: 14px; }
+h2, .lbl, .fw-eyebrow, .numcard h3, .grid .hd, .card.list h4.aisle, h4.sub, h4.psub, .tbl th, .tbl .sub, .macro .lbl, .stepline b, .bar b, .bars-labels, .numcard .bar b, .spark text, .spark text.val, .cmp-cell i, .btn.block .sub, .stack .btn .sub, .freeweek .fw-upgrade span, .cupcheck .chip small, .acct .sub, #intro .stat-row span, .stat span, .numcard .stat span, .homehero .hbig small, .wtabs button small, .plandock small, .numcard .stat b span, .shopchip i, .shopchip span, .cell .ctag, .cell .cmeta, .grid .lbl .dnum, .grid .lbl .dname { font-size: 12px; }
+.badge, .chip, .chip.useup, .swaprow .chip, .cmp-cell b, .tbl td, .pantryprice span, .pantryprice i, .brandbar .trialpill, .fw-more, .line, .check { font-size: 13px; }
+.badge { padding: 3px 8px; }
+.lbl, h2 { display: flex; align-items: center; gap: 6px; } .lbl svg.ico, h2 svg.ico { width: 15px; height: 15px; flex: none; }
+.stepline { margin: -2px 0 12px; } .stepline b { margin-right: 0; }
+/* 44px everywhere a thumb lands */
+.btn, .btn.small, .btn.ghost.small, .chip, .wtabs button, .day-pick button, .seg button, .fw-more, .morebtn, .brandbar .gear, .brandbar .trialpill, .shopchip, .ing-row button, .line .find, .cupcheck .chip, .chip.useup, .swaprow .chip, .pickfilters .chip, #gate .back, #intro .back, .fold summary, details.pantry-group summary, details.pantry-rest > summary { min-height: 44px; }
+.btn.small { padding: 10px 14px; font-size: 14px; } .chip { padding: 10px 14px; display: inline-flex; align-items: center; gap: 6px; }
+.chip.useup, .swaprow .chip { padding: 8px 12px; }
+.brandbar .gear { width: 44px; height: 44px; } .brandbar .trialpill { padding: 10px 14px; }
+.stepper button, .recipe-row.pick .stepper button { width: 44px; height: 44px; } .stepper b { min-width: 30px; }
+.recipe-row.pick .tick, .line input[type=checkbox], .check input { width: 28px; height: 28px; }
+.card.pickcard .recipe-row.pick { min-height: 60px; } .card.pickcard .recipe-row.pick .name { font-size: 16px; } .recipe-row.pick label.name { cursor: pointer; }
+.morebtn { min-height: 60px; } .morebtn b { font-size: 17px; } .morebtn svg.ico { width: 22px; height: 22px; color: var(--muted); flex: none; }
+.plandock .btn { min-height: 44px; } .fw-more { padding: 6px 0; } .fold summary, details.pantry-rest > summary { display: flex; align-items: center; } .fold summary { flex-direction: column; align-items: flex-start; justify-content: center; }
+.wtabs button { font-size: 15px; }
+/* tab bar: icons and words, no bubbles */
+#tabs button { font-size: 12px; gap: 4px; } #tabs button i { display: none; }
+/* icons beside labels */
+svg.ico { display: inline-block; vertical-align: -3px; flex: none; }
+.homehero .lbl svg.ico { color: rgba(255, 255, 255, .7); }
+.homehero .hint.ok { color: #3ddc97; font-weight: 700; } .homehero .hint.bad { color: #ff7a9a; font-weight: 700; }
+/* chips: facts, not sentences */
+.chips { display: flex; flex-wrap: wrap; gap: 4px; } .chips em { font-style: normal; font-size: 13px; font-weight: 600; background: var(--panel-2); color: var(--text); border-radius: 999px; padding: 4px 9px; white-space: nowrap; line-height: 1.3; }
+/* Plan: the numbers strip */
+.card.numstrip { display: grid; grid-template-columns: 1fr 1.35fr 1fr; padding: 10px 12px; }
+.numstrip > div { padding: 0 8px; border-left: 1px solid var(--line); min-width: 0; } .numstrip > div:first-child { border-left: 0; padding-left: 0; }
+.numstrip b { display: block; font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: -.03em; line-height: 1.05; font-variant-numeric: tabular-nums; white-space: nowrap; } .numstrip b small { font-family: Inter, sans-serif; font-size: 13px; color: var(--muted); font-weight: 600; letter-spacing: 0; }
+.numstrip span { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 500; margin-top: 3px; line-height: 1.25; } .numstrip span svg.ico { width: 14px; height: 14px; }
+/* Plan: the week grid, one solid colour per meal */
+.grid2 { display: grid; grid-template-columns: 44px repeat(3, 1fr) 44px; gap: 5px; align-items: stretch; margin-top: 2px; }
+.grid2 .hd { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-align: center; padding-bottom: 2px; }
+.grid2 .dlab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: none; border: 0; padding: 0; margin: 0; color: var(--text); font: inherit; min-height: 0; }
+.grid2 .dlab b { font-size: 13px; text-transform: uppercase; letter-spacing: .02em; } .grid2 .dlab span { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.grid2 .dlab.off b, .grid2 .dlab.off span { text-decoration: line-through; opacity: .5; } .grid2 .dlab i { font-style: normal; color: var(--mint); font-weight: 800; font-size: 13px; }
+.grid2 .cell { height: 56px; min-height: 0; border: 0; border-radius: 11px; padding: 5px 6px 5px 8px; font-size: 13px; font-weight: 700; line-height: 1.2; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; box-shadow: 0 2px 6px rgba(20, 18, 42, .12); text-align: left; overflow: hidden; }
+.grid2 .cell .cname { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.grid2 .cell .ctag { font-size: 12px; font-weight: 600; opacity: .85; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.grid2 .cell:has(.ctag) .cname { -webkit-line-clamp: 2; line-clamp: 2; }
+.grid2 .cell.empty { background: var(--panel); border: 1.5px dashed #d9d3c6; color: var(--accent); box-shadow: none; align-items: center; justify-content: center; font-size: 13px; }
+.grid2 .cell.off { background: repeating-linear-gradient(135deg, #f6f1e4 0 6px, #fff 6px 12px); box-shadow: none; }
+.grid2 .cell.past { background: var(--panel-2); color: var(--muted); box-shadow: none; } .grid2 .cell.past .cname { text-decoration: line-through; } .grid2 .cell.past .ctag { color: #0b7a4a; }
+.grid2 .cell.out { background: repeating-linear-gradient(135deg, #ecebf3 0 7px, #f7f6fb 7px 14px); color: var(--muted); box-shadow: none; } .grid2 .cell.out .cname { text-decoration: line-through; }
+.grid2 .cell.late { outline: 2px solid var(--sun); outline-offset: -2px; } .grid2 .cell.tubcell { outline: 2px dashed rgba(255, 255, 255, .7); outline-offset: -3px; }
+.grid2 .cell.over { outline: 3px solid var(--accent); outline-offset: -3px; transform: scale(1.04); } .grid2 .cell.lifted { opacity: .35; }
+.picking .grid2 .cell:not(.lifted):not(.off):not(.past) { outline: 2px dashed var(--accent); outline-offset: -2px; }
+.grid2 .pday { display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; font-variant-numeric: tabular-nums; } .grid2 .pday.ok { color: #0b7a4a; } .grid2 .pday.low { color: #b45309; } .grid2 .pday.off { color: var(--muted); opacity: .5; }
+.rowbtns { display: flex; gap: 8px; margin-top: 10px; } .rowbtns .btn { flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 10px 12px; } .rowbtns.quiet .btn { font-size: 14px; }
+.rowbtns .btn svg.ico { color: var(--muted); }
+.gridtip { display: flex; align-items: center; gap: 10px; margin-top: 10px; } .gridtip span { flex: 1; } .gridtip .btn { flex: none; }
+/* Home: the status card */
+.card.wk { padding: 2px 14px; }
+.wkrow { display: flex; align-items: center; gap: 8px; width: 100%; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 10px 0; min-height: 58px; text-align: left; color: var(--text); font: inherit; }
+.wkrow:last-child { border-bottom: 0; }
+.wkrow i { font-style: normal; flex: none; width: 28px; height: 28px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; background: var(--panel-2); color: var(--muted); }
+.wkrow.done i { background: #17c964; color: #06301a; } .wkrow.now i { background: var(--accent); color: #fff; }
+.wkrow svg.ico { width: 20px; height: 20px; color: var(--text); } .wkrow b { font-size: 16px; flex: none; } .wkrow.now b { color: #c81e4a; }
+.wkrow .chips { flex: 1; min-width: 0; } .wkrow .go { color: var(--accent); font-weight: 700; font-size: 15px; white-space: nowrap; }
+/* Home: the compact free-week card */
+.freeweek .fw-top { min-height: 44px; } .freeweek .fw-upgrade { margin-top: 10px; }
+/* Shop */
+.h4 { margin: 2px 0 8px; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.shops { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 0 12px; }
+.shopbtn { display: flex; align-items: center; gap: 6px; min-height: 48px; background: var(--panel); border: 1.5px solid var(--edge); border-radius: 12px; padding: 8px 10px; font: inherit; color: var(--text); min-width: 0; text-align: left; }
+.shopbtn.on { border: 2px solid var(--ink); } .shopbtn.dead { opacity: .5; }
+.shopbtn b { font-size: 15px; white-space: nowrap; } .shopbtn span { margin-left: auto; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.shopbtn em { font-style: normal; font-size: 12px; font-weight: 700; color: #fff; background: var(--mint); border-radius: 999px; padding: 2px 7px; white-space: nowrap; } .shopbtn em.q { background: var(--panel-2); color: var(--muted); }
+.shophead .verdict { margin: 8px 0 0; font-size: 14px; font-weight: 700; } .verdict.ok { color: #0b7a4a; } .verdict.over { color: #c81e4a; } .verdict a { color: inherit; text-decoration: underline; }
+.cupcheck .rowbtns { margin-top: 10px; }
+/* Cook */
+.card.cookday .mid { margin-top: 2px; font-size: 22px; } .card.cookday.gone .mid { color: #c81e4a; } .card.cookday .day-pick { margin-top: 10px; flex-wrap: wrap; } .card.cookday .day-pick button { flex: 1 1 auto; min-width: 70px; font-size: 14px; }
+ol.cooklist li b { font-size: 16px; } ol.cooklist .chips, ul.clean .chips { margin-top: 4px; }
+.dot { display: inline-block; width: 11px; height: 11px; border-radius: 4px; margin-right: 7px; vertical-align: 0; }
+.cookfold summary { display: flex; flex-direction: row; align-items: center; gap: 10px; min-height: 44px; } .cookfold summary::after { content: none; } .cookfold summary > .grow { flex: 1; min-width: 0; } .cookfold summary b { display: block; font-size: 16px; }
+.cookfold .open { color: var(--accent); font-weight: 700; white-space: nowrap; font-size: 15px; } .cookfold[open] .open { font-size: 0; } .cookfold[open] .open::after { content: "Close"; font-size: 15px; }
+/* set-up: the three steps as an icon row */
+.steprow { display: flex; gap: 8px; margin: 6px 0 14px; } .steprow span { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; background: var(--panel); border: 1px solid var(--edge); border-radius: 14px; padding: 10px 6px; font-weight: 700; font-size: 14px; } .steprow svg.ico { width: 22px; height: 22px; color: var(--accent); }
+/* dark */
+:root[data-theme=dark] .shopbtn { background: var(--panel); border-color: var(--edge); } :root[data-theme=dark] .shopbtn.on { border-color: #f5f5f7; }
+:root[data-theme=dark] .grid2 .cell.empty { background: var(--panel); border-color: #3a3a44; } :root[data-theme=dark] .grid2 .cell.off { background: repeating-linear-gradient(135deg, #1b1b22 0 6px, #16161b 6px 12px); } :root[data-theme=dark] .grid2 .cell.out { background: repeating-linear-gradient(135deg, #1b1b22 0 7px, #222229 7px 14px); }
+:root[data-theme=dark] .grid2 .pday.ok { color: #4fe39b; } :root[data-theme=dark] .wkrow.now b, :root[data-theme=dark] .verdict.over, :root[data-theme=dark] .card.cookday.gone .mid { color: #ff7a9a; } :root[data-theme=dark] .verdict.ok { color: #4fe39b; }
+:root[data-theme=dark] .steprow span { background: var(--panel); border-color: var(--edge); }
+@media (prefers-color-scheme: dark) {
+:root:not([data-theme=light]) .shopbtn { background: var(--panel); border-color: var(--edge); } :root:not([data-theme=light]) .shopbtn.on { border-color: #f5f5f7; }
+:root:not([data-theme=light]) .grid2 .cell.empty { background: var(--panel); border-color: #3a3a44; } :root:not([data-theme=light]) .grid2 .cell.off { background: repeating-linear-gradient(135deg, #1b1b22 0 6px, #16161b 6px 12px); } :root:not([data-theme=light]) .grid2 .cell.out { background: repeating-linear-gradient(135deg, #1b1b22 0 7px, #222229 7px 14px); }
+:root:not([data-theme=light]) .grid2 .pday.ok { color: #4fe39b; } :root:not([data-theme=light]) .wkrow.now b, :root:not([data-theme=light]) .verdict.over, :root:not([data-theme=light]) .card.cookday.gone .mid { color: #ff7a9a; } :root:not([data-theme=light]) .verdict.ok { color: #4fe39b; }
+:root:not([data-theme=light]) .steprow span { background: var(--panel); border-color: var(--edge); }
+}
+
+/* v88 fit: three lines of name in a cell, and the whole week above the dock on a 812px phone */
+.grid2 .cell { height: 54px; padding: 4px 6px 4px 8px; line-height: 1.12; }
+h1 { margin: 0 0 4px; } .stepline { margin: -4px 0 10px; } .wtabs { margin-bottom: 10px; } .card.numstrip { padding: 8px 12px; margin-bottom: 10px; } .gridcard { padding: 12px 12px 14px; }
+.grid2 .hd svg.ico { color: var(--muted); }
+
+/* v88 picker: three tabs, colour tiles, one Add button */
+.pickseg { position: sticky; top: 0; z-index: 5; display: flex; gap: 4px; background: #ebe7de; border-radius: 14px; padding: 4px; margin: 4px 0 12px; box-shadow: 0 8px 16px -10px rgba(20, 18, 42, .35); }
+.pickseg button { flex: 1; min-height: 48px; border: 0; background: none; border-radius: 11px; font: inherit; font-weight: 700; font-size: 14px; color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; line-height: 1.15; padding: 4px 2px; }
+.pickseg button small { font-size: 12px; font-weight: 600; opacity: .8; }
+.pickseg button.on { background: var(--panel); color: var(--text); box-shadow: 0 1px 3px rgba(20, 18, 42, .14); }
+.mtiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mtile { background: var(--panel); border: 1px solid var(--edge); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow); min-width: 0; }
+.mtile.on { border: 2px solid var(--accent); box-shadow: 0 8px 22px rgba(255, 79, 123, .18); }
+.mtile.full { opacity: .5; }
+.mt-top { display: flex; align-items: baseline; gap: 5px; padding: 12px 12px 10px; }
+.mt-top b { font-family: var(--display); font-weight: 800; font-size: 28px; letter-spacing: -.035em; line-height: 1; }
+.mt-top span { font-size: 13px; font-weight: 700; opacity: .9; }
+.mt-body { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 10px; }
+.mt-name { font-size: 15px; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; }
+.mt-body .chips em { font-size: 12px; padding: 3px 8px; }
+.mtile .mt-add { margin: 0 10px 10px; min-height: 44px; padding: 10px; font-size: 15px; }
+.mtile .mt-add:disabled { background: var(--panel-2); color: var(--muted); }
+.mt-step { display: flex; align-items: center; margin: 0 10px 10px; min-height: 44px; background: var(--accent); color: #fff; border-radius: 14px; }
+.mt-step button { flex: none; width: 44px; height: 44px; border: 0; background: none; color: #fff; font: 700 22px/1 Inter, sans-serif; }
+.mt-step button:disabled { opacity: .35; }
+.mt-step span { flex: 1; text-align: center; font-size: 13px; font-weight: 600; white-space: nowrap; } .mt-step span b { font-size: 17px; margin-right: 2px; }
+.snackline { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 4px 4px 4px 12px; background: var(--panel-2); border-radius: 14px; } .snackline > span { flex: 1; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; }
+.snackbar .chip.meal { border: 0; }
+.nextbtn { margin: 4px 0 14px; }
+/* v88 fit: the whole week above the tab bar on a 375x812 phone */
+.brandbar { margin-bottom: 6px; }
+.titlerow { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 8px; } .titlerow h1 { margin: 0; } .titlerow .stepline { margin: 0; }
+.wtabs { padding: 3px; margin-bottom: 10px; } .wtabs button { padding: 4px 6px; line-height: 1.15; } .wtabs button small { margin-top: 1px; }
+.grid2 .cell { height: 52px; }
+.card.numstrip { padding: 8px 12px; } .numstrip span { white-space: nowrap; }
+.gridcard { padding: 10px 10px 12px; }
+:root[data-theme=dark] .pickseg { background: var(--panel-2); } :root[data-theme=dark] .pickseg button.on { background: var(--panel); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme=light]) .pickseg { background: var(--panel-2); } :root:not([data-theme=light]) .pickseg button.on { background: var(--panel); } }
+.mtile.full { opacity: 1; } .mtile.full .mt-top { opacity: .7; }
+.mt-step span { font-size: 18px; } .mt-step span b { font-size: 19px; margin: 0; }
+.rowbtns .btn:not(.ghost) { font-size: 16px; }
+.shopbtn .sn { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; } .shopbtn .sn em { font-size: 11.5px; padding: 1px 7px; } .shopbtn .pr { margin-left: auto; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.shopbtn .sn em { font-size: 12px; }
+ol.cooklist li span.dot, ul.clean li span.dot, .cookfold summary span.dot { display: inline-block; margin-top: 0; }
+.fw-eyebrow { display: inline-flex; align-items: center; gap: 6px; }
+/* v88 ux-check fixes */
+#intro .back, #gate .back { min-height: 44px; min-width: 64px; padding: 10px 14px 10px 0; text-align: left; }
+label.field select, .sheet-inner select, label.field input:not([type=range]):not([type=checkbox]) { min-height: 44px; }
+input.range, input[type=range] { min-height: 44px; }
+.cellquick .btn span { font-size: 12.5px; }
+h2.pickgroup span, h2 span { font-size: 12px; }
+.check .sub a, label .sub a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; margin: -12px 0; }
+#intro .back, #gate .back { min-height: 46px; line-height: 1.2; box-sizing: border-box; display: inline-flex; align-items: center; }
+/* v88 small phones (320-360px): narrower side columns, one shop per row */
+@media (max-width: 360px) {
+  .grid2 { grid-template-columns: 34px repeat(3, 1fr) 36px; gap: 4px; }
+  .grid2 .cell { font-size: 12px; padding: 4px 4px 4px 6px; -webkit-hyphens: auto; hyphens: auto; }
+  .grid2 .dlab b, .grid2 .dlab span, .grid2 .pday { font-size: 12px; }
+  .shops { grid-template-columns: 1fr; }
+}
+.shopbtn { justify-content: space-between; text-align: left; } .shopbtn .sn { flex: 1; text-align: left; }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { kcalTargetFor, retargetFor, kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet, unitPrice, budgetVerdict, swapRecipe, keepsInPlace, daysBetween, useByState, useByDay, useByLabel } from '../planner.js';
+import { kcalTargetFor, retargetFor, kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet, unitPrice, budgetVerdict, swapRecipe, keepsInPlace, daysBetween, useByState, useByDay, useByLabel, mealColour, mealColours, dayProteinState, MEAL_COLOURS } from '../planner.js';
 
 const ingredients = [
   { id: 'chicken', name: 'Chicken breast', unit: 'g', protein: 22.5, packs: [
@@ -304,4 +304,30 @@ test('use-by labels: amber wording names the day, red says past, far-off dates s
 });
 test('netPantry: a ticked item the week does not need changes nothing', () => {
   assert.deepEqual(netPantry({ rice: 300 }, { tuna: true, rice: undefined }), { rice: 300 });
+});
+
+// v88: one bright colour per meal, and the per-day protein state behind the grid's protein column
+test('mealColour is stable per id and uses the eight-colour palette', () => {
+  assert.equal(MEAL_COLOURS.length, 8);
+  const a = mealColour('chilli'), b = mealColour('chilli');
+  assert.deepEqual(a, b);
+  assert.ok(MEAL_COLOURS.some(([bg, fg]) => bg === a.bg && fg === a.fg));
+  assert.ok(['#ffffff', '#14122a', '#06301a'].includes(a.fg));
+});
+test('mealColours gives every id in a week its own colour when there are 8 or fewer', () => {
+  const ids = ['eggs', 'soy', 'curry', 'tuna', 'eggrice', 'redcurry'];
+  const m = mealColours(ids);
+  assert.equal(m.size, 6);
+  assert.equal(new Set([...m.values()].map((c) => c.bg)).size, 6);
+  for (const id of ids) assert.ok(m.get(id).bg && m.get(id).fg);
+});
+test('mealColours is deterministic and keeps a lone id on its hash colour', () => {
+  assert.deepEqual([...mealColours(['tuna', 'eggs']).entries()], [...mealColours(['eggs', 'tuna']).entries()]);
+  assert.deepEqual(mealColours(['tuna']).get('tuna'), mealColour('tuna'));
+});
+test('dayProteinState: off when the day is not live, ok at or above target, low under', () => {
+  assert.equal(dayProteinState(214, 170, true), 'ok');
+  assert.equal(dayProteinState(170, 170, true), 'ok');
+  assert.equal(dayProteinState(169, 170, true), 'low');
+  assert.equal(dayProteinState(240, 170, false), 'off');
 });
