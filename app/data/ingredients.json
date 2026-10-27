@@ -11412,6 +11412,352 @@
      "checked": "2026-09-20"
     }
    ]
+  },
+  {
+   "id": "roast_chicken",
+   "name": "Whole roast chicken (cooked)",
+   "unit": "each",
+   "protein": 152,
+   "kcal": 890,
+   "category": "protein",
+   "store": "fridge",
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Tesco Whole Roast Chicken 1kg",
+     "size": 1,
+     "price": 6.5,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Roast Whole Cooked British Chicken 894g - 1112g",
+     "size": 1,
+     "price": 6.5,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Extra Tasty Whole Roast Chicken 950g",
+     "size": 1,
+     "price": 6.22,
+     "checked": "2026-10-27"
+    }
+   ],
+   "unavailable": [
+    "aldi"
+   ]
+  },
+  {
+   "id": "chipotle_paste",
+   "name": "Chipotle paste",
+   "unit": "g",
+   "protein": 2.5,
+   "kcal": 171,
+   "category": "sauce",
+   "store": "cupboard",
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Tesco Chipotle Chilli Paste 95G",
+     "size": 95,
+     "price": 1.95,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Bart Mexican Chipotle & Red Pepper Paste 80g",
+     "size": 80,
+     "price": 2.5,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Gran Luchito Chipotle Chilli Paste 100g",
+     "size": 100,
+     "price": 4.0,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "asda",
+     "name": "COOK by ASDA Chipotle Paste 100g",
+     "size": 100,
+     "price": 2.0,
+     "checked": "2026-10-27"
+    }
+   ],
+   "unavailable": [
+    "aldi"
+   ]
+  },
+  {
+   "id": "agave",
+   "name": "Agave syrup",
+   "unit": "ml",
+   "protein": 0,
+   "kcal": 400,
+   "category": "cupboard",
+   "store": "cupboard",
+   "staple": true,
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Groovy Food Agave Light And Mild 250ml",
+     "size": 250,
+     "price": 2.85,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "The Groovy Food Company Agave Nectar 250ml",
+     "size": 250,
+     "price": 2.85,
+     "checked": "2026-10-27"
+    }
+   ],
+   "unavailable": [
+    "aldi",
+    "asda"
+   ]
+  },
+  {
+   "id": "dill",
+   "name": "Fresh dill",
+   "unit": "g",
+   "protein": 3.7,
+   "kcal": 31,
+   "category": "veg",
+   "store": "fridge",
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Tesco Fresh Cut Dill 20G",
+     "size": 20,
+     "price": 0.48,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Bunched Dill 20g",
+     "size": 20,
+     "price": 0.6,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Dill 25g",
+     "size": 25,
+     "price": 0.6,
+     "checked": "2026-10-27"
+    }
+   ],
+   "unavailable": [
+    "aldi"
+   ]
+  },
+  {
+   "id": "sweetener",
+   "name": "Granulated sweetener (sucralose or stevia)",
+   "unit": "g",
+   "protein": 0,
+   "kcal": 386,
+   "category": "cupboard",
+   "store": "cupboard",
+   "staple": true,
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Tesco Low Calorie Sucralose-Based Sweetener 75G",
+     "size": 75,
+     "price": 1.1,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Sucralose Sweetener 75g",
+     "size": 75,
+     "price": 1.15,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Stevia Granulated Sweetener 75g",
+     "size": 75,
+     "price": 0.95,
+     "checked": "2026-10-27"
+    }
+   ],
+   "unavailable": [
+    "aldi"
+   ]
+  },
+  {
+   "id": "pinto_beans",
+   "name": "Pinto beans (drained weight)",
+   "unit": "g",
+   "protein": 6,
+   "kcal": 94,
+   "category": "tin",
+   "store": "cupboard",
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Tesco Pinto Beans In Water 390G (235g drained)",
+     "size": 235,
+     "price": 0.45,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Pinto Beans in Water 400g (235g drained)",
+     "size": 235,
+     "price": 0.5,
+     "checked": "2026-10-27"
+    }
+   ],
+   "unavailable": [
+    "aldi",
+    "sainsburys"
+   ]
+  },
+  {
+   "id": "enchilada_sauce",
+   "name": "Enchilada sauce",
+   "unit": "g",
+   "protein": 1.4,
+   "kcal": 70,
+   "category": "sauce",
+   "store": "cupboard",
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Old El Paso Enchilada Sauce Mild 340G",
+     "size": 340,
+     "price": 1.9,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "asda",
+     "name": "Old El Paso Enchilada Cooking Sauce 340g",
+     "size": 340,
+     "price": 1.9,
+     "checked": "2026-10-27"
+    }
+   ],
+   "unavailable": [
+    "aldi",
+    "sainsburys"
+   ]
+  },
+  {
+   "id": "cheddar_mozzarella",
+   "name": "Grated cheddar & mozzarella",
+   "unit": "g",
+   "protein": 23,
+   "kcal": 367,
+   "category": "dairy",
+   "store": "fridge",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Emporium Grated Cheddar & Mozzarella Cheese Mix 250g",
+     "size": 250,
+     "price": 1.89,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Grated Cheddar & Mozzarella Mix 250g",
+     "size": 250,
+     "price": 2.5,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "tesco",
+     "name": "Mexicana Grated Spicy Cheddar Cheese & Mozzarella 180g",
+     "size": 180,
+     "price": 2.95,
+     "checked": "2026-10-27"
+    }
+   ],
+   "unavailable": [
+    "asda"
+   ]
+  },
+  {
+   "id": "light_coconut_milk",
+   "name": "Light coconut milk",
+   "unit": "ml",
+   "protein": 0.4,
+   "kcal": 61,
+   "category": "tin",
+   "store": "cupboard",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Asia Green Garden Coconut Milk 400ml Reduced Fat",
+     "size": 400,
+     "price": 0.75,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Light Coconut Milk 400ml",
+     "size": 400,
+     "price": 0.75,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Coconut Milk Light 400g",
+     "size": 400,
+     "price": 0.75,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "asda",
+     "name": "Island Sun Light Coconut Milk 400ml",
+     "size": 400,
+     "price": 0.98,
+     "checked": "2026-10-27"
+    }
+   ]
+  },
+  {
+   "id": "chilli_oil",
+   "name": "Crispy chilli oil",
+   "unit": "g",
+   "protein": 3.5,
+   "kcal": 659,
+   "category": "sauce",
+   "store": "cupboard",
+   "staple": true,
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Blue Dragon Mild Crispy Chilli Oil Crunch 180g",
+     "size": 180,
+     "price": 3.5,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "asda",
+     "name": "Blue Dragon Mild Crispy Chilli Oil Crunch 180g",
+     "size": 180,
+     "price": 3.15,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Laoganma Crispy Chilli in Oil 210g",
+     "size": 210,
+     "price": 2.75,
+     "checked": "2026-10-27"
+    }
+   ],
+   "unavailable": [
+    "aldi"
+   ]
   }
  ]
 }

@@ -6931,6 +6931,558 @@
     "shop-bought"
    ],
    "core": true
+  },
+  {
+   "id": "chipotle_chicken_egg_smash",
+   "name": "Chipotle chicken & egg smash",
+   "short": "Chipotle smash",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 3,
+   "freezer": false,
+   "cookMinutes": 20,
+   "equipment": [
+    "hob"
+   ],
+   "source": "https://www.instagram.com/reel/De3i5YRCcvc/",
+   "ingredients": [
+    {
+     "id": "roast_chicken",
+     "qty": 0.17
+    },
+    {
+     "id": "egg",
+     "qty": 0.83
+    },
+    {
+     "id": "red_onion",
+     "qty": 0.17
+    },
+    {
+     "id": "sweetcorn",
+     "qty": 27
+    },
+    {
+     "id": "jalapenos",
+     "qty": 5
+    },
+    {
+     "id": "parmesan",
+     "qty": 10
+    },
+    {
+     "id": "sour_cream",
+     "qty": 50
+    },
+    {
+     "id": "chipotle_paste",
+     "qty": 30
+    },
+    {
+     "id": "garlic_granules",
+     "qty": 1.5
+    },
+    {
+     "id": "lime",
+     "qty": 0.17
+    },
+    {
+     "id": "agave",
+     "qty": 2.5
+    }
+   ],
+   "method": [
+    "Boil the eggs for 9 to 10 minutes, cool them in cold water and peel. Strip all the meat off the roast chicken and shred it.",
+    "Char the drained sweetcorn in a dry, very hot pan for 3 to 4 minutes until some kernels blacken. Finely chop the red onion and the jalapeños.",
+    "Sauce: in a big bowl mix the soured cream, chipotle paste, garlic granules, lime juice and a little agave. Taste, and add salt only if it needs it.",
+    "Add the chicken, eggs, onion, corn, jalapeños and grated parmesan, and smash it all together with a fork until creamy.",
+    "Tub it on its own. Eat it however you like: in a wrap toasted in a dry pan for 1 to 2 minutes a side, on toast, or with rice."
+   ],
+   "notes": "From @carbs.calendar on Instagram. The video uses a 1.1 kg shop rotisserie chicken (a supermarket whole roast chicken is the same thing) and low-fat soured cream. Makes 6 portions. In the video it goes in a toasted high-protein wrap, in a melt on buttered sourdough with cheddar and mozzarella, or on toast with extra onion, chilli and lime. The numbers and shop list are for the smash only, so add whatever you have it with.",
+   "tags": [
+    "mexican",
+    "cold-lunch"
+   ],
+   "core": true
+  },
+  {
+   "id": "chicken_egg_smash",
+   "name": "Creamy chicken & egg smash",
+   "short": "Egg smash",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 3,
+   "freezer": false,
+   "cookMinutes": 20,
+   "equipment": [
+    "hob"
+   ],
+   "source": "https://www.instagram.com/reel/DeWEpLLirin/",
+   "ingredients": [
+    {
+     "id": "roast_chicken",
+     "qty": 0.17
+    },
+    {
+     "id": "egg",
+     "qty": 0.83
+    },
+    {
+     "id": "spring_onion",
+     "qty": 1
+    },
+    {
+     "id": "sun_dried_tomatoes",
+     "qty": 10
+    },
+    {
+     "id": "gherkins",
+     "qty": 12
+    },
+    {
+     "id": "dill",
+     "qty": 2
+    },
+    {
+     "id": "parmesan",
+     "qty": 8
+    },
+    {
+     "id": "cottage_cheese",
+     "qty": 50
+    },
+    {
+     "id": "mustard",
+     "qty": 3
+    },
+    {
+     "id": "honey",
+     "qty": 3
+    },
+    {
+     "id": "garlic_granules",
+     "qty": 0.5
+    }
+   ],
+   "method": [
+    "Boil the eggs for 9 to 10 minutes, cool them in cold water and peel. Strip all the meat off the roast chicken and shred it.",
+    "Chop the spring onions, sun-dried tomatoes, gherkins and dill.",
+    "Sauce: blend the cottage cheese until smooth, then stir in the mustard, honey and garlic granules (and a spoon of mayo if you like it richer).",
+    "Add the chicken, eggs, chopped bits and grated parmesan to the sauce and smash it all together with a fork until creamy.",
+    "Tub it on its own. Eat it however you like: in a toasted wrap, on buttered sourdough with chilli crisp, or with rice."
+   ],
+   "notes": "From @carbs.calendar on Instagram. The video gives the chicken (a 1.2 kg roast chicken), 5 eggs and 300 g cottage cheese; the rest are \"to taste\", so those amounts are our measured version of what is shown. Mayo is optional in the original. Makes 6 portions. The numbers and shop list are for the smash only, so add whatever you have it with (a wrap, toast or rice).",
+   "tags": [
+    "cold-lunch"
+   ],
+   "core": true
+  },
+  {
+   "id": "beef_egg_rice_bowl",
+   "name": "Beef, egg & chilli mayo rice bowl",
+   "short": "Slop bowl",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 25,
+   "equipment": [
+    "hob"
+   ],
+   "source": "https://www.instagram.com/reel/DesGo3vhLaA/",
+   "ingredients": [
+    {
+     "id": "basmati",
+     "qty": 60
+    },
+    {
+     "id": "stock_cube",
+     "qty": 0.5
+    },
+    {
+     "id": "beef_mince_5",
+     "qty": 240
+    },
+    {
+     "id": "sweetcorn",
+     "qty": 60
+    },
+    {
+     "id": "spring_onion",
+     "qty": 1
+    },
+    {
+     "id": "egg",
+     "qty": 2
+    },
+    {
+     "id": "mayo",
+     "qty": 15
+    },
+    {
+     "id": "chilli_oil",
+     "qty": 5
+    }
+   ],
+   "method": [
+    "Cook the rice with a chicken stock cube crumbled into the water.",
+    "Brown the lean mince in a hot dry pan, breaking it up, and season with salt and pepper. Warm the drained sweetcorn through with it at the end.",
+    "Soft-boil the eggs: 6½ minutes in boiling water, straight into cold water, then peel.",
+    "Mix the mayo with the crispy chilli oil.",
+    "Bowl it up: rice, beef and corn, sliced spring onions, the halved eggs and the chilli mayo. Stir it all through before eating."
+   ],
+   "notes": "From @slopbowlcentral on Instagram (\"Trying your slop\" part 5, a bowl sent in by @m1ndrevival). The video names the ingredients but no amounts and puts a bowl at 650 kcal and 70 g protein, so these amounts are set to match its protein and carbs. Freezes without the eggs and the chilli mayo: add those on the day.",
+   "tags": [],
+   "core": true
+  },
+  {
+   "id": "apple_crumble_overnight_oats",
+   "name": "Apple crumble overnight oats",
+   "short": "Apple oats",
+   "slots": [
+    "breakfast"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 3,
+   "freezer": false,
+   "cookMinutes": 15,
+   "equipment": [
+    "oven"
+   ],
+   "source": "https://www.instagram.com/reel/DdzC8wuOeyw/",
+   "ingredients": [
+    {
+     "id": "oats",
+     "qty": 28
+    },
+    {
+     "id": "chia_seeds",
+     "qty": 5
+    },
+    {
+     "id": "milk",
+     "qty": 65
+    },
+    {
+     "id": "protein_powder",
+     "qty": 22
+    },
+    {
+     "id": "cinnamon",
+     "qty": 1
+    },
+    {
+     "id": "vanilla",
+     "qty": 1
+    },
+    {
+     "id": "apples",
+     "qty": 0.33
+    },
+    {
+     "id": "greek_yoghurt",
+     "qty": 75
+    },
+    {
+     "id": "butter",
+     "qty": 3
+    },
+    {
+     "id": "brown_sugar",
+     "qty": 2
+    }
+   ],
+   "method": [
+    "Dice the apple small (or grate it). Half goes in the oats, half in the yoghurt.",
+    "Oats: mix the oats (keep a spoonful back for the crumble), chia seeds, cinnamon, vanilla, protein powder, milk and half the apple, and spoon into jars.",
+    "Topper: beat the Greek yoghurt with the rest of the apple and a splash of milk for about 20 seconds, then spoon it on top. Into the fridge overnight.",
+    "Crumble: rub the saved oats, butter, sugar and a pinch of cinnamon together with your fingers, spread it on a tray and bake at 180°C for about 10 minutes until golden. Cool and keep it in a tub.",
+    "In the morning, scatter the crumble on top."
+   ],
+   "notes": "From @finntonry on Instagram (Pink Lady apples in the video). The milk (180 g for 3 jars) and the 3 jars are from the video; Finn’s exact amounts for the rest are on his paid website, so these are ours, set to land near his 320 kcal, 32 g protein and 6 g fibre a jar.",
+   "tags": [
+    "breakfast"
+   ],
+   "core": true
+  },
+  {
+   "id": "steak_egg_yumyum_bowl",
+   "name": "Steak & egg yum yum bowls",
+   "short": "Steak bowl",
+   "slots": [
+    "lunch",
+    "dinner",
+    "breakfast"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 35,
+   "equipment": [
+    "hob"
+   ],
+   "source": "https://www.instagram.com/reel/DeA4nJNRwpJ/",
+   "ingredients": [
+    {
+     "id": "steak",
+     "qty": 195
+    },
+    {
+     "id": "jasmine_rice",
+     "qty": 40
+    },
+    {
+     "id": "egg",
+     "qty": 1
+    },
+    {
+     "id": "egg_whites",
+     "qty": 125
+    },
+    {
+     "id": "cherry_tomatoes",
+     "qty": 65
+    },
+    {
+     "id": "cheese_slices",
+     "qty": 1.15
+    },
+    {
+     "id": "greek_yoghurt",
+     "qty": 64
+    },
+    {
+     "id": "tomato_ketchup_reduced",
+     "qty": 4.3
+    },
+    {
+     "id": "sweetener",
+     "qty": 1.4
+    },
+    {
+     "id": "rice_vinegar",
+     "qty": 0.7
+    },
+    {
+     "id": "garlic_granules",
+     "qty": 1.1
+    },
+    {
+     "id": "paprika",
+     "qty": 0.43
+    },
+    {
+     "id": "onion_powder",
+     "qty": 0.29
+    },
+    {
+     "id": "salt",
+     "qty": 1.7
+    },
+    {
+     "id": "black_pepper",
+     "qty": 0.7
+    }
+   ],
+   "method": [
+    "Cook the jasmine rice: 1 part rice to 2 parts water.",
+    "Dice the steak into bite-size pieces, season it with salt, pepper and garlic granules, and fry it in a big hot pan until browned.",
+    "Scramble the whole eggs and egg whites until fully set (in the same pan as the steak is fine).",
+    "Yum yum sauce: mix the Greek yoghurt, ketchup, sweetener, rice vinegar, garlic granules, paprika, onion powder and a pinch of salt until smooth.",
+    "Dice the tomatoes. Add the eggs, rice, tomatoes, yum yum sauce and the cheese slices (torn up) to the steak, mix well and split evenly between tubs."
+   ],
+   "notes": "From @cookingforgains_ on Instagram: 3 lb top sirloin, 1½ cups jasmine rice, 7 eggs, 32 oz egg whites, 16 oz tomatoes and 8 cheese slices make 7 meals (about 670 kcal and 74 g protein each in the original). The steak seasoning in the video is Kinder’s The Blend (salt, pepper, garlic); fat-free Greek yoghurt and no-sugar ketchup in the sauce. Optional, from the video: a whole jar of jalapeños with its juice. The sauce can go a little grainy after freezing: stir well after reheating.",
+   "tags": [],
+   "core": true
+  },
+  {
+   "id": "slow_cooker_chicken_burritos",
+   "name": "Slow cooker chicken & rice burritos",
+   "short": "Burritos",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 20,
+   "equipment": [
+    "slow cooker"
+   ],
+   "source": "https://www.instagram.com/reel/DdmHU_ZuXMx/",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 113
+    },
+    {
+     "id": "pinto_beans",
+     "qty": 60
+    },
+    {
+     "id": "sweetcorn",
+     "qty": 62
+    },
+    {
+     "id": "enchilada_sauce",
+     "qty": 60
+    },
+    {
+     "id": "salt",
+     "qty": 0.75
+    },
+    {
+     "id": "garlic_granules",
+     "qty": 0.8
+    },
+    {
+     "id": "smoked_paprika",
+     "qty": 0.6
+    },
+    {
+     "id": "chilli_powder",
+     "qty": 0.3
+    },
+    {
+     "id": "cream_cheese",
+     "qty": 15
+    },
+    {
+     "id": "basmati",
+     "qty": 26
+    },
+    {
+     "id": "cheddar_mozzarella",
+     "qty": 28
+    },
+    {
+     "id": "wrap",
+     "qty": 2
+    }
+   ],
+   "method": [
+    "Start this first: rub the chicken all over with the salt, garlic granules, smoked paprika and chilli powder.",
+    "Into the slow cooker: the chicken, drained pinto beans and sweetcorn, then the enchilada sauce over the top. Lid on, 3 to 4 hours on high or 4 to 5 on low.",
+    "Meanwhile cook the rice. When the chicken is done, lift it out and shred or dice it.",
+    "Stir the cream cheese into the pot, then the rice, grated cheese and chicken.",
+    "Put about half a cup of filling in the middle of each wrap and roll it up tight. For crispy ones, cook them seam-side down in a dry pan for 3 to 5 minutes a side. Wrap in foil or cling film, then fridge or freeze."
+   ],
+   "notes": "From @realfoodwholelife (Instagram and realfoodwholelife.com): 1 lb chicken, a 15 oz can of pinto beans, 1½ cups corn, 1 cup enchilada sauce, 2 cups cooked rice and 8 large tortillas make 8 burritos (394 kcal and 25 g protein each in the original). A portion here is 2 burritos. 20 minutes hands-on, plus 3 to 4 hours in the slow cooker. The US recipe uses a mild chili powder blend: UK chilli powder is hotter, so go easy. Reheat: microwave 2 to 3 minutes wrapped in damp kitchen paper, turning halfway.",
+   "tags": [
+    "mexican"
+   ],
+   "core": true
+  },
+  {
+   "id": "oven_chicken_biryani",
+   "name": "One-dish oven chicken biryani",
+   "short": "Oven biryani",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 70,
+   "equipment": [
+    "oven"
+   ],
+   "source": "https://www.instagram.com/reel/DdBx3j4N4h4/",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 150
+    },
+    {
+     "id": "basmati",
+     "qty": 50
+    },
+    {
+     "id": "onion",
+     "qty": 0.25
+    },
+    {
+     "id": "pepper",
+     "qty": 0.25
+    },
+    {
+     "id": "greek_yoghurt",
+     "qty": 38
+    },
+    {
+     "id": "frozen_peas",
+     "qty": 25
+    },
+    {
+     "id": "light_coconut_milk",
+     "qty": 25
+    },
+    {
+     "id": "stock_cube",
+     "qty": 0.25
+    },
+    {
+     "id": "olive_oil",
+     "qty": 4
+    },
+    {
+     "id": "garam_masala",
+     "qty": 0.5
+    },
+    {
+     "id": "cumin",
+     "qty": 0.5
+    },
+    {
+     "id": "paprika",
+     "qty": 0.6
+    },
+    {
+     "id": "turmeric",
+     "qty": 0.4
+    },
+    {
+     "id": "chilli_powder",
+     "qty": 0.3
+    },
+    {
+     "id": "salt",
+     "qty": 0.5
+    },
+    {
+     "id": "black_pepper",
+     "qty": 0.2
+    }
+   ],
+   "method": [
+    "Heat the oven to 180°C. Rinse the rice until the water runs clear and spread it over the bottom of a deep baking dish.",
+    "Lay the diced raw chicken on top, then the oil, spices, salt and pepper, the sliced onion, the diced red pepper and the peas.",
+    "Spoon on the Greek yoghurt, pour in the light coconut milk and the boiling stock (made with the stock cube), then mix everything together and spread it level.",
+    "Bake for 60 minutes until the rice is tender and the chicken is cooked through. Fluff it up and split it into tubs."
+   ],
+   "notes": "From @trainwithwarren on Instagram, a recipe from @gymtrav: 600 g chicken breast, 200 g basmati, 1 onion, 1 red pepper, 150 g 0% Greek yoghurt, 100 g peas, 100 ml light coconut milk and 300 ml stock, 60 minutes at 180°C, for 4 servings (540 kcal and 48 g protein each in the original). The chilli powder is optional; the video also adds garlic powder.",
+   "tags": [
+    "curry"
+   ],
+   "core": true
   }
  ]
 }

@@ -6,9 +6,10 @@ import { planWeek } from './autoplan.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v88';
+const APP_VERSION = 'v89';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
+  ['v89', '27 Oct 2026', '7 new recipes from Instagram: chipotle and creamy chicken & egg smash, steak & egg yum yum bowls, slow cooker chicken burritos, one-dish oven chicken biryani, a beef & egg chilli mayo rice bowl and apple crumble overnight oats.'],
   ['v88', '25 Oct 2026', 'Clearer everywhere: the whole week on one screen in bright colours, a new meal picker (tap Add), a status card on Home, the price first on Shop, the cook day on Cook, bigger text and buttons.'],
   ['v87', '23 Oct 2026', 'New here? The app opens on Plan with one button, Plan my week for me, until your first week is planned.'],
   ['v86', '24 Oct 2026', 'A Home tab that answers five questions, the Sunday check-in that plans next week from what happened, cook tonight when you join midweek, Shop led by the food number, light and dark, and a free week that always runs to a Sunday night.'],
