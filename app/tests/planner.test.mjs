@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { kcalTargetFor, retargetFor, kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet, unitPrice, budgetVerdict, swapRecipe, keepsInPlace, daysBetween, useByState, useByDay, useByLabel, mealColour, mealColours, dayProteinState, MEAL_COLOURS } from '../planner.js';
+import { kcalTargetFor, retargetFor, kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet, unitPrice, budgetVerdict, swapRecipe, keepsInPlace, daysBetween, useByState, useByDay, useByLabel, mealColour, mealColours, dayProteinState, MEAL_COLOURS, mealSplit, weekSplit, sizeWeek, sizeRecipes } from '../planner.js';
 
 const ingredients = [
   { id: 'chicken', name: 'Chicken breast', unit: 'g', protein: 22.5, packs: [
@@ -330,4 +330,60 @@ test('dayProteinState: off when the day is not live, ok at or above target, low 
   assert.equal(dayProteinState(170, 170, true), 'ok');
   assert.equal(dayProteinState(169, 170, true), 'low');
   assert.equal(dayProteinState(240, 170, false), 'off');
+});
+
+// v90: carbs fill the calories, everything else is sized to the protein target
+const SZ_ING = [
+  { id: 'steak', unit: 'g', protein: 30, kcal: 150, category: 'protein' },
+  { id: 'rice', unit: 'g', protein: 7, kcal: 350, category: 'carb' },
+  { id: 'oil', unit: 'g', protein: 0, kcal: 900, category: 'cupboard' },
+  { id: 'egg', unit: 'each', protein: 6, kcal: 70, category: 'protein' },
+];
+const steakRice = { id: 'sr', slots: ['lunch', 'dinner'], ingredients: [{ id: 'steak', qty: 200 }, { id: 'rice', qty: 50 }, { id: 'oil', qty: 5 }] };
+const eggsOnly = { id: 'eo', slots: ['breakfast'], ingredients: [{ id: 'egg', qty: 3 }] };
+const snackR = { id: 'sn', slots: ['snack'], ingredients: [{ id: 'egg', qty: 2 }] };
+test('mealSplit puts carbs on one side and everything else on the other', () => {
+  const s = mealSplit(steakRice, SZ_ING);
+  assert.equal(s.ck, 175); assert.equal(s.cg, 3.5);
+  assert.equal(s.pk, 300 + 45); assert.equal(s.pg, 60);
+});
+test('weekSplit averages a day and fills an empty slot with that slot\'s average meal', () => {
+  const day = { breakfast: 'eo', lunch: 'sr', dinner: 'sr' };
+  const full = weekSplit([day, day], [steakRice, eggsOnly], SZ_ING, [true, true, false, false, false, false, false]);
+  const gap = weekSplit([day, { ...day, dinner: null }], [steakRice, eggsOnly], SZ_ING, [true, true, false, false, false, false, false]);
+  for (const k of ['pk', 'pg', 'ck', 'cg']) assert.ok(Math.abs(full[k] - gap[k]) < 1e-9, k);
+});
+test('sizeWeek: a protein-heavy week reaches its calories with carbs, not more meat', () => {
+  const m = { pk: 1100, pg: 134, ck: 363, cg: 8 }; // Cameron's week, 27 Oct
+  const f = sizeWeek(m, { kcal: 2450, protein: 195 });
+  assert.ok(f.c > f.p, `carbs ${f.c} should grow more than the rest ${f.p}`);
+  const protein = f.p * m.pg + f.c * m.cg, kcal = f.p * m.pk + f.c * m.ck;
+  assert.ok(protein >= 195 && protein <= 195 * 1.15, `protein ${protein}`);
+  assert.ok(Math.abs(kcal - 2450) / 2450 < 0.05, `kcal ${kcal}`);
+  const old = Math.round((2450 / (m.pk + m.ck)) * 20) / 20; // one factor for everything, as before v90
+  assert.ok(protein < old * (m.pg + m.cg) - 20, 'less protein than the single factor gave');
+});
+test('sizeWeek: carbs at their biggest and still short, the rest grows until the calories are met', () => {
+  const m = { pk: 1100, pg: 134, ck: 363, cg: 8 };
+  const f = sizeWeek(m, { kcal: 3400, protein: 195 });
+  assert.equal(f.c, 2.5);
+  assert.ok(f.p > 1.65, `p ${f.p}`);
+  assert.ok(Math.abs(f.p * m.pk + f.c * m.ck - 3400) / 3400 < 0.03);
+});
+test('sizeWeek: a high protein target with low calories keeps the calories and lets protein land where it lands', () => {
+  const m = { pk: 1100, pg: 134, ck: 363, cg: 8 };
+  const f = sizeWeek(m, { kcal: 1800, protein: 200 });
+  assert.equal(f.c, 0.5);
+  assert.ok(Math.abs(f.p * m.pk + f.c * m.ck - 1800) / 1800 < 0.03, `kcal ${f.p * m.pk + f.c * m.ck}`);
+  assert.ok(f.p < 1.55);
+});
+test('sizeWeek: no carbs at all falls back to one factor; no targets leaves the recipe as written', () => {
+  const f = sizeWeek({ pk: 1500, pg: 120, ck: 0, cg: 0 }, { kcal: 3000, protein: 150 });
+  assert.equal(f.p, f.c); assert.equal(f.p, 2);
+  assert.deepEqual(sizeWeek({ pk: 0, pg: 0, ck: 0, cg: 0 }, { kcal: 3000, protein: 150 }), { p: 1, c: 1 });
+});
+test('sizeRecipes scales carbs by c, the rest by p, and leaves snacks alone', () => {
+  const [a, b] = sizeRecipes([steakRice, snackR], { p: 1.2, c: 2 }, SZ_ING);
+  assert.deepEqual(a.ingredients.map((x) => x.qty), [240, 100, 6]);
+  assert.equal(b, snackR);
 });

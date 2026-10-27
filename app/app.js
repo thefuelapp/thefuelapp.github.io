@@ -6,9 +6,10 @@ import { planWeek } from './autoplan.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v89';
+const APP_VERSION = 'v90';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
+  ['v90', '27 Oct 2026', 'Portions are sized in two parts: rice, pasta, oats and potatoes fill your calories, and the meat, fish, eggs and dairy are sized to your protein target, so a high-protein week no longer means extra meat and a bigger shop. Each day in the week grid now shows its calories under the protein. Cheaper swaps in the new recipes: thin-cut frying steak, whole eggs and grated cheddar in the yum yum bowls; black beans, passata and cheddar in the burritos; honey in the chipotle smash.'],
   ['v89', '27 Oct 2026', '7 new recipes from Instagram: chipotle and creamy chicken & egg smash, steak & egg yum yum bowls, slow cooker chicken burritos, one-dish oven chicken biryani, a beef & egg chilli mayo rice bowl and apple crumble overnight oats.'],
   ['v88', '25 Oct 2026', 'Clearer everywhere: the whole week on one screen in bright colours, a new meal picker (tap Add), a status card on Home, the price first on Shop, the cook day on Cook, bigger text and buttons.'],
   ['v87', '23 Oct 2026', 'New here? The app opens on Plan with one button, Plan my week for me, until your first week is planned.'],
@@ -125,45 +126,41 @@ let RECF = { raw: null, m: new Map() }; // recipes sized for a week that isn't t
 const FACTORS = new Map(); // weekFactor answers, keyed by calorie target + the week's grid, days and snacks
 // Forget everything worked out from recipes, ingredients, tweaks or settings. Cheap to call; the next draw rebuilds what it needs.
 function bustCaches() { RECF = { raw: null, m: new Map() }; ING_C = { a: null, b: null, n: -1, list: [] }; RAW_C = { a: null, b: null, n: -1, t: '', ing: null, list: [] }; SCALED = { f: null, list: null, n: 0 }; FACTORS.clear(); META.clear(); }
-// Meals (not snacks) are scaled so the active week's picks land on the calorie target.
-function mealsKcalAt1x(w) {
-  const raw = RAW(); const ing = ING(); const rec = (RAW_C.byId ||= Object.fromEntries(raw.map((r) => [r.id, r])));
+// Meals (not snacks) are sized so the active week's picks land on the targets (v90): the carbs fill the calories, everything else is sized to the protein target (P.sizeWeek).
+function mealsAt1x(w) {
+  const raw = RAW(), ing = ING(); const rec = (RAW_C.byId ||= Object.fromEntries(raw.map((r) => [r.id, r])));
   const active = (w.days || []).filter(Boolean).length || 1;
-  let meals = 0, snacks = 0;
-  let cells = 0, skipped = 0; const by = {}; // by[slot] = { kcal, n } of what IS planned there, so an empty breakfast is filled in as a breakfast, not as a dinner
-  (w.grid || []).forEach((d, i) => { if (!w.days[i]) return; for (const sl of P.SLOTS) { const v = d[sl]; const o = (by[sl] ||= { kcal: 0, n: 0, gaps: 0 }); if (P.isOut(v) || !v) { skipped += 1; o.gaps += 1; continue; } const rid = P.isTub(v) ? P.tubRecipe(v) : v; if (rid && rec[rid]) { const k = P.kcalPerPortion(rec[rid], ing); meals += k; cells += 1; o.kcal += k; o.n += 1; } } });
-  // A skipped slot is a meal eaten somewhere else, and an EMPTY slot is a meal not picked yet: neither is a reason to make every other portion bigger, so each counts as an average meal
-  // (the average for that slot when there is one). Without this a half-picked week hit the 2.5× cap: "160g protein a portion", "23 tins of tuna".
-  if (cells && skipped) { const avg = meals / cells; for (const o of Object.values(by)) meals += (o.n ? o.kcal / o.n : avg) * o.gaps; }
-  for (const [id, n] of Object.entries(w.snacks || {})) if (rec[id] && n) snacks += P.kcalPerPortion(rec[id], ing) * n;
-  return { meals: meals / active, snacks: snacks / active };
+  let k = 0, g = 0;
+  for (const [id, n] of Object.entries(w.snacks || {})) if (rec[id] && n) { k += P.kcalPerPortion(rec[id], ing) * n; g += P.proteinPerPortion(rec[id], ing) * n; }
+  return { m: P.weekSplit(w.grid || [], raw, ing, w.days || []), snacks: { k: k / active, g: g / active } };
 }
-function weekFactor(w, kcalTarget = S.settings.kcalTarget) {
-  if (!w || !w.grid) return 1;
+// { p, c, key }: the factor for everything but the carbs, the factor for the carbs, and a string to compare them by.
+function weekFactor(w, kcalTarget = S.settings.kcalTarget, proteinTarget = S.settings.proteinTarget) {
+  if (!w || !w.grid) return { p: 1, c: 1, key: '1|1' };
   // Remembered: this is asked ~70 times per tap and each answer used to cost a pass over the whole week. If the sum ever depends on more (goal, weight), add it to the key.
-  const raw = RAW(), ing = ING(); const key = `${kcalTarget}|${JSON.stringify(w.grid)}|${JSON.stringify(w.days)}|${JSON.stringify(w.snacks || {})}`;
+  const raw = RAW(), ing = ING(); const key = `${kcalTarget}|${proteinTarget}|${JSON.stringify(w.grid)}|${JSON.stringify(w.days)}|${JSON.stringify(w.snacks || {})}`;
   let c = FACTORS.get(key);
   if (!c || c.raw !== raw || c.ing !== ing) {
-    const { meals, snacks } = mealsKcalAt1x(w);
-    const f = !meals || !kcalTarget ? 1 : Math.round(Math.min(2.5, Math.max(0.6, (kcalTarget - snacks) / meals)) * 20) / 20; // 0.6× to 2.5× the written recipe
+    const { m, snacks } = mealsAt1x(w);
+    const f = P.sizeWeek(m, { kcal: kcalTarget, protein: proteinTarget }, snacks);
     if (FACTORS.size > 12) FACTORS.clear();
-    c = { f, raw, ing }; FACTORS.set(key, c);
+    c = { f: { ...f, key: `${f.p}|${f.c}` }, raw, ing }; FACTORS.set(key, c);
   }
   return c.f;
 }
-const scaleBy = (raw, f) => raw.map((r) => (r.slots.includes('snack') ? r : { ...r, ingredients: r.ingredients.map((x) => ({ id: x.id, qty: Math.round(x.qty * f * 100) / 100 })) }));
+const scaleBy = (raw, f) => P.sizeRecipes(raw, f, ING());
 const REC = () => {
   const raw = RAW(); const w = S.weeks?.[S.activeWeek];
   const f = weekFactor(w);
-  if (SCALED.f !== f || SCALED.raw !== raw) { SCALED = { f, raw, n: raw.length, list: scaleBy(raw, f) }; META.clear(); }
+  if (SCALED.f?.key !== f.key || SCALED.raw !== raw) { SCALED = { f, raw, n: raw.length, list: scaleBy(raw, f) }; META.clear(); }
   return SCALED.list;
 };
 // The same recipes sized for ANY week object: the other week, or a what-if copy of this one (Shop's "Switch" buttons price a change on a copy, never on the live week). Leaves SCALED and META alone.
 function recFor(w) {
   if (!w || w === S.weeks?.[S.activeWeek]) return REC();
-  const raw = RAW(), f = weekFactor(w); if (SCALED.raw === raw && SCALED.f === f && SCALED.list) return SCALED.list;
+  const raw = RAW(), f = weekFactor(w); if (SCALED.raw === raw && SCALED.f?.key === f.key && SCALED.list) return SCALED.list;
   if (RECF.raw !== raw || RECF.m.size > 8) RECF = { raw, m: new Map() };
-  if (!RECF.m.has(f)) RECF.m.set(f, scaleBy(raw, f)); return RECF.m.get(f);
+  if (!RECF.m.has(f.key)) RECF.m.set(f.key, scaleBy(raw, f)); return RECF.m.get(f.key);
 }
 const inLibrary = (id) => !S.library || S.library.includes(id);
 const ingById = (id) => ING().find((i) => i.id === id);
@@ -608,15 +605,16 @@ function planTop(w) {
   const dayNum = (i) => { const d = new Date(S.activeWeek + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + i); return d.getUTCDate(); };
   const live = w.days.map((on, i) => on && !isPast(i));
   const gridHtml = `<div class="grid2">
-    <div class="hd"></div>${P.SLOTS.map((s) => `<div class="hd">${({ breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner' })[s]}</div>`).join('')}<div class="hd" title="Protein a day">${ic('flame', 14)}</div>
-    ${P.DAYS.map((d, i) => (isPast(i) ? `<div class="dlab gone"><b>${d}</b><span>${dayNum(i)}</span><i>✓</i></div>` : `<button class="dlab ${w.days[i] ? '' : 'off'}" data-action="day-sheet" data-day="${i}" aria-label="${DAY_FULL[i]} ${dayNum(i)}: skip or put back"><b>${d}</b><span>${dayNum(i)}</span></button>`) + P.SLOTS.map((s) => cell(w.grid[i][s], i, s)).join('') + `<div class="pday ${P.dayProteinState(st.perDay[i], target, live[i])}">${live[i] ? `${st.perDay[i]}g` : '–'}</div>`).join('')}
+    <div class="hd"></div>${P.SLOTS.map((s) => `<div class="hd">${({ breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner' })[s]}</div>`).join('')}<div class="hd tot" title="Protein and calories a day">${ic('flame', 14)}<span>kcal</span></div>
+    ${P.DAYS.map((d, i) => (isPast(i) ? `<div class="dlab gone"><b>${d}</b><span>${dayNum(i)}</span><i>✓</i></div>` : `<button class="dlab ${w.days[i] ? '' : 'off'}" data-action="day-sheet" data-day="${i}" aria-label="${DAY_FULL[i]} ${dayNum(i)}: skip or put back"><b>${d}</b><span>${dayNum(i)}</span></button>`) + P.SLOTS.map((s) => cell(w.grid[i][s], i, s)).join('') + `<div class="pday ${P.dayProteinState(st.perDay[i], target, live[i])}" ${live[i] ? `aria-label="${st.perDay[i]}g protein, ${st.kcalPerDay[i].toLocaleString()} kcal"` : ''}>${live[i] ? `<b>${st.perDay[i]}g</b><span>${st.kcalPerDay[i].toLocaleString()}</span>` : '–'}</div>`).join('')}
   </div>`;
   const tubs = Object.entries(S.tubs).filter(([, n]) => n > 0);
   const tubHtml = tubs.length ? `<p class="small" style="margin:10px 0 0"><b>In the freezer:</b> ${tubs.map(([id, n]) => `${esc(recById(id)?.name)} ×${n}`).join(', ')}. Tap an empty slot to use one.</p>` : '';
   const hasGrid = chosen.length || tubs.length || Object.keys(lockedCells(w)).length;
   const tips = (S.tips && S.tips.plan) ? '' : `<div class="card tipcard"><h3>How Fuel works</h3><ol class="tips"><li><b>Plan.</b> Tick the meals you fancy. Fuel fits them into your week.</li><li><b>Shop.</b> Your list is priced at four supermarkets. Buy from the cheapest.</li><li><b>Cook.</b> Batch cook on ${DAY_FULL[w.cookDay]}, box it up, and the week is sorted.</li></ol><p class="small">Targets, budget and milk are under the ⚙ gear, top right.</p><button class="btn small" data-action="tip-done" data-tip="plan">Got it</button></div>`;
   const gridTip = (S.tips && S.tips.grid) ? '' : `<div class="gridhelp gridtip"><span><b>Tap a meal</b> to swap or move it. <b>Tap a day</b> to skip it.</span><button class="btn ghost small" data-action="tip-done" data-tip="grid">Got it</button></div>`;
-  const limitNote = st.filled < st.slots / 2 ? '' : weekFactor(w) >= 2.5 ? `These meals come to ${st.avgKcal.toLocaleString()} kcal a day even at the biggest portion size, under your ${kcalT.toLocaleString()} target. Add a snack or another meal to close the gap.` : weekFactor(w) <= 0.6 ? `These meals come to ${st.avgKcal.toLocaleString()} kcal a day even at the smallest portion size, over your ${kcalT.toLocaleString()} target. Drop a snack or a meal.` : '';
+  const fw = weekFactor(w); // v90: the carbs are sized to the calories, so a gap left means the carbs are already at their biggest (or the meals at their smallest)
+  const limitNote = st.filled < st.slots / 2 ? '' : st.avgKcal < kcalT * 0.93 && fw.p >= P.SIZE_LIMITS.pMax ? `These meals come to ${st.avgKcal.toLocaleString()} kcal a day even at the biggest portion size, under your ${kcalT.toLocaleString()} target. Add a snack or another meal to close the gap.` : st.avgKcal > kcalT * 1.07 && fw.p <= P.SIZE_LIMITS.pMin ? `These meals come to ${st.avgKcal.toLocaleString()} kcal a day even at the smallest portion size, over your ${kcalT.toLocaleString()} target. Drop a snack or a meal.` : '';
   // Joined midweek? Say so, and offer tonight / tomorrow as the cook day (the default is already today for a week that has started).
   let midweek = '';
   const goneDays = S.activeWeek === S.thisMon ? todayIdx() : 0;
@@ -1362,8 +1360,8 @@ function newIngredientForm() {
 // Live preview for Settings: at this calorie target, what portion size results, what the week averages, and what the shop costs.
 function macroPreview(kTarget, pTarget) {
   const w = W(); const ing = ING();
-  const f = weekFactor(w, kTarget);
-  const recipes = RAW().map((r) => (r.slots.includes('snack') ? r : { ...r, ingredients: r.ingredients.map((x) => ({ id: x.id, qty: Math.round(x.qty * f * 100) / 100 })) }));
+  const f = weekFactor(w, kTarget, pTarget);
+  const recipes = scaleBy(RAW(), f);
   const rec = Object.fromEntries(recipes.map((r) => [r.id, r]));
   const active = w.days.filter(Boolean).length || 1;
   let sp = 0, sk = 0;
@@ -1376,8 +1374,8 @@ function macroPreview(kTarget, pTarget) {
   const kPct = Math.min(100, Math.round((st.avgKcal / (kTarget || 1)) * 100));
   const gapP = Math.round(pTarget - st.avg), gapK = Math.round(kTarget - st.avgKcal);
   const budget = S.settings.budget || 0;
-  const capped = f >= 2.5 ? 'Meals are at their biggest (2.5×); the rest has to come from snacks.' : f <= 0.6 ? 'Meals are at their smallest (0.6×); drop a snack or a meal to go lower.' : '';
-  return `<div class="macro"><div class="row"><span class="grow">${empty ? 'Nothing picked this week yet' : `Portions: <b>${f}×</b> the recipe`}</span></div>
+  const capped = f.p >= P.SIZE_LIMITS.pMax && gapK > kTarget * 0.07 ? 'Meals are at their biggest (2.5×); the rest has to come from snacks.' : f.p <= P.SIZE_LIMITS.pMin && gapK < -kTarget * 0.07 ? 'Meals are at their smallest; drop a snack or a meal to go lower.' : '';
+  return `<div class="macro"><div class="row"><span class="grow">${empty ? 'Nothing picked this week yet' : `Portions: <b>${f.p}×</b> the recipe · carbs <b>${f.c}×</b>`}</span></div>
     <div class="row" style="margin-top:6px"><span class="lbl">Calories</span><div class="budget grow kcal ${kPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${kPct}%"></i></div><b class="val">${st.avgKcal.toLocaleString()}</b><span class="small muted">/ ${(kTarget || 0).toLocaleString()}</span></div>
     <div class="row" style="margin-top:6px"><span class="lbl">Protein</span><div class="budget grow ${pPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${pPct}%"></i></div><b class="val">${st.avg}g</b><span class="small muted">/ ${pTarget}g</span></div>
     ${shop ? `<div class="row" style="margin-top:6px"><span class="lbl">Shop</span><div class="budget grow ${shop.total > budget ? 'over' : ''}" style="margin:0"><i style="width:${Math.min(100, Math.round((shop.total / (budget || 1)) * 100))}%"></i></div><b class="val">${P.gbp(shop.total)}</b><span class="small muted">at ${P.SHOP_NAMES[shop.shop]} / £${budget}</span></div>` : ''}
@@ -1665,13 +1663,13 @@ const GOAL_NAMES = { build: 'Build muscle', lean: 'Stay lean and strong', lose: 
 // Calories set the portion size, so new targets mean new portions. Settings is updated in place (no redraw: focus stays put when you tab from weight to budget).
 // Returns true when the active week's portions really changed size (they do not on an empty week or at the 0.6x / 2.5x limits), so the toast never claims it wrongly.
 function setTargets(kcal, prot) {
-  const st = S.settings, w = W(), before = weekFactor(w); st.kcalTarget = kcal; st.proteinTarget = prot; bustCaches(); if (w && w.done) shopDone(w); save(); // a finished shop's logged total follows the resize, so Shop and Settings → Money never disagree
+  const st = S.settings, w = W(), before = weekFactor(w).key; st.kcalTarget = kcal; st.proteinTarget = prot; bustCaches(); if (w && w.done) shopDone(w); save(); // a finished shop's logged total follows the resize, so Shop and Settings → Money never disagree
   for (const [k, v] of [['kcalTarget', kcal], ['proteinTarget', prot]]) {
     const r = document.querySelector(`#view input[data-setting="${k}"]`); if (r) r.value = v;
     const b = document.querySelector(`#view [data-val="${k}"]`); if (b) b.textContent = k === 'kcalTarget' ? v.toLocaleString() : v + 'g';
   }
   const mp = document.getElementById('macro-preview'); if (mp) mp.innerHTML = macroPreview(kcal, prot);
-  return weekFactor(w) !== before;
+  return weekFactor(w).key !== before;
 }
 // Goal or bodyweight changed: the targets move with them, worked out the same way as the set-up questions. Sliders that were set by hand are never overwritten without asking.
 async function retarget(oldWeight, oldGoal) {

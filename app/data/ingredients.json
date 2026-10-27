@@ -3669,6 +3669,60 @@
    "store": "fridge"
   },
   {
+   "id": "thin_cut_steak",
+   "name": "Thin cut beef steak (frying steak)",
+   "unit": "g",
+   "protein": 21.2,
+   "kcal": 150,
+   "category": "protein",
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Tesco Thin Cut Beef Steaks 395G",
+     "size": 395,
+     "price": 4.38,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Beef Medallion Steak 227G",
+     "size": 227,
+     "price": 3.19,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Thin Cut Beef Steaks 400g",
+     "size": 400,
+     "price": 4.56,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Tender Beef Stir-Fry Strips 250G",
+     "size": 250,
+     "price": 2.5,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Quick Cook Extra Thin British or Irish Beef 200g",
+     "size": 200,
+     "price": 3.0,
+     "checked": "2026-10-27"
+    },
+    {
+     "shop": "aldi",
+     "name": "Everyday Essentials British Beef Steak 21 Day Matured 227g",
+     "size": 227,
+     "price": 3.19,
+     "checked": "2026-10-27"
+    }
+   ],
+   "store": "fridge",
+   "aka": "frying steak, minute steak, quick cook beef, stir-fry strips, medallion steak"
+  },
+  {
    "id": "lamb_mince",
    "name": "Lamb mince",
    "unit": "g",

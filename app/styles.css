@@ -1130,3 +1130,10 @@ h2.pickgroup span, h2 span { font-size: 12px; }
   .shops { grid-template-columns: 1fr; }
 }
 .shopbtn { justify-content: space-between; text-align: left; } .shopbtn .sn { flex: 1; text-align: left; }
+
+/* v90: calories a day under the protein in the grid's last column */
+.grid2 .hd.tot { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 1px; line-height: 1; }
+.grid2 .pday { flex-direction: column; gap: 2px; line-height: 1.1; }
+.grid2 .pday b { font-size: 13px; font-weight: 800; }
+.grid2 .pday span { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: -.02em; }
+@media (max-width: 359px) { .grid2 { grid-template-columns: 34px repeat(3, 1fr) 38px; } .grid2 .pday b { font-size: 12px; } }

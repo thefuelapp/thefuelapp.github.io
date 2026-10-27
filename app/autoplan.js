@@ -1,6 +1,6 @@
 // "Plan my week for me": finds a sensible, cheap week for one person in a second or two, on the phone.
 // A lighter port of marketing/content2/v5-budget/lib/search.mjs (the budget-video tool), sized and priced the way app.js does it
-// (mealsKcalAt1x/weekFactor, scaleBy, shopNeeds, shopTotals), so the week it picks costs what the app then shows.
+// (mealsAt1x/weekFactor, scaleBy, shopNeeds, shopTotals), so the week it picks costs what the app then shows.
 //
 // Rules (the same as the budget videos): one breakfast per day (one or two breakfast recipes); two lunch/dinner portions per day from
 // 3–6 different mains, 2–4 portions each (nothing cooked for one portion); at most 3 mains of one cuisine and of one main protein; never
@@ -48,18 +48,17 @@ export function planWeek(o) {
   const D = days.filter(Boolean).length;
   const B = pool.filter(isBreakfast).map((r) => r.id), M = pool.filter(isMain).map((r) => r.id);
   if (!D || !B.length || M.length < 2) return null;
-  const kcal1x = Object.fromEntries(pool.map((r) => [r.id, P.kcalPerPortion(r, ING)]));
+  const split1x = Object.fromEntries(pool.map((r) => [r.id, P.mealSplit(r, ING)]));
   const mainProtein = Object.fromEntries(pool.map((r) => { let best = null; for (const { id, qty } of r.ingredients) { const it = ingById[id]; if (!it) continue; const p = it.unit === 'each' ? it.protein * qty : (it.protein * qty) / 100; if (!best || p > best.p) best = { id, p }; } return [r.id, FAMILY[best?.id] || best?.id]; }));
   const lunchOnly = (id) => { const s = recById[id].slots; return s.length === 1 && s[0] === 'lunch'; };
   const scaledCache = new Map();
-  const scaled = (f) => { let s = scaledCache.get(f); if (!s) { const list = pool.map((r) => ({ ...r, ingredients: r.ingredients.map((x) => ({ id: x.id, qty: Math.round(x.qty * f * 100) / 100 })) })); s = { list, byId: Object.fromEntries(list.map((r) => [r.id, r])) }; scaledCache.set(f, s); } return s; };
+  const scaled = (f) => { const k = `${f.p}|${f.c}`; let s = scaledCache.get(k); if (!s) { const list = P.sizeRecipes(pool, f, ING); s = { list, byId: Object.fromEntries(list.map((r) => [r.id, r])) }; scaledCache.set(k, s); } return s; };
   const isStock = (id) => !!ingById[id]?.staple;
 
   function price(portions) {
     const { grid } = P.autoLayout(portions, pool, cookDay, days, {});
-    let meals = 0; grid.forEach((d, i) => { if (!days[i]) return; for (const sl of P.SLOTS) { const v = d[sl]; if (v && kcal1x[v] !== undefined) meals += kcal1x[v]; } });
-    meals /= D;
-    const f = !meals || !kcal ? 1 : Math.round(Math.min(2.5, Math.max(0.6, kcal / meals)) * 20) / 20;
+    const m = { pk: 0, pg: 0, ck: 0, cg: 0 }; grid.forEach((d, i) => { if (!days[i]) return; for (const sl of P.SLOTS) { const s = split1x[d[sl]]; if (s) for (const x in m) m[x] += s[x] / D; } });
+    const f = P.sizeWeek(m, { kcal, protein }); // v90: carbs fill the calories, the rest is sized to the protein target, as app.js weekFactor
     const S2 = scaled(f);
     const st = P.gridStats(grid, S2.list, ING, { protein: 0, kcal: 0 }, days);
     let late = 0; for (const id of Object.keys(P.gridCounts(grid))) late += P.tubPlan(S2.byId[id], grid, cookDay, {}).late.length;
@@ -88,7 +87,7 @@ export function planWeek(o) {
     const r = price(portionsOf(c)); const problems = [];
     if (r.st.filled !== r.st.slots) problems.push('not full');
     if (r.late) problems.push('too old by then');
-    if (r.f <= 0.6 || r.f >= 2.5) problems.push('portion size at the limit');
+    if (r.f.p <= P.SIZE_LIMITS.pMin || r.f.p >= P.SIZE_LIMITS.pMax || (kcal && r.st.avgKcal < kcal * 0.93)) problems.push('portion size at the limit');
     if (!r.priced) problems.push('something has no price');
     if (c.m.filter(([id]) => lunchOnly(id)).reduce((t, [, n]) => t + n, 0) > D) problems.push('too many lunch-only portions');
     for (const tag of CUISINES) if (c.m.filter(([id]) => (recById[id].tags || []).includes(tag)).length > 3) problems.push('cuisine');
