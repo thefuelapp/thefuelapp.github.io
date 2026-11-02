@@ -434,8 +434,48 @@ export function sizeWeek(m, target, snacks = { k: 0, g: 0 }) {
   if (kcal < K * 0.97) p = clamp((K - c * m.ck) / m.pk, p, L.pMax); else if (kcal > K * 1.03) p = clamp((K - c * m.ck) / m.pk, L.pMin, p);
   return { p: r20(p), c: r20(c) };
 }
-// Recipes sized by a week's factors. Snacks keep their written size.
+// Recipes sized by a week's factors: a recipe's own pair when the week gave it one (f.per), the week's pair otherwise. Snacks keep their written size.
 export function sizeRecipes(recipes, f, ingredients) {
   const ing = byId(ingredients);
-  return recipes.map((r) => (r.slots.includes('snack') ? r : { ...r, ingredients: r.ingredients.map((x) => ({ id: x.id, qty: Math.round(x.qty * (isCarb(ing[x.id]) ? f.c : f.p) * 100) / 100 })) }));
+  return recipes.map((r) => {
+    if (r.slots.includes('snack')) return r;
+    const x = (f.per && f.per.get(r.id)) || f;
+    return { ...r, ingredients: r.ingredients.map((q) => ({ id: q.id, qty: Math.round(q.qty * (isCarb(ing[q.id]) ? x.c : x.p) * 100) / 100 })) };
+  });
+}
+// Per-recipe sizing (v91). One pair of factors for the whole week leaves the days uneven (a steak-bowl day at 2,900 kcal, an oats-and-biryani day
+// at 2,300). Batch cooking means every tub of a recipe is the same size, so the days cannot all be made equal, but each recipe can be sized so the
+// days land as close to the targets as possible: least squares on the day totals, calories weighted most, protein under target next, protein over
+// target least (so a heavy day loses meat before carbs), with a gentle pull towards the week's one-pair answer and the same 0.6–2.5× / 0.5–2.5×
+// limits. Recipes not in the week keep the one-pair answer (that is what the picker shows for them). Deterministic: same week in, same sizes out.
+export function sizeWeekByRecipe(grid, recipes, ingredients, target, { days = [true, true, true, true, true, true, true], snacks = { k: 0, g: 0 }, iterations = 150 } = {}) {
+  const rec = byId(recipes);
+  const base = sizeWeek(weekSplit(grid, recipes, ingredients, days), target, snacks);
+  const per = new Map(); const done = () => ({ p: base.p, c: base.c, per, key: `${base.p}|${base.c}|` + [...per.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([id, x]) => `${id}:${x.p}/${x.c}`).join(',') });
+  if (!target.kcal) return done();
+  const K = target.kcal - (snacks.k || 0), G = Math.max(1, (target.protein || 0) * 1.05 - (snacks.g || 0));
+  const dayRecs = []; const ids = new Set();
+  grid.forEach((d, i) => {
+    if (!days[i]) return; const o = {};
+    for (const sl of SLOTS) { const v = d[sl]; if (!v || isOut(v)) continue; const id = isTub(v) ? tubRecipe(v) : v; if (!rec[id]) continue; o[id] = (o[id] || 0) + 1; ids.add(id); }
+    if (Object.keys(o).length) dayRecs.push(o);
+  });
+  if (!dayRecs.length) return done();
+  const split = {}, f = {}; for (const id of ids) { split[id] = mealSplit(rec[id], ingredients); f[id] = { p: base.p, c: base.c }; }
+  const L = SIZE_LIMITS, clamp = (x, a, b) => Math.min(b, Math.max(a, x)), r20 = (x) => Math.round(x * 20) / 20;
+  const WK = 1, WG_UNDER = 0.5, WG_OVER = 0.08, PULL = 0.03, STEP = 0.6;
+  for (let it = 0; it < iterations; it++) {
+    const grad = {}; for (const id of ids) grad[id] = { p: 2 * PULL * (f[id].p - base.p), c: 2 * PULL * (f[id].c - base.c) };
+    for (const o of dayRecs) {
+      let k = snacks.k || 0, g = snacks.g || 0;
+      for (const [id, n] of Object.entries(o)) { const s = split[id], x = f[id]; k += n * (x.p * s.pk + x.c * s.ck); g += n * (x.p * s.pg + x.c * s.cg); }
+      const ek = (k - K) / K, eg = (g - G) / G, wg = eg < 0 ? WG_UNDER : WG_OVER;
+      for (const [id, n] of Object.entries(o)) { const s = split[id]; grad[id].p += n * 2 * ((WK * ek * s.pk) / K + (wg * eg * s.pg) / G); grad[id].c += n * 2 * ((WK * ek * s.ck) / K + (wg * eg * s.cg) / G); }
+    }
+    let moved = 0;
+    for (const id of ids) { const x = f[id]; const np = clamp(x.p - STEP * grad[id].p, L.pMin, L.pMax), nc = clamp(x.c - STEP * grad[id].c, L.cMin, L.cMax); moved += Math.abs(np - x.p) + Math.abs(nc - x.c); x.p = np; x.c = nc; }
+    if (moved < 1e-4) break; // close enough: the factors are rounded to 0.05 below. Plan my week for me prices thousands of candidate weeks with this, so it has to be quick (about 0.4 ms).
+  }
+  for (const id of ids) per.set(id, { p: r20(f[id].p), c: r20(f[id].c) });
+  return done();
 }

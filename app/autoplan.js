@@ -48,17 +48,15 @@ export function planWeek(o) {
   const D = days.filter(Boolean).length;
   const B = pool.filter(isBreakfast).map((r) => r.id), M = pool.filter(isMain).map((r) => r.id);
   if (!D || !B.length || M.length < 2) return null;
-  const split1x = Object.fromEntries(pool.map((r) => [r.id, P.mealSplit(r, ING)]));
   const mainProtein = Object.fromEntries(pool.map((r) => { let best = null; for (const { id, qty } of r.ingredients) { const it = ingById[id]; if (!it) continue; const p = it.unit === 'each' ? it.protein * qty : (it.protein * qty) / 100; if (!best || p > best.p) best = { id, p }; } return [r.id, FAMILY[best?.id] || best?.id]; }));
   const lunchOnly = (id) => { const s = recById[id].slots; return s.length === 1 && s[0] === 'lunch'; };
   const scaledCache = new Map();
-  const scaled = (f) => { const k = `${f.p}|${f.c}`; let s = scaledCache.get(k); if (!s) { const list = P.sizeRecipes(pool, f, ING); s = { list, byId: Object.fromEntries(list.map((r) => [r.id, r])) }; scaledCache.set(k, s); } return s; };
+  const scaled = (f) => { const k = f.key; let s = scaledCache.get(k); if (!s) { const list = P.sizeRecipes(pool, f, ING); s = { list, byId: Object.fromEntries(list.map((r) => [r.id, r])) }; scaledCache.set(k, s); } return s; };
   const isStock = (id) => !!ingById[id]?.staple;
 
   function price(portions) {
     const { grid } = P.autoLayout(portions, pool, cookDay, days, {});
-    const m = { pk: 0, pg: 0, ck: 0, cg: 0 }; grid.forEach((d, i) => { if (!days[i]) return; for (const sl of P.SLOTS) { const s = split1x[d[sl]]; if (s) for (const x in m) m[x] += s[x] / D; } });
-    const f = P.sizeWeek(m, { kcal, protein }); // v90: carbs fill the calories, the rest is sized to the protein target, as app.js weekFactor
+    const f = P.sizeWeekByRecipe(grid, pool, ING, { kcal, protein }, { days }); // v91: each recipe sized so the days land on the targets, as app.js weekFactor
     const S2 = scaled(f);
     const st = P.gridStats(grid, S2.list, ING, { protein: 0, kcal: 0 }, days);
     let late = 0; for (const id of Object.keys(P.gridCounts(grid))) late += P.tubPlan(S2.byId[id], grid, cookDay, {}).late.length;

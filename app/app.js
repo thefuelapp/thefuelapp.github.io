@@ -6,9 +6,10 @@ import { planWeek } from './autoplan.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v90';
+const APP_VERSION = 'v91';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
+  ['v91', '2 Nov 2026', 'Meal tiles now show each meal sized for you (a typical main or breakfast for your targets), so the numbers no longer change as you pick. Four more from @cookingforgains_: creamy bacon chicken ranch pasta (slow cooker), creamy sun-dried tomato chicken & rice, BBQ bacon chicken wraps, and the steak yum yum bowls are now beef & egg chipotle bowls with a mince-or-steak pick (Shop → Where can I save?). Each recipe is sized so every day lands on your calorie and protein targets, not just the week on average. Calories show on every meal when you choose. The chicken & egg smashes cook chicken breast instead of buying a roast chicken, and the beef rice bowl uses less mince: same dishes, about a third cheaper. Recipes and Pantry have a Back button.'],
   ['v90', '27 Oct 2026', 'Portions are sized in two parts: rice, pasta, oats and potatoes fill your calories, and the meat, fish, eggs and dairy are sized to your protein target, so a high-protein week no longer means extra meat and a bigger shop. Each day in the week grid now shows its calories under the protein. Cheaper swaps in the new recipes: thin-cut frying steak, whole eggs and grated cheddar in the yum yum bowls; black beans, passata and cheddar in the burritos; honey in the chipotle smash.'],
   ['v89', '27 Oct 2026', '7 new recipes from Instagram: chipotle and creamy chicken & egg smash, steak & egg yum yum bowls, slow cooker chicken burritos, one-dish oven chicken biryani, a beef & egg chilli mayo rice bowl and apple crumble overnight oats.'],
   ['v88', '25 Oct 2026', 'Clearer everywhere: the whole week on one screen in bright colours, a new meal picker (tap Add), a status card on Home, the price first on Shop, the cook day on Cook, bigger text and buttons.'],
@@ -125,29 +126,31 @@ let SCALED = { f: null, list: null, n: 0 };
 let RECF = { raw: null, m: new Map() }; // recipes sized for a week that isn't the live one, by factor (see recFor)
 const FACTORS = new Map(); // weekFactor answers, keyed by calorie target + the week's grid, days and snacks
 // Forget everything worked out from recipes, ingredients, tweaks or settings. Cheap to call; the next draw rebuilds what it needs.
-function bustCaches() { RECF = { raw: null, m: new Map() }; ING_C = { a: null, b: null, n: -1, list: [] }; RAW_C = { a: null, b: null, n: -1, t: '', ing: null, list: [] }; SCALED = { f: null, list: null, n: 0 }; FACTORS.clear(); META.clear(); }
-// Meals (not snacks) are sized so the active week's picks land on the targets (v90): the carbs fill the calories, everything else is sized to the protein target (P.sizeWeek).
-function mealsAt1x(w) {
+function bustCaches() { PREVIEW.clear(); RECF = { raw: null, m: new Map() }; ING_C = { a: null, b: null, n: -1, list: [] }; RAW_C = { a: null, b: null, n: -1, t: '', ing: null, list: [] }; SCALED = { f: null, list: null, n: 0 }; FACTORS.clear(); META.clear(); }
+// Snacks a day at their written size (snacks are never resized), so the sizing leaves room for them.
+function snacksAt1x(w) {
   const raw = RAW(), ing = ING(); const rec = (RAW_C.byId ||= Object.fromEntries(raw.map((r) => [r.id, r])));
   const active = (w.days || []).filter(Boolean).length || 1;
   let k = 0, g = 0;
   for (const [id, n] of Object.entries(w.snacks || {})) if (rec[id] && n) { k += P.kcalPerPortion(rec[id], ing) * n; g += P.proteinPerPortion(rec[id], ing) * n; }
-  return { m: P.weekSplit(w.grid || [], raw, ing, w.days || []), snacks: { k: k / active, g: g / active } };
+  return { k: k / active, g: g / active };
 }
-// { p, c, key }: the factor for everything but the carbs, the factor for the carbs, and a string to compare them by.
+// { p, c, per, key }: the week's pair of factors (everything but the carbs, and the carbs: v90, the carbs fill the calories and the rest is sized to the
+// protein target), each recipe's own pair (v91: sized so every day lands on the targets, P.sizeWeekByRecipe), and a string to compare them by.
 function weekFactor(w, kcalTarget = S.settings.kcalTarget, proteinTarget = S.settings.proteinTarget) {
-  if (!w || !w.grid) return { p: 1, c: 1, key: '1|1' };
+  if (!w || !w.grid) return { p: 1, c: 1, per: new Map(), key: '1|1' };
   // Remembered: this is asked ~70 times per tap and each answer used to cost a pass over the whole week. If the sum ever depends on more (goal, weight), add it to the key.
   const raw = RAW(), ing = ING(); const key = `${kcalTarget}|${proteinTarget}|${JSON.stringify(w.grid)}|${JSON.stringify(w.days)}|${JSON.stringify(w.snacks || {})}`;
   let c = FACTORS.get(key);
   if (!c || c.raw !== raw || c.ing !== ing) {
-    const { m, snacks } = mealsAt1x(w);
-    const f = P.sizeWeek(m, { kcal: kcalTarget, protein: proteinTarget }, snacks);
+    const f = P.sizeWeekByRecipe(w.grid || [], raw, ing, { kcal: kcalTarget, protein: proteinTarget }, { days: w.days || [], snacks: snacksAt1x(w) });
     if (FACTORS.size > 12) FACTORS.clear();
-    c = { f: { ...f, key: `${f.p}|${f.c}` }, raw, ing }; FACTORS.set(key, c);
+    c = { f, raw, ing }; FACTORS.set(key, c);
   }
   return c.f;
 }
+// "1.4×" or "1.2–1.6×": the spread of a factor across the week's recipes, for Settings.
+const fRange = (f, k) => { const v = f.per && f.per.size ? [...f.per.values()].map((x) => x[k]) : [f[k]]; const lo = Math.min(...v), hi = Math.max(...v); return lo === hi ? `${lo}×` : `${lo}–${hi}×`; };
 const scaleBy = (raw, f) => P.sizeRecipes(raw, f, ING());
 const REC = () => {
   const raw = RAW(); const w = S.weeks?.[S.activeWeek];
@@ -418,6 +421,7 @@ async function syncOnSignIn() {
 }
 
 // The 1 and 2 on the tab bar turn into ticks: Plan once a meal is picked, Shop once the list is all ticked off. Cook never does (the app can't know you cooked).
+const SUB_SCREENS = ['recipes', 'pantry', 'settings']; // screens reached from More (or a link), not from the tab bar: they carry a Back button
 function markTabs() { const w = W(); if (!w) return; const d = { plan: Object.values(w.portions || {}).some((n) => n > 0), shop: !!w.done }; document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('done', !!d[b.dataset.tab])); }
 function render(opts = {}) {
   if (S.tab !== 'shop') { saveUndo = null; saveOpen = false; } // leaving Shop drops the Undo: the week may be edited elsewhere
@@ -538,14 +542,27 @@ function removeAvoidText(term) { S.settings.avoidText = (S.settings.avoidText ||
 function suggestions(n = 6) { const list = REC(), ing = ING(), raw = (RAW_C.byId ||= Object.fromEntries(RAW().map((r) => [r.id, r]))); // ranked on the recipe as written: protein per £ is the same at any portion size, but the rounded resized numbers are not, and the first Quick pick used to swap the chips under your thumb
   return list.filter((r) => inLibrary(r.id) && !r.slots.includes('snack') && !isAvoided(r) && r.cookMinutes > 0).map((r) => { const o = raw[r.id] || r, c = P.costPerPortion(o, ing).cost; return { r, score: c ? P.proteinPerPortion(o, ing) / c : 0 }; }).sort((a, b) => b.score - a.score).slice(0, n).map((x) => x.r); }
 const META = new Map();
+// The picker tiles and the Recipes list show a meal sized for THIS PERSON's typical meal, whatever the week holds (v91): breakfasts about 26% of the
+// day's calories and protein, lunch and dinner 37% each, snacks as written. The week itself is sized exactly once it is picked (weekFactor), so the
+// grid, Shop and Cook can differ a little from these. What matters here: a tile's numbers never change as you pick, and a half-picked week can no
+// longer show every meal blown up to the 2.5× limit ("145g protein in a pesto pasta").
+const PREVIEW = new Map();
+function previewFor(r) {
+  const st = S.settings; const key = `${r.id}|${st.kcalTarget}|${st.proteinTarget}|${RAW_C.t}`; let m = PREVIEW.get(key); if (m) return m;
+  const ing = ING(); const raw = (RAW_C.byId ||= Object.fromEntries(RAW().map((x) => [x.id, x])))[r.id] || r;
+  const share = raw.slots.includes('snack') ? 0 : raw.slots[0] === 'breakfast' ? 0.26 : 0.37;
+  const sized = share ? P.sizeRecipes([raw], P.sizeWeek(P.mealSplit(raw, ing), { kcal: (st.kcalTarget || 0) * share, protein: (st.proteinTarget || 0) * share }), ing)[0] : raw;
+  m = { pp: P.proteinPerPortion(sized, ing), kcal: P.kcalPerPortion(sized, ing), c: P.costPerPortion(sized, ing) };
+  if (PREVIEW.size > 400) PREVIEW.clear(); PREVIEW.set(key, m); return m;
+}
 function metaFor(r) { let m = META.get(r.id); if (!m) { const ing = ING(); m = { pp: P.proteinPerPortion(r, ing), kcal: P.kcalPerPortion(r, ing), c: P.costPerPortion(r, ing) }; META.set(r.id, m); } return m; }
 function mealMeta(r) {
-  const { pp, c } = metaFor(r);
+  const { pp, kcal, c } = previewFor(r);
   const cost = c.cost ? `~£${c.cost.toFixed(2)}` : '';
   const flex = '';
   const cold = r.cold ? '<span class="badge ok">cold ok</span>' : '';
   const fz = r.freezer ? '<span class="badge">freezes</span>' : (r.fridgeDays ? `<span class="badge warn">fridge ${r.fridgeDays}d</span>` : '<span class="badge">made fresh</span>');
-  return `${pp}g protein${cost ? ` · ${cost} a portion` : ''} ${flex}${cold}${fz}`;
+  return `${pp}g protein · ${kcal.toLocaleString()} kcal${cost ? ` · ${cost} a portion` : ''} ${flex}${cold}${fz}`;
 }
 function snackExtra(w) {
   const active = w.days.filter(Boolean).length || 1;
@@ -640,13 +657,13 @@ function mealTile(r, w, free, colours) {
   const snack = r.slots.includes('snack');
   const n = (snack ? w.snacks[r.id] : w.portions[r.id]) || 0;
   const full = !snack && P.roomFor(r, free) <= 0;
-  const { pp, c } = metaFor(r);
+  const { pp, kcal, c } = previewFor(r);
   const keeps = r.cookMinutes === 0 ? 'No cooking' : r.freezer ? 'Freezes' : r.fridgeDays ? `Fridge ${r.fridgeDays} days` : 'Cook fresh';
   const chips = [c.cost ? P.gbp(c.cost) : '', r.cookMinutes ? `${r.cookMinutes} min` : '', keeps].filter(Boolean);
   const [inc, dec, add] = snack ? ['sinc', 'sdec', 'snack-add'] : ['inc', 'dec', 'pick-add'];
   const ctl = n ? `<div class="mt-step"><button data-action="${dec}" data-id="${r.id}" aria-label="One fewer">−</button><span aria-label="${n} in your week"><b>${n}</b></span><button data-action="${inc}" data-id="${r.id}" ${full ? 'disabled' : ''} aria-label="One more">+</button></div>`
     : full ? '<button class="btn mt-add" disabled>Week\u2019s full</button>' : `<button class="btn mt-add" data-action="${add}" data-id="${r.id}">Add</button>`;
-  return `<div class="mtile ${n ? 'on' : ''} ${full && !n ? 'full' : ''}" data-row="${r.id}"><div class="mt-top" style="${mealStyle(r.id, colours)}"><b>${pp}g</b><span>protein</span></div><div class="mt-body"><b class="mt-name">${esc(r.name)}</b><div class="chips">${chips.map((x) => `<em>${x}</em>`).join('')}</div></div>${ctl}</div>`;
+  return `<div class="mtile ${n ? 'on' : ''} ${full && !n ? 'full' : ''}" data-row="${r.id}"><div class="mt-top" style="${mealStyle(r.id, colours)}"><b>${pp}g</b><span>protein</span><small>${kcal.toLocaleString()} kcal</small></div><div class="mt-body"><b class="mt-name">${esc(r.name)}</b><div class="chips">${chips.map((x) => `<em>${x}</em>`).join('')}</div></div>${ctl}</div>`;
 }
 // The 'use up' and 'Quick picks' cards under the search box. Their own function so refreshPlan() can keep them fresh (Quick picks goes once anything is ticked).
 // The "use up" card: things marked Use up in Pantry, plus anything whose optional use-by date is within 3 days (worked out now, nothing stored).
@@ -1286,7 +1303,7 @@ function renderRecipes() {
   const ideasHtml = S.ideasOpen ? `<div class="card" id="ideas"><h3>Meal ideas <span class="muted small">${ideasCount} not in your list</span></h3>
     <div class="chip-row"><button class="chip ${!tag ? 'on' : ''}" data-action="idea-tag" data-tag="">All</button>${TAGS.map(([k, l]) => `<button class="chip ${tag === k ? 'on' : ''}" data-action="idea-tag" data-tag="${k}">${l}</button>`).join('')}</div>
     ${ideas.length ? ideas.map((r) => recipeRow(r, `<button class="btn small" data-action="lib-add" data-id="${r.id}">+ Add</button>`)).join('') : '<p class="muted">Nothing left to add here. Try another filter, or type one in.</p>'}</div>` : '';
-  return `<h1>Recipes</h1>${stepLine(0, 'Every meal you can pick from.')}
+  return `<div class="settings-head"><button class="btn ghost small" data-action="screen-back">‹ Back</button><h1>Recipes</h1></div>${stepLine(0, 'Every meal you can pick from.')}
   <button class="btn block ${S.ideasOpen ? 'ghost' : ''}" data-action="ideas-toggle" style="margin-bottom:10px">${S.ideasOpen ? 'Hide meal ideas' : `✨ Find more meal ideas (${ideasCount})`}</button>
   ${ideasHtml}
   <div class="row" style="margin-bottom:12px"><button class="btn ghost grow" data-action="add-recipe">+ Type a recipe in</button></div>
@@ -1375,7 +1392,7 @@ function macroPreview(kTarget, pTarget) {
   const gapP = Math.round(pTarget - st.avg), gapK = Math.round(kTarget - st.avgKcal);
   const budget = S.settings.budget || 0;
   const capped = f.p >= P.SIZE_LIMITS.pMax && gapK > kTarget * 0.07 ? 'Meals are at their biggest (2.5×); the rest has to come from snacks.' : f.p <= P.SIZE_LIMITS.pMin && gapK < -kTarget * 0.07 ? 'Meals are at their smallest; drop a snack or a meal to go lower.' : '';
-  return `<div class="macro"><div class="row"><span class="grow">${empty ? 'Nothing picked this week yet' : `Portions: <b>${f.p}×</b> the recipe · carbs <b>${f.c}×</b>`}</span></div>
+  return `<div class="macro"><div class="row"><span class="grow">${empty ? 'Nothing picked this week yet' : `Portions: <b>${fRange(f, 'p')}</b> the recipe · carbs <b>${fRange(f, 'c')}</b>`}</span></div>
     <div class="row" style="margin-top:6px"><span class="lbl">Calories</span><div class="budget grow kcal ${kPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${kPct}%"></i></div><b class="val">${st.avgKcal.toLocaleString()}</b><span class="small muted">/ ${(kTarget || 0).toLocaleString()}</span></div>
     <div class="row" style="margin-top:6px"><span class="lbl">Protein</span><div class="budget grow ${pPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${pPct}%"></i></div><b class="val">${st.avg}g</b><span class="small muted">/ ${pTarget}g</span></div>
     ${shop ? `<div class="row" style="margin-top:6px"><span class="lbl">Shop</span><div class="budget grow ${shop.total > budget ? 'over' : ''}" style="margin:0"><i style="width:${Math.min(100, Math.round((shop.total / (budget || 1)) * 100))}%"></i></div><b class="val">${P.gbp(shop.total)}</b><span class="small muted">at ${P.SHOP_NAMES[shop.shop]} / £${budget}</span></div>` : ''}
@@ -1547,7 +1564,7 @@ function renderPantry() {
   const restTicked = rest.filter((it) => w.pantry[it.id] !== undefined).length;
   const restHtml = rest.length && (!q || groupsHtml) ? `<details class="pantry-rest" ${q || S.pantryRestOpen ? 'open' : ''}><summary><span><b>The rest of your cupboard</b><small>Things your other recipes use. None of it is needed ${label}, so none of it is on the shop list.</small><small class="cnt">${rest.length} things${restTicked ? ` · ${restTicked} ticked` : ''}</small></span></summary>${groupsHtml}</details>` : '';
   const none = q && !wkHit.length && !groupsHtml ? `<p class="muted">Nothing called "${esc(S.pantrySearch)}" in your cupboard.</p>` : '';
-  return `<h1>Pantry</h1>${stepLine(0, `<strong>Your cupboard.</strong> Tick what you have; it comes off the shop list.`)}${weekSwitch()}${tipCard('pantry')}<div id="useby-banner">${useByInner('pantry')}</div><div class="pantryprice" id="pantryprice">${pantryPriceHtml(w)}</div>
+  return `<div class="settings-head"><button class="btn ghost small" data-action="screen-back">‹ Back</button><h1>Pantry</h1></div>${stepLine(0, `<strong>Your cupboard.</strong> Tick what you have; it comes off the shop list.`)}${weekSwitch()}${tipCard('pantry')}<div id="useby-banner">${useByInner('pantry')}</div><div class="pantryprice" id="pantryprice">${pantryPriceHtml(w)}</div>
   <div class="row" style="margin-bottom:12px"><input class="search grow" placeholder="Search the cupboard" value="${esc(S.pantrySearch || '')}" data-pantry-search><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>
   <h2 class="pweekhead">On ${whose} shopping list${wk.length ? ` <span class="muted" id="pantry-week-count">${wkTicked} of ${wk.length} ticked</span>` : ''}</h2>${wk.length ? `<p class="small muted" style="margin:-4px 0 8px">Only what your planned meals need. Got it already? Tick it.</p>` : ''}${weekHtml}${restHtml}${none}
   <div class="card nextcard"><b>Ticked what you have?</b><p class="small muted">Your shop list and its price are already up to date.</p><button class="btn block" data-action="go-tab" data-to="shop">Back to Shop</button></div>`;
@@ -1900,13 +1917,14 @@ function onAction(e) {
   else if (a === 'avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); render(); }
   else if (a === 'settings') { if (S.tab !== 'settings') S.prevTab = S.tab; S.tab = 'settings'; save(); render({ top: true }); }
   else if (a === 'settings-back') { S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan'; save(); render({ top: true }); }
+  else if (a === 'screen-back') { S.tab = S.prevTab && !SUB_SCREENS.includes(S.prevTab) ? S.prevTab : 'more'; pantryBase = null; save(); render({ top: true }); } // v91: Recipes and Pantry go back to where they were opened from (More, or the Shop fold)
   else if (a === 'install') { if (installEvt) { installEvt.prompt(); installEvt.userChoice.then(() => { installEvt = null; }); } else toast('Use your browser menu: Install app / Add to Home Screen'); }
   else if (a === 'tips-again') { S.tips = {}; save(); render(); toast('Tips are back on every tab'); }
   else if (a === 'tip-done') { S.tips ||= {}; S.tips[el.dataset.tip] = true; save(); holdPlace(S.tab === 'plan' ? '#pick-head' : '', () => render()); }
   else if (a === 'plan-add') { planAdd = true; render({ top: true }); }
   else if (a === 'plan-week') { planAdd = false; render({ top: true }); }
   // Next-step buttons inside a page. They must not carry data-tab (that lives on the tab bar only), so they name the tab in data-to; data-week also switches week.
-  else if (a === 'go-tab') { if (el.dataset.week && S.weeks[el.dataset.week]) S.activeWeek = el.dataset.week; if (el.dataset.to !== S.tab) pantryBase = null; S.tab = el.dataset.to; planAdd = null; save(); render({ top: true }); }
+  else if (a === 'go-tab') { if (el.dataset.week && S.weeks[el.dataset.week]) S.activeWeek = el.dataset.week; if (el.dataset.to !== S.tab) pantryBase = null; if (SUB_SCREENS.includes(el.dataset.to) && !SUB_SCREENS.includes(S.tab)) S.prevTab = S.tab; S.tab = el.dataset.to; planAdd = null; save(); render({ top: true }); }
   else if (a === 'scroll-pick') { const v = document.getElementById('view'), h = document.getElementById('pick-head'); if (h) v.scrollTo({ top: v.scrollTop + h.getBoundingClientRect().top - v.getBoundingClientRect().top - 6 }); }
   else if (a === 'intro') openIntro();
   else if (a === 'intro-goal') { INTRO.goal = el.dataset.goal; S.settings.goal = INTRO.goal; bustCaches(); save(); introStep(2); }
@@ -1957,7 +1975,7 @@ function onAction(e) {
   else if (a === 'cup-done') { const off = cup.base === null ? 0 : P.round2(cup.base - (tillNow(w)?.total ?? cup.base)); w.cupChecked = true; save(); render(); toast(off > 0 ? `Cupboard checked. ${P.gbp(off)} off your shop.` : 'Cupboard checked'); }
   else if (a === 'cup-open') { cupOpen = true; holdPlace('.cupcheck', () => render()); }
   else if (a === 'go-pantry') { e.preventDefault(); pantryBase = null; S.prevTab = S.tab; S.tab = 'pantry'; save(); render({ top: true }); }
-  else if (a === 'go-ideas') { S.tab = 'recipes'; S.ideasOpen = true; save(); render({ top: true }); }
+  else if (a === 'go-ideas') { if (!SUB_SCREENS.includes(S.tab)) S.prevTab = S.tab; S.tab = 'recipes'; S.ideasOpen = true; save(); render({ top: true }); }
   else if (a === 'ideas-toggle') { S.ideasOpen = !S.ideasOpen; save(); render(); }
   else if (a === 'idea-tag') { S.ideaTag = el.dataset.tag; save(); holdPlace('#more-meals, #ideas', () => render()); }
   else if (a === 'lib-add') { if (!S.library.includes(id)) S.library.push(id); save(); closeSheet(); render(); toast('Added to your recipes'); }

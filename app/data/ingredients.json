@@ -212,6 +212,86 @@
    "kcal": 125
   },
   {
+   "id": "beef_bowl",
+   "name": "Beef mince or thin-cut steak (your pick)",
+   "unit": "g",
+   "protein": 21,
+   "kcal": 125,
+   "category": "protein",
+   "choices": [
+    "beef_mince_5",
+    "thin_cut_steak"
+   ],
+   "store": "fridge",
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Tesco Lean Beef Steak Mince 5% Fat 500g",
+     "size": 500,
+     "price": 5.05,
+     "checked": "2026-09-06"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Lean Beef Steak Mince 5% Fat 750g",
+     "size": 750,
+     "price": 7.09,
+     "checked": "2026-09-06"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Beef Mince <5% Fat 500g",
+     "size": 500,
+     "price": 5.15,
+     "checked": "2026-09-20"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Beef Mince <5% Fat 1kg",
+     "size": 1000,
+     "price": 9.53,
+     "checked": "2026-09-20"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's British or Irish 5% Fat Beef Mince 500g",
+     "size": 500,
+     "price": 5.05,
+     "checked": "2026-09-20"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's British or Irish 5% Fat Beef Mince 750g",
+     "size": 750,
+     "price": 7.09,
+     "checked": "2026-09-20"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ashfields British Lean Beef Steak Mince 5% Fat 500g",
+     "size": 500,
+     "price": 5.05,
+     "checked": "2026-09-20"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ashfields British Lean Beef Steak Mince 5% Fat 750g",
+     "size": 750,
+     "price": 7.09,
+     "checked": "2026-09-20"
+    },
+    {
+     "shop": "lidl",
+     "name": "Lidl Lean Beef Mince 500g (receipt 14 Sep)",
+     "size": 500,
+     "price": 5.05,
+     "checked": "2026-09-14",
+     "source": "receipt"
+    }
+   ],
+   "note": "Priced as the mince (the default pick); the shop list follows whichever you pick."
+  },
+  {
    "id": "tuna",
    "name": "Tuna chunks in spring water (145g tin)",
    "unit": "each",

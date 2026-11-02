@@ -6944,15 +6944,15 @@
    "reheat": "none",
    "fridgeDays": 3,
    "freezer": false,
-   "cookMinutes": 20,
+   "cookMinutes": 25,
    "equipment": [
     "hob"
    ],
    "source": "https://www.instagram.com/reel/De3i5YRCcvc/",
    "ingredients": [
     {
-     "id": "roast_chicken",
-     "qty": 0.17
+     "id": "chicken_breast",
+     "qty": 130
     },
     {
      "id": "egg",
@@ -6971,7 +6971,7 @@
      "qty": 5
     },
     {
-     "id": "parmesan",
+     "id": "cheddar",
      "qty": 10
     },
     {
@@ -6980,7 +6980,11 @@
     },
     {
      "id": "chipotle_paste",
-     "qty": 30
+     "qty": 15
+    },
+    {
+     "id": "smoked_paprika",
+     "qty": 1
     },
     {
      "id": "garlic_granules",
@@ -6993,16 +6997,20 @@
     {
      "id": "honey",
      "qty": 2.5
+    },
+    {
+     "id": "bread",
+     "qty": 2
     }
    ],
    "method": [
-    "Boil the eggs for 9 to 10 minutes, cool them in cold water and peel. Strip all the meat off the roast chicken and shred it.",
+    "Boil the eggs for 9 to 10 minutes, cool them in cold water and peel. Poach or pan-fry the chicken breasts until cooked through (about 12 minutes), cool and shred them (a shop roast chicken works too: strip it and shred).",
     "Char the drained sweetcorn in a dry, very hot pan for 3 to 4 minutes until some kernels blacken. Finely chop the red onion and the jalapeños.",
-    "Sauce: in a big bowl mix the soured cream, chipotle paste, garlic granules, lime juice and a little honey. Taste, and add salt only if it needs it.",
-    "Add the chicken, eggs, onion, corn, jalapeños and grated parmesan, and smash it all together with a fork until creamy.",
-    "Tub it on its own. Eat it however you like: in a wrap toasted in a dry pan for 1 to 2 minutes a side, on toast, or with rice."
+    "Sauce: in a big bowl mix the soured cream, chipotle paste, smoked paprika, garlic granules, lime juice and a little honey. Taste, and add salt only if it needs it.",
+    "Add the chicken, eggs, onion, corn, jalapeños and grated cheddar, and smash it all together with a fork until creamy.",
+    "Tub the smash on its own. Eat it on the bread, toasted, or swap the bread for a wrap or rice. The bread is on the list so the meal's calories and price add up."
    ],
-   "notes": "From @carbs.calendar on Instagram. The video uses a 1.1 kg shop rotisserie chicken (a supermarket whole roast chicken is the same thing) low-fat soured cream and agave in the sauce (honey does the same job for less). Makes 6 portions. In the video it goes in a toasted high-protein wrap, in a melt on buttered sourdough with cheddar and mozzarella, or on toast with extra onion, chilli and lime. The numbers and shop list are for the smash only, so add whatever you have it with.",
+   "notes": "From @carbs.calendar on Instagram. The video uses a 1.1 kg shop rotisserie chicken, a lot of chipotle paste, parmesan, low-fat soured cream and agave; ours cooks chicken breast (about half the price per portion, and a roast chicken still works if you would rather not cook), uses half the chipotle paste with smoked paprika, cheddar, and honey. Same smash. Makes 6 portions. In the video it goes in a toasted high-protein wrap, in a melt on buttered sourdough, or on toast with extra onion, chilli and lime. Two slices of bread a portion are included so the meal's calories and price are whole; swap them for a wrap or rice if you prefer.",
    "tags": [
     "mexican",
     "cold-lunch"
@@ -7021,15 +7029,15 @@
    "reheat": "none",
    "fridgeDays": 3,
    "freezer": false,
-   "cookMinutes": 20,
+   "cookMinutes": 25,
    "equipment": [
     "hob"
    ],
    "source": "https://www.instagram.com/reel/DeWEpLLirin/",
    "ingredients": [
     {
-     "id": "roast_chicken",
-     "qty": 0.17
+     "id": "chicken_breast",
+     "qty": 130
     },
     {
      "id": "egg",
@@ -7052,7 +7060,7 @@
      "qty": 2
     },
     {
-     "id": "parmesan",
+     "id": "cheddar",
      "qty": 8
     },
     {
@@ -7070,16 +7078,20 @@
     {
      "id": "garlic_granules",
      "qty": 0.5
+    },
+    {
+     "id": "bread",
+     "qty": 2
     }
    ],
    "method": [
-    "Boil the eggs for 9 to 10 minutes, cool them in cold water and peel. Strip all the meat off the roast chicken and shred it.",
+    "Boil the eggs for 9 to 10 minutes, cool them in cold water and peel. Poach or pan-fry the chicken breasts until cooked through (about 12 minutes), cool and shred them (a shop roast chicken works too: strip it and shred).",
     "Chop the spring onions, sun-dried tomatoes, gherkins and dill.",
     "Sauce: blend the cottage cheese until smooth, then stir in the mustard, honey and garlic granules (and a spoon of mayo if you like it richer).",
-    "Add the chicken, eggs, chopped bits and grated parmesan to the sauce and smash it all together with a fork until creamy.",
-    "Tub it on its own. Eat it however you like: in a toasted wrap, on buttered sourdough with chilli crisp, or with rice."
+    "Add the chicken, eggs, chopped bits and grated cheddar to the sauce and smash it all together with a fork until creamy.",
+    "Tub the smash on its own. Eat it on the bread, toasted, or swap the bread for a wrap or rice. The bread is on the list so the meal's calories and price add up."
    ],
-   "notes": "From @carbs.calendar on Instagram. The video gives the chicken (a 1.2 kg roast chicken), 5 eggs and 300 g cottage cheese; the rest are \"to taste\", so those amounts are our measured version of what is shown. Mayo is optional in the original. Makes 6 portions. The numbers and shop list are for the smash only, so add whatever you have it with (a wrap, toast or rice).",
+   "notes": "From @carbs.calendar on Instagram. The video gives the chicken (a 1.2 kg roast chicken), 5 eggs and 300 g cottage cheese; the rest are \"to taste\", so those amounts are our measured version of what is shown. Ours cooks chicken breast instead of buying a roast chicken (about half the price per portion; a shop roast chicken still works, no cooking) and uses cheddar in place of parmesan. Mayo is optional in the original. Makes 6 portions. Two slices of bread a portion are included so the meal's calories and price are whole; swap them for a wrap or rice if you prefer.",
    "tags": [
     "cold-lunch"
    ],
@@ -7113,7 +7125,7 @@
     },
     {
      "id": "beef_mince_5",
-     "qty": 240
+     "qty": 120
     },
     {
      "id": "sweetcorn",
@@ -7125,7 +7137,7 @@
     },
     {
      "id": "egg",
-     "qty": 2
+     "qty": 3
     },
     {
      "id": "mayo",
@@ -7143,7 +7155,7 @@
     "Mix the mayo with the crispy chilli oil.",
     "Bowl it up: rice, beef and corn, sliced spring onions, the halved eggs and the chilli mayo. Stir it all through before eating."
    ],
-   "notes": "From @slopbowlcentral on Instagram (\"Trying your slop\" part 5, a bowl sent in by @m1ndrevival). The video names the ingredients but no amounts and puts a bowl at 650 kcal and 70 g protein, so these amounts are set to match its protein and carbs. Freezes without the eggs and the chilli mayo: add those on the day.",
+   "notes": "From @slopbowlcentral on Instagram (\"Trying your slop\" part 5, a bowl sent in by @m1ndrevival). The video names the ingredients but no amounts and puts a bowl at 650 kcal and 70 g protein, so these amounts are set to match its protein and carbs. Freezes without the eggs and the chilli mayo: add those on the day. Ours uses 120 g of mince and 3 eggs a portion (eggs are the cheaper protein) rather than the 240 g of mince it takes to match the creator's 70 g: the app sizes every portion to your own targets anyway, and it takes about 80p off a portion.",
    "tags": [],
    "core": true
   },
@@ -7220,8 +7232,8 @@
   },
   {
    "id": "steak_egg_yumyum_bowl",
-   "name": "Steak & egg yum yum bowls",
-   "short": "Yum yum bowls",
+   "name": "Beef & egg chipotle bowls (mince or steak)",
+   "short": "Chipotle beef bowls",
    "slots": [
     "lunch",
     "dinner",
@@ -7238,71 +7250,77 @@
    "source": "https://www.instagram.com/reel/DeA4nJNRwpJ/",
    "ingredients": [
     {
-     "id": "thin_cut_steak",
-     "qty": 195
+     "id": "beef_bowl",
+     "qty": 180
+    },
+    {
+     "id": "egg",
+     "qty": 2
     },
     {
      "id": "jasmine_rice",
      "qty": 40
     },
     {
-     "id": "egg",
-     "qty": 3
+     "id": "onion",
+     "qty": 0.15
+    },
+    {
+     "id": "pepper",
+     "qty": 0.45
     },
     {
      "id": "cherry_tomatoes",
      "qty": 65
     },
     {
-     "id": "cheddar",
-     "qty": 25
+     "id": "jalapenos",
+     "qty": 10
     },
     {
      "id": "greek_yoghurt",
-     "qty": 64
+     "qty": 50
     },
     {
-     "id": "ketchup",
-     "qty": 4.3
+     "id": "chipotle_paste",
+     "qty": 10
     },
     {
-     "id": "sugar",
-     "qty": 1.5
-    },
-    {
-     "id": "white_wine_vinegar",
-     "qty": 0.7
+     "id": "lime",
+     "qty": 0.15
     },
     {
      "id": "garlic_granules",
-     "qty": 1.1
+     "qty": 1.5
     },
     {
-     "id": "paprika",
-     "qty": 0.43
+     "id": "smoked_paprika",
+     "qty": 0.3
     },
     {
-     "id": "onion_powder",
-     "qty": 0.29
+     "id": "cumin",
+     "qty": 0.3
     },
     {
      "id": "salt",
-     "qty": 1.7
+     "qty": 1.5
     },
     {
      "id": "black_pepper",
-     "qty": 0.7
+     "qty": 0.6
     }
    ],
    "method": [
     "Cook the jasmine rice: 1 part rice to 2 parts water.",
-    "Cut the steaks into bite-size pieces (stir-fry strips are already done), season with salt, pepper and garlic granules, and fry in a very hot pan in two batches for 2 to 3 minutes until browned.",
-    "Scramble the eggs until fully set (in the same pan as the steak is fine).",
-    "Yum yum sauce: mix the Greek yoghurt, ketchup, sugar, vinegar, garlic granules, paprika, onion powder and a pinch of salt until smooth.",
-    "Dice the tomatoes. Add the eggs, rice, tomatoes, sauce and the grated cheddar to the steak, mix well and split evenly between tubs."
+    "Chop the onion and peppers. Brown the mince with them in a big hot pan, breaking it up, with the salt, pepper and half the garlic granules, until cooked through. (Steak: cut it into bite-size pieces, fry it hot in two batches, then soften the onion and peppers in the same pan.)",
+    "Scramble the eggs until fully set.",
+    "Chipotle sauce: stir the Greek yoghurt, chipotle paste, lime juice, the rest of the garlic granules, smoked paprika, cumin and a pinch of salt together, with a splash of water to loosen it.",
+    "Dice the tomatoes. Take the pan off the heat, mix in the eggs, rice, tomatoes and jalapeños, then the whole batch of sauce, and split evenly between tubs."
    ],
-   "notes": "From @cookingforgains_ on Instagram: 3 lb top sirloin, 1½ cups jasmine rice, 7 eggs, 32 oz egg whites, 16 oz tomatoes and 8 cheese slices make 7 meals (about 670 kcal and 74 g protein each in the original). Ours takes the cheaper options: thin-cut frying steak instead of sirloin (Tesco and ASDA thin cut steaks, Sainsbury's quick-cook extra thin beef, Aldi's basic beef steak: £11 to £15 a kilo against £17 for rump, and it fries in minutes; 5% beef mince is cheaper again), whole eggs instead of cartons of egg whites, grated cheddar instead of cheese slices, and normal ketchup, a pinch of sugar and white wine vinegar in the sauce. Optional, from the video: a jar of jalapeños with its juice. The sauce can go a little grainy after freezing: stir well after reheating.",
-   "tags": [],
+   "notes": "From @cookingforgains_ on Instagram (beef & egg rice bowls): 3.5 lb 96/4 beef, 7 eggs, 16 oz egg whites, 270 g jasmine rice, an onion, 3 peppers and a chipotle yoghurt sauce (Greek yoghurt, chipotle peppers in adobo, lime, garlic, smoked paprika, cumin) make 7 meals (570 kcal, 68 g protein each in the original). Ours: 5% beef mince by default or thin-cut steak (pick in Shop → Where can I save?), whole eggs instead of egg whites, chipotle paste for the tinned chipotles, and the cherry tomatoes and jalapeños kept from our earlier steak yum yum version (the macros count the mince; steak adds about 45 kcal a portion). The video's other sauce is a sweet maple one (Greek yoghurt, maple syrup, vanilla, cinnamon). The sauce can go a little grainy after freezing: stir well after reheating.",
+   "tags": [
+    "mexican"
+   ],
    "core": true
   },
   {
@@ -7483,6 +7501,248 @@
     "curry"
    ],
    "core": true
+  },
+  {
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "core": true,
+   "id": "bacon_chicken_ranch_pasta",
+   "name": "Creamy bacon chicken ranch pasta",
+   "short": "Ranch pasta",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cookMinutes": 25,
+   "equipment": [
+    "slow cooker"
+   ],
+   "source": "https://www.instagram.com/reel/DaOdP97Trzf/",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 194
+    },
+    {
+     "id": "stock_cube",
+     "qty": 0.3
+    },
+    {
+     "id": "cream_cheese",
+     "qty": 32
+    },
+    {
+     "id": "bacon",
+     "qty": 32
+    },
+    {
+     "id": "cheddar",
+     "qty": 32
+    },
+    {
+     "id": "penne",
+     "qty": 35
+    },
+    {
+     "id": "garlic_granules",
+     "qty": 1
+    },
+    {
+     "id": "onion_powder",
+     "qty": 1
+    },
+    {
+     "id": "mixed_herbs",
+     "qty": 0.5
+    },
+    {
+     "id": "salt",
+     "qty": 0.5
+    },
+    {
+     "id": "black_pepper",
+     "qty": 0.3
+    }
+   ],
+   "method": [
+    "Fry the bacon until crisp, chop it small and set it aside.",
+    "Into the slow cooker: the chicken breasts, the stock (cube dissolved in a mug of water per 3 portions), the cream cheese and the ranch mix (garlic granules, onion powder, mixed herbs, salt and pepper). Lid on: 3 to 4 hours on high or 6 to 7 on low.",
+    "Shred the chicken in the pot with two forks and stir until the cream cheese has made a smooth sauce.",
+    "Cook the penne, drain it well, and stir it into the pot with the bacon and the grated cheddar until the cheese has melted.",
+    "Split evenly between tubs."
+   ],
+   "notes": "From @cookingforgains_ on Instagram: 3 lb chicken breast, 2 cups chicken broth, a 28 g ranch seasoning packet, 8 oz light cream cheese, a pack of beef bacon, a 224 g bag of reduced-fat cheddar and 245 g protein pasta make 7 meals (480 kcal, 45 g protein each in the original). Ours uses normal bacon rashers, penne and cheddar, and a ranch mix from the spice rack (garlic granules, onion powder, mixed herbs, salt, pepper), because ranch packets are hard to find here. 25 minutes hands-on plus 3 to 4 hours in the slow cooker. Reheat: microwave 2 to 3 minutes with a splash of water.",
+   "tags": [
+    "pasta"
+   ]
+  },
+  {
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "core": true,
+   "id": "sundried_tomato_chicken_rice",
+   "name": "Creamy sun-dried tomato chicken & rice",
+   "short": "Sun-dried chicken rice",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cookMinutes": 35,
+   "equipment": [
+    "hob"
+   ],
+   "source": "https://www.instagram.com/reel/Ddj_KKRvSNY/",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 227
+    },
+    {
+     "id": "basmati",
+     "qty": 47
+    },
+    {
+     "id": "spinach",
+     "qty": 30
+    },
+    {
+     "id": "cream_cheese",
+     "qty": 38
+    },
+    {
+     "id": "sun_dried_tomatoes",
+     "qty": 15
+    },
+    {
+     "id": "garlic_granules",
+     "qty": 1.3
+    },
+    {
+     "id": "onion_powder",
+     "qty": 1
+    },
+    {
+     "id": "paprika",
+     "qty": 1
+    },
+    {
+     "id": "mixed_herbs",
+     "qty": 1
+    },
+    {
+     "id": "salt",
+     "qty": 0.7
+    },
+    {
+     "id": "black_pepper",
+     "qty": 0.5
+    },
+    {
+     "id": "chilli_flakes",
+     "qty": 0.2
+    }
+   ],
+   "method": [
+    "Dice the chicken and season it with the garlic granules, onion powder, paprika, mixed herbs, salt, pepper and chilli flakes. Fry in a big pan until cooked through.",
+    "Cook the rice: 1 part rice to 2 parts water.",
+    "Into the chicken pan: the cooked rice, the spinach, the cream cheese and the chopped sun-dried tomatoes. Stir over a low heat until the spinach is hot through and the cream cheese has melted into a sauce.",
+    "Split evenly between tubs. Hot sauce on top if you like."
+   ],
+   "notes": "From @cookingforgains_ on Instagram: 3 lb diced chicken breast, 1½ cups raw rice, 5 oz baby spinach, an 8 oz block of light cream cheese and a bag of sun-dried tomatoes make 6 meals (530 kcal, 59 g protein each in the original). Ours uses frozen spinach (cheaper, always in), mixed herbs for the Italian seasoning and a 15 g share of a jar of sun-dried tomatoes. Chilli flakes are optional, as in the video.",
+   "tags": [
+    "italian"
+   ]
+  },
+  {
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "core": true,
+   "id": "bbq_bacon_chicken_wraps",
+   "name": "BBQ bacon chicken wraps",
+   "short": "BBQ chicken wraps",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cookMinutes": 40,
+   "equipment": [
+    "hob"
+   ],
+   "source": "https://www.instagram.com/reel/DdmLCnrRmcU/",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 181
+    },
+    {
+     "id": "bacon",
+     "qty": 23
+    },
+    {
+     "id": "basmati",
+     "qty": 30
+    },
+    {
+     "id": "wrap",
+     "qty": 1
+    },
+    {
+     "id": "cheddar",
+     "qty": 20
+    },
+    {
+     "id": "onion",
+     "qty": 0.15
+    },
+    {
+     "id": "greek_yoghurt",
+     "qty": 23
+    },
+    {
+     "id": "bbq_sauce",
+     "qty": 12
+    },
+    {
+     "id": "white_wine_vinegar",
+     "qty": 1.5
+    },
+    {
+     "id": "tomato_puree",
+     "qty": 3
+    },
+    {
+     "id": "paprika",
+     "qty": 0.25
+    },
+    {
+     "id": "black_pepper",
+     "qty": 0.25
+    },
+    {
+     "id": "salt",
+     "qty": 0.5
+    },
+    {
+     "id": "garlic_granules",
+     "qty": 0.15
+    }
+   ],
+   "method": [
+    "Bash the chicken breasts flat so they cook evenly, season with salt, pepper and paprika, and fry in a covered pan until browned on both sides and cooked through. Chop it up.",
+    "Chop the bacon and fry it with the chopped onion until the bacon is crisp.",
+    "Cook the rice: 1 part rice to 2 parts water.",
+    "BBQ sauce: mix the Greek yoghurt, BBQ sauce, vinegar, tomato purée, garlic granules, paprika, salt and pepper.",
+    "Mix the chicken, bacon and onion, rice, sauce and grated cheddar. Spread evenly over the wraps, roll them up tight and toast each one in a dry pan until golden.",
+    "Wrap in foil or cling film, then fridge or freeze. Reheat: microwave 1½ minutes from the fridge or 2 minutes from frozen, turning halfway."
+   ],
+   "notes": "From @cookingforgains_ on Instagram: 4 lb chicken breast, a pack of beef bacon, 300 g rice, 10 low-carb wraps, a bag of fat-free cheddar, 200 g onion and a yoghurt BBQ sauce make 10 wraps (550 kcal, 63 g protein each in the original). Ours uses normal bacon rashers, normal wraps and cheddar, and white wine vinegar for the cider vinegar. The video doesn't say what the chicken is seasoned with, so ours uses the sauce's salt, pepper and paprika. A portion is one wrap.",
+   "tags": []
   }
  ]
 }

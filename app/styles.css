@@ -1137,3 +1137,7 @@ h2.pickgroup span, h2 span { font-size: 12px; }
 .grid2 .pday b { font-size: 13px; font-weight: 800; }
 .grid2 .pday span { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: -.02em; }
 @media (max-width: 359px) { .grid2 { grid-template-columns: 34px repeat(3, 1fr) 38px; } .grid2 .pday b { font-size: 12px; } }
+
+/* v91: calories on every meal tile, under the protein */
+.mt-top { flex-wrap: wrap; row-gap: 3px; }
+.mt-top small { flex-basis: 100%; font-size: 13px; font-weight: 700; opacity: .9; line-height: 1.1; }
