@@ -7743,6 +7743,84 @@
    ],
    "notes": "From @cookingforgains_ on Instagram: 4 lb chicken breast, a pack of beef bacon, 300 g rice, 10 low-carb wraps, a bag of fat-free cheddar, 200 g onion and a yoghurt BBQ sauce make 10 wraps (550 kcal, 63 g protein each in the original). Ours uses normal bacon rashers, normal wraps and cheddar, and white wine vinegar for the cider vinegar. The video doesn't say what the chicken is seasoned with, so ours uses the sauce's salt, pepper and paprika. A portion is one wrap.",
    "tags": []
+  },
+  {
+   "id": "cucumber_tuna_salad",
+   "name": "Cucumber tuna salad",
+   "short": "Tuna salad",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 2,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "https://www.instagram.com/reel/Dd5A-0EOMm2/",
+   "ingredients": [
+    {
+     "id": "tuna",
+     "qty": 2
+    },
+    {
+     "id": "cucumber",
+     "qty": 0.5
+    },
+    {
+     "id": "red_onion",
+     "qty": 0.25
+    },
+    {
+     "id": "gherkins",
+     "qty": 40
+    },
+    {
+     "id": "spring_onion",
+     "qty": 2
+    },
+    {
+     "id": "sweetcorn",
+     "qty": 80
+    },
+    {
+     "id": "dill",
+     "qty": 5
+    },
+    {
+     "id": "greek_yoghurt",
+     "qty": 100
+    },
+    {
+     "id": "light_mayo",
+     "qty": 20
+    },
+    {
+     "id": "mustard",
+     "qty": 10
+    },
+    {
+     "id": "paprika",
+     "qty": 1
+    },
+    {
+     "id": "salt",
+     "qty": 1
+    }
+   ],
+   "method": [
+    "Slice the cucumber and the red onion thin. Chop the gherkins, spring onions and dill.",
+    "Into a big bowl: the cucumber, onion, gherkins, sweetcorn, spring onions, dill and the drained tuna, flaked.",
+    "Sauce: mix the Greek yoghurt, mayo, mustard, a splash of juice from the gherkin jar, the paprika and salt.",
+    "Pour the sauce over and mix well. Eat straight away or keep it in the fridge for up to 2 days (the cucumber goes watery after that). No cooking."
+   ],
+   "notes": "From @allsnackco on Instagram, a \"real macros\" repost of a cucumber tuna salad the creator puts at 550 kcal and 70 g protein (the repost's own count is 589 kcal and 84 g). The video names the ingredients but gives no amounts, so these are our measured version of what is shown, with two UK tins of tuna (US cans are bigger). The pickle juice is the gherkin jar's juice. Makes one bowl; it is a bowl, not a tub-and-reheat meal, so plan it on days you can eat it cold.",
+   "tags": [
+    "cold-lunch",
+    "quick"
+   ],
+   "core": true
   }
  ]
 }
