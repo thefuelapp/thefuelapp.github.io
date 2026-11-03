@@ -1,11 +1,12 @@
 // "Plan my week for me": finds a sensible, cheap week for one person in a second or two, on the phone.
 // A lighter port of marketing/content2/v5-budget/lib/search.mjs (the budget-video tool), sized and priced the way app.js does it
-// (mealsAt1x/weekFactor, scaleBy, shopNeeds, shopTotals), so the week it picks costs what the app then shows.
+// (P.sizeAll, shopNeeds, shopTotals), so the week it picks costs what the app then shows.
 //
 // Rules (the same as the budget videos): one breakfast per day (one or two breakfast recipes); two lunch/dinner portions per day from
 // 3–6 different mains, 2–4 portions each (nothing cooked for one portion); at most 3 mains of one cuisine and of one main protein; never
-// the same main for lunch and dinner on one day; nothing the app would call "too old by then"; portions not stuck at the 0.6× / 2.5× limits;
-// every ingredient priced somewhere; protein a day at or over the target; the week's food (stock-ups aside) at or under the budget.
+// the same main for lunch and dinner on one day; nothing the app would call "too old by then"; every ingredient priced somewhere; protein a day
+// at or over the target; the week's food (stock-ups aside) at or under the budget. Meals have one size each (v94, P.sizeAll), so a day's calories
+// are scored, not forced: a week short of the calorie target is still a week, and the app says a snack fills the rest.
 // Among the weeks that pass, the cheapest full shop wins, with a nudge towards the app's core recipes and a little extra protein.
 
 const CUISINES = ['asian', 'italian', 'mexican', 'curry', 'british'];
@@ -50,14 +51,11 @@ export function planWeek(o) {
   if (!D || !B.length || M.length < 2) return null;
   const mainProtein = Object.fromEntries(pool.map((r) => { let best = null; for (const { id, qty } of r.ingredients) { const it = ingById[id]; if (!it) continue; const p = it.unit === 'each' ? it.protein * qty : (it.protein * qty) / 100; if (!best || p > best.p) best = { id, p }; } return [r.id, FAMILY[best?.id] || best?.id]; }));
   const lunchOnly = (id) => { const s = recById[id].slots; return s.length === 1 && s[0] === 'lunch'; };
-  const scaledCache = new Map();
-  const scaled = (f) => { const k = f.key; let s = scaledCache.get(k); if (!s) { const list = P.sizeRecipes(pool, f, ING); s = { list, byId: Object.fromEntries(list.map((r) => [r.id, r])) }; scaledCache.set(k, s); } return s; };
+  const sizedList = P.sizeAll(pool, { kcal, protein }, ING); const S2 = { list: sizedList, byId: Object.fromEntries(sizedList.map((r) => [r.id, r])) }; // v94: one size per recipe, the same whatever the week holds
   const isStock = (id) => !!ingById[id]?.staple;
 
   function price(portions) {
     const { grid } = P.autoLayout(portions, pool, cookDay, days, {});
-    const f = P.sizeWeekByRecipe(grid, pool, ING, { kcal, protein }, { days }); // v91: each recipe sized so the days land on the targets, as app.js weekFactor
-    const S2 = scaled(f);
     const st = P.gridStats(grid, S2.list, ING, { protein: 0, kcal: 0 }, days);
     let late = 0; for (const id of Object.keys(P.gridCounts(grid))) late += P.tubPlan(S2.byId[id], grid, cookDay, {}).late.length;
     const needsAll = P.aggregateNeeds(P.gridCounts(grid), S2.list, resolve);
@@ -75,7 +73,7 @@ export function planWeek(o) {
     }
     ranked.sort((a, b) => (a.unpriced - b.unpriced) || (a.comparable - b.comparable));
     const ch = ranked[0];
-    return { grid, f, st, late, shop: ch.shop, total: ch.comparable, weekly: P.round2(ch.comparable - ch.stock), stock: ch.stock, priced: !ch.unpriced };
+    return { grid, st, late, shop: ch.shop, total: ch.comparable, weekly: P.round2(ch.comparable - ch.stock), stock: ch.stock, priced: !ch.unpriced };
   }
 
   const portionsOf = (c) => { const o2 = {}; const sort = (xs) => [...xs].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)); for (const [id, n] of sort(c.b)) o2[id] = n; for (const [id, n] of sort(c.m)) o2[id] = n; return o2; };
@@ -85,17 +83,16 @@ export function planWeek(o) {
     const r = price(portionsOf(c)); const problems = [];
     if (r.st.filled !== r.st.slots) problems.push('not full');
     if (r.late) problems.push('too old by then');
-    if (r.f.p <= P.SIZE_LIMITS.pMin || r.f.p >= P.SIZE_LIMITS.pMax || (kcal && r.st.avgKcal < kcal * 0.93)) problems.push('portion size at the limit');
     if (!r.priced) problems.push('something has no price');
     if (c.m.filter(([id]) => lunchOnly(id)).reduce((t, [, n]) => t + n, 0) > D) problems.push('too many lunch-only portions');
     for (const tag of CUISINES) if (c.m.filter(([id]) => (recById[id].tags || []).includes(tag)).length > 3) problems.push('cuisine');
     if (r.grid.some((d, i) => days[i] && d.lunch && d.lunch === d.dinner)) problems.push('same lunch and dinner');
     const fam = {}; for (const [id] of c.m) fam[mainProtein[id]] = (fam[mainProtein[id]] || 0) + 1; if (Object.values(fam).some((n) => n > 3)) problems.push('protein family');
-    const short = Math.max(0, protein - r.st.avg), over = Math.max(0, P.round2(r.weekly - budget));
+    const short = Math.max(0, protein - r.st.avg), over = Math.max(0, P.round2(r.weekly - budget)), kShort = kcal ? Math.max(0, Math.round(kcal * 0.93 - r.st.avgKcal)) : 0; // calories under 93% of the target cost about 2p per kcal in the score: fuller days win when the price is close
     const classics = [...c.b, ...c.m].reduce((t, [id, n]) => t + (core.has(id) ? n : 0), 0) + c.m.reduce((t, [id, n]) => t + (liked.has(id) ? n * 0.7 : 0), 0); // a liked main counts like a core one (0.6 × 0.7 ≈ £0.42 a portion)
     const shared = differentFrom ? c.m.filter(([id]) => differentFrom[id]).length : 0; // mains kept from the week just shown (breakfast can stay)
     const merit = r.total - 0.6 * classics - 0.3 * Math.max(0, Math.min(r.st.avg, cap) - protein) + 6 * shared;
-    const score = merit + problems.length * 1000 + (over > 0 ? 200 + over * 50 : 0) + short * 20;
+    const score = merit + problems.length * 1000 + (over > 0 ? 200 + over * 50 : 0) + short * 20 + kShort * 0.02;
     return { ...r, problems, short, over, merit, score, ok: !problems.length && !short && !over, portions: portionsOf(c) };
   }
 

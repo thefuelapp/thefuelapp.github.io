@@ -382,12 +382,19 @@ export function mealColours(ids) {
 export const dayProteinState = (protein, target, live) => (!live ? 'off' : protein >= target ? 'ok' : 'low');
 
 // ---------- portion sizing (v90) ----------
-// Until v89 one factor sized the whole week to the calorie target, so protein-heavy meals reached the calories with extra meat:
-// "249g protein a day against 195, and an £80 shop". Now the carbs (rice, pasta, oats, bread, wraps, potatoes) are sized
-// separately: everything else in a meal (meat, fish, eggs, dairy, veg, sauce) is sized to the protein target and the carbs fill
-// the rest of the calories. Snacks are never resized.
-export const SIZE_LIMITS = { pMin: 0.6, pMax: 2.5, cMin: 0.5, cMax: 2.5 };
+// ---------- portion sizing (v94) ----------
+// Each recipe has ONE size for a person, worked out from their two targets and nothing else: never from what else is in the week. So a
+// meal's numbers are the same on the picker tile, in the week grid, on Shop and on Cook, and never move as meals are picked.
+// A breakfast is sized as 26% of the day's protein and calories, a lunch or dinner as 37% (26 + 37 + 37 = 100; snacks sit on top and are
+// never resized). Protein first: everything but the carbs is sized so the meal's protein is its share, then the carbs (rice, pasta, oats,
+// bread, wraps, potatoes) are sized so the calories come as close as they can. Both in quarter steps, never under 0.5× or over 1.5× the
+// recipe as written: a salad written for two tins of tuna is never "four tins", and a day that is still short shows it so a snack can fill it.
+// Until v93 the week was solved as a whole (every recipe re-sized against the day totals, up to 2.5×), which put 2.4 tins of tuna in that
+// salad on a 3,000 kcal target and moved every number each time a meal was picked.
+export const SIZE_LIMITS = { min: 0.5, max: 1.5, step: 0.25 };
+export const MEAL_SHARE = { breakfast: 0.26, main: 0.37 };
 export const isCarb = (item) => item?.category === 'carb';
+export const mealShare = (recipe) => (recipe.slots.includes('snack') ? 0 : recipe.slots[0] === 'breakfast' ? MEAL_SHARE.breakfast : MEAL_SHARE.main);
 // A meal's kcal and protein at 1×, split into carbs (c) and everything else (p).
 export function mealSplit(recipe, ingredients) {
   const ing = byId(ingredients); const o = { pk: 0, pg: 0, ck: 0, cg: 0 };
@@ -398,84 +405,21 @@ export function mealSplit(recipe, ingredients) {
   }
   return o;
 }
-// The average day of a week at 1×. A skipped slot (eaten elsewhere) or an empty one (not picked yet) counts as an average meal
-// for that slot, so a half-picked week isn't blown up to fill the gaps.
-export function weekSplit(grid, recipes, ingredients, days = [true, true, true, true, true, true, true]) {
-  const rec = byId(recipes); const sum = { pk: 0, pg: 0, ck: 0, cg: 0 }; const by = {}; let cells = 0, gaps = 0;
-  const add = (o, s, k = 1) => { for (const x in sum) o[x] += s[x] * k; };
-  grid.forEach((d, i) => {
-    if (!days[i]) return;
-    for (const sl of SLOTS) {
-      const v = d[sl]; const o = (by[sl] ||= { pk: 0, pg: 0, ck: 0, cg: 0, n: 0, gaps: 0 });
-      if (!v || isOut(v)) { o.gaps += 1; gaps += 1; continue; }
-      const r = rec[isTub(v) ? tubRecipe(v) : v]; if (!r) continue;
-      const s = mealSplit(r, ingredients); add(sum, s); add(o, s); o.n += 1; cells += 1;
-    }
-  });
-  if (cells && gaps) for (const o of Object.values(by)) { const src = o.n ? o : sum, n = o.n || cells; if (o.gaps) add(sum, src, o.gaps / n); }
-  const active = days.filter(Boolean).length || 1;
-  for (const x in sum) sum[x] /= active;
-  return sum;
+// { p, c }: one recipe's factors for a person (p for everything but the carbs, c for the carbs). target = { kcal, protein } a day.
+export function sizeFor(recipe, target, ingredients) {
+  const L = SIZE_LIMITS, fit = (x) => Math.min(L.max, Math.max(L.min, Math.round(x / L.step) * L.step));
+  const share = mealShare(recipe); if (!share) return { p: 1, c: 1 };
+  const m = mealSplit(recipe, ingredients);
+  const K = (target?.kcal || 0) * share, G = (target?.protein || 0) * share;
+  const p = G && m.pg ? fit((G - m.cg) / m.pg) : 1; // the carbs' own protein counts, at the written amount
+  const c = K && m.ck ? fit((K - p * m.pk) / m.ck) : 1;
+  return { p, c };
 }
-// The two factors for a week: p for everything but the carbs, c for the carbs. Aims for the protein target (+5%, so the average
-// day sits on it, not under it) and the calorie target. Calories come first: when the carbs are at their biggest and the calories
-// are still short, the rest grows until they are met (a protein-heavy week then lands over its protein target, as before v90, but
-// with the cheap carbs doing as much of the work as they can); when even the smallest carbs leave the calories over, the rest shrinks.
-// m = weekSplit(); snacks = { k, g } a day.
-export function sizeWeek(m, target, snacks = { k: 0, g: 0 }) {
-  const L = SIZE_LIMITS, r20 = (x) => Math.round(x * 20) / 20, clamp = (x, a, b) => Math.min(b, Math.max(a, x));
-  const K = (target.kcal || 0) - (snacks.k || 0), G = (target.protein || 0) * 1.05 - (snacks.g || 0);
-  if (!target.kcal || !(m.pk + m.ck)) return { p: 1, c: 1 };
-  const D = m.pg * m.ck - m.cg * m.pk;
-  if (!target.protein || !m.pg || D <= 0) { const f = r20(clamp(K / (m.pk + m.ck), L.pMin, L.pMax)); return { p: f, c: f }; } // no protein target, or no carbs to work with: one factor, as before v90
-  const c = clamp((m.pg * K - m.pk * G) / D, L.cMin, L.cMax);
-  let p = clamp((G - c * m.cg) / m.pg, L.pMin, L.pMax);
-  const kcal = p * m.pk + c * m.ck;
-  if (kcal < K * 0.97) p = clamp((K - c * m.ck) / m.pk, p, L.pMax); else if (kcal > K * 1.03) p = clamp((K - c * m.ck) / m.pk, L.pMin, p);
-  return { p: r20(p), c: r20(c) };
-}
-// Recipes sized by a week's factors: a recipe's own pair when the week gave it one (f.per), the week's pair otherwise. Snacks keep their written size.
-export function sizeRecipes(recipes, f, ingredients) {
+// Every recipe at its size for the person. Snacks, and anything that lands on 1×, come back as the same object.
+export function sizeAll(recipes, target, ingredients) {
   const ing = byId(ingredients);
   return recipes.map((r) => {
-    if (r.slots.includes('snack')) return r;
-    const x = (f.per && f.per.get(r.id)) || f;
-    return { ...r, ingredients: r.ingredients.map((q) => ({ id: q.id, qty: Math.round(q.qty * (isCarb(ing[q.id]) ? x.c : x.p) * 100) / 100 })) };
+    const f = sizeFor(r, target, ingredients); if (f.p === 1 && f.c === 1) return r;
+    return { ...r, ingredients: r.ingredients.map((q) => ({ id: q.id, qty: Math.round(q.qty * (isCarb(ing[q.id]) ? f.c : f.p) * 100) / 100 })) };
   });
-}
-// Per-recipe sizing (v91). One pair of factors for the whole week leaves the days uneven (a steak-bowl day at 2,900 kcal, an oats-and-biryani day
-// at 2,300). Batch cooking means every tub of a recipe is the same size, so the days cannot all be made equal, but each recipe can be sized so the
-// days land as close to the targets as possible: least squares on the day totals, calories weighted most, protein under target next, protein over
-// target least (so a heavy day loses meat before carbs), with a gentle pull towards the week's one-pair answer and the same 0.6–2.5× / 0.5–2.5×
-// limits. Recipes not in the week keep the one-pair answer (that is what the picker shows for them). Deterministic: same week in, same sizes out.
-export function sizeWeekByRecipe(grid, recipes, ingredients, target, { days = [true, true, true, true, true, true, true], snacks = { k: 0, g: 0 }, iterations = 150 } = {}) {
-  const rec = byId(recipes);
-  const base = sizeWeek(weekSplit(grid, recipes, ingredients, days), target, snacks);
-  const per = new Map(); const done = () => ({ p: base.p, c: base.c, per, key: `${base.p}|${base.c}|` + [...per.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([id, x]) => `${id}:${x.p}/${x.c}`).join(',') });
-  if (!target.kcal) return done();
-  const K = target.kcal - (snacks.k || 0), G = Math.max(1, (target.protein || 0) * 1.05 - (snacks.g || 0));
-  const dayRecs = []; const ids = new Set();
-  grid.forEach((d, i) => {
-    if (!days[i]) return; const o = {};
-    for (const sl of SLOTS) { const v = d[sl]; if (!v || isOut(v)) continue; const id = isTub(v) ? tubRecipe(v) : v; if (!rec[id]) continue; o[id] = (o[id] || 0) + 1; ids.add(id); }
-    if (Object.keys(o).length) dayRecs.push(o);
-  });
-  if (!dayRecs.length) return done();
-  const split = {}, f = {}; for (const id of ids) { split[id] = mealSplit(rec[id], ingredients); f[id] = { p: base.p, c: base.c }; }
-  const L = SIZE_LIMITS, clamp = (x, a, b) => Math.min(b, Math.max(a, x)), r20 = (x) => Math.round(x * 20) / 20;
-  const WK = 1, WG_UNDER = 0.5, WG_OVER = 0.08, PULL = 0.03, STEP = 0.6;
-  for (let it = 0; it < iterations; it++) {
-    const grad = {}; for (const id of ids) grad[id] = { p: 2 * PULL * (f[id].p - base.p), c: 2 * PULL * (f[id].c - base.c) };
-    for (const o of dayRecs) {
-      let k = snacks.k || 0, g = snacks.g || 0;
-      for (const [id, n] of Object.entries(o)) { const s = split[id], x = f[id]; k += n * (x.p * s.pk + x.c * s.ck); g += n * (x.p * s.pg + x.c * s.cg); }
-      const ek = (k - K) / K, eg = (g - G) / G, wg = eg < 0 ? WG_UNDER : WG_OVER;
-      for (const [id, n] of Object.entries(o)) { const s = split[id]; grad[id].p += n * 2 * ((WK * ek * s.pk) / K + (wg * eg * s.pg) / G); grad[id].c += n * 2 * ((WK * ek * s.ck) / K + (wg * eg * s.cg) / G); }
-    }
-    let moved = 0;
-    for (const id of ids) { const x = f[id]; const np = clamp(x.p - STEP * grad[id].p, L.pMin, L.pMax), nc = clamp(x.c - STEP * grad[id].c, L.cMin, L.cMax); moved += Math.abs(np - x.p) + Math.abs(nc - x.c); x.p = np; x.c = nc; }
-    if (moved < 1e-4) break; // close enough: the factors are rounded to 0.05 below. Plan my week for me prices thousands of candidate weeks with this, so it has to be quick (about 0.4 ms).
-  }
-  for (const id of ids) per.set(id, { p: r20(f[id].p), c: r20(f[id].c) });
-  return done();
 }

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { kcalTargetFor, retargetFor, kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet, unitPrice, budgetVerdict, swapRecipe, keepsInPlace, daysBetween, useByState, useByDay, useByLabel, mealColour, mealColours, dayProteinState, MEAL_COLOURS, mealSplit, weekSplit, sizeWeek, sizeRecipes, sizeWeekByRecipe } from '../planner.js';
+import fs from 'node:fs';
+import { kcalTargetFor, retargetFor, kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet, unitPrice, budgetVerdict, swapRecipe, keepsInPlace, daysBetween, useByState, useByDay, useByLabel, mealColour, mealColours, dayProteinState, MEAL_COLOURS, mealSplit, sizeFor, sizeAll, SIZE_LIMITS } from '../planner.js';
 
 const ingredients = [
   { id: 'chicken', name: 'Chicken breast', unit: 'g', protein: 22.5, packs: [
@@ -347,74 +348,32 @@ test('mealSplit puts carbs on one side and everything else on the other', () => 
   assert.equal(s.ck, 175); assert.equal(s.cg, 3.5);
   assert.equal(s.pk, 300 + 45); assert.equal(s.pg, 60);
 });
-test('weekSplit averages a day and fills an empty slot with that slot\'s average meal', () => {
-  const day = { breakfast: 'eo', lunch: 'sr', dinner: 'sr' };
-  const full = weekSplit([day, day], [steakRice, eggsOnly], SZ_ING, [true, true, false, false, false, false, false]);
-  const gap = weekSplit([day, { ...day, dinner: null }], [steakRice, eggsOnly], SZ_ING, [true, true, false, false, false, false, false]);
-  for (const k of ['pk', 'pg', 'ck', 'cg']) assert.ok(Math.abs(full[k] - gap[k]) < 1e-9, k);
+// v94: one size per recipe for the person, from the two targets alone (never from the week): protein first, then the carbs to the
+// calories, quarter steps, 0.5–1.5× the recipe as written.
+test('sizeFor: protein first, then the carbs fill the calories, both in quarter steps within 0.5–1.5×', () => {
+  // 2,000 kcal / 120 g: a main is 740 kcal and 44 g. Steak and rice has 60 g (+3.5 g in the rice) at 1×, so the steak comes down to 0.75× and the rice goes up for the calories.
+  assert.deepEqual(sizeFor(steakRice, { kcal: 2000, protein: 120 }, SZ_ING), { p: 0.75, c: 1.5 });
+  // eggs only (18 g) for a 31 g breakfast share wants 1.73×: capped at 1.5×; with no carbs c stays at 1
+  assert.deepEqual(sizeFor(eggsOnly, { kcal: 2000, protein: 120 }, SZ_ING), { p: 1.5, c: 1 });
+  assert.deepEqual(sizeFor(snackR, { kcal: 2000, protein: 120 }, SZ_ING), { p: 1, c: 1 });
+  assert.deepEqual(sizeFor(steakRice, { kcal: 0, protein: 0 }, SZ_ING), { p: 1, c: 1 });
+  assert.deepEqual(sizeFor(steakRice, { kcal: 9000, protein: 600 }, SZ_ING), { p: 1.5, c: 1.5 });
+  assert.deepEqual(sizeFor(steakRice, { kcal: 500, protein: 20 }, SZ_ING), { p: 0.5, c: 0.5 });
 });
-test('sizeWeek: a protein-heavy week reaches its calories with carbs, not more meat', () => {
-  const m = { pk: 1100, pg: 134, ck: 363, cg: 8 }; // Cameron's week, 27 Oct
-  const f = sizeWeek(m, { kcal: 2450, protein: 195 });
-  assert.ok(f.c > f.p, `carbs ${f.c} should grow more than the rest ${f.p}`);
-  const protein = f.p * m.pg + f.c * m.cg, kcal = f.p * m.pk + f.c * m.ck;
-  assert.ok(protein >= 195 && protein <= 195 * 1.15, `protein ${protein}`);
-  assert.ok(Math.abs(kcal - 2450) / 2450 < 0.05, `kcal ${kcal}`);
-  const old = Math.round((2450 / (m.pk + m.ck)) * 20) / 20; // one factor for everything, as before v90
-  assert.ok(protein < old * (m.pg + m.cg) - 20, 'less protein than the single factor gave');
-});
-test('sizeWeek: carbs at their biggest and still short, the rest grows until the calories are met', () => {
-  const m = { pk: 1100, pg: 134, ck: 363, cg: 8 };
-  const f = sizeWeek(m, { kcal: 3400, protein: 195 });
-  assert.equal(f.c, 2.5);
-  assert.ok(f.p > 1.65, `p ${f.p}`);
-  assert.ok(Math.abs(f.p * m.pk + f.c * m.ck - 3400) / 3400 < 0.03);
-});
-test('sizeWeek: a high protein target with low calories keeps the calories and lets protein land where it lands', () => {
-  const m = { pk: 1100, pg: 134, ck: 363, cg: 8 };
-  const f = sizeWeek(m, { kcal: 1800, protein: 200 });
-  assert.equal(f.c, 0.5);
-  assert.ok(Math.abs(f.p * m.pk + f.c * m.ck - 1800) / 1800 < 0.03, `kcal ${f.p * m.pk + f.c * m.ck}`);
-  assert.ok(f.p < 1.55);
-});
-test('sizeWeek: no carbs at all falls back to one factor; no targets leaves the recipe as written', () => {
-  const f = sizeWeek({ pk: 1500, pg: 120, ck: 0, cg: 0 }, { kcal: 3000, protein: 150 });
-  assert.equal(f.p, f.c); assert.equal(f.p, 2);
-  assert.deepEqual(sizeWeek({ pk: 0, pg: 0, ck: 0, cg: 0 }, { kcal: 3000, protein: 150 }), { p: 1, c: 1 });
-});
-test('sizeRecipes scales carbs by c, the rest by p, and leaves snacks alone', () => {
-  const [a, b] = sizeRecipes([steakRice, snackR], { p: 1.2, c: 2 }, SZ_ING);
-  assert.deepEqual(a.ingredients.map((x) => x.qty), [240, 100, 6]);
+test('sizeAll scales the carbs by c and the rest by p, hands back snacks and 1× recipes as the same object, and is the same whatever the week', () => {
+  const [a, b] = sizeAll([steakRice, snackR], { kcal: 2000, protein: 120 }, SZ_ING);
+  assert.deepEqual(a.ingredients.map((x) => x.qty), [150, 75, 3.75]);
   assert.equal(b, snackR);
+  assert.deepEqual(sizeAll([steakRice], { kcal: 2000, protein: 120 }, SZ_ING), sizeAll([steakRice], { kcal: 2000, protein: 120 }, SZ_ING));
+  assert.equal(sizeAll([steakRice], { kcal: 0, protein: 0 }, SZ_ING)[0], steakRice);
 });
-
-// v91: each recipe sized so the days land on the targets, not just the week's average
-const lightMain = { id: 'lm', slots: ['lunch', 'dinner'], ingredients: [{ id: 'egg', qty: 2 }, { id: 'rice', qty: 60 }] };
-const twoDays = [{ breakfast: 'eo', lunch: 'sr', dinner: 'sr' }, { breakfast: 'eo', lunch: 'lm', dinner: 'lm' }];
-const twoDaysOn = [true, true, false, false, false, false, false];
-const spread = (xs) => Math.max(...xs) - Math.min(...xs);
-test('sizeWeekByRecipe brings every day closer to the calorie target than one pair for the whole week', () => {
-  const recs = [steakRice, eggsOnly, lightMain]; const target = { kcal: 2000, protein: 120 };
-  const one = sizeWeek(weekSplit(twoDays, recs, SZ_ING, twoDaysOn), target);
-  const per = sizeWeekByRecipe(twoDays, recs, SZ_ING, target, { days: twoDaysOn });
-  const kcal = (f) => gridStats(twoDays, sizeRecipes(recs, f, SZ_ING), SZ_ING, { protein: 0, kcal: 0 }, twoDaysOn).kcalPerDay;
-  const before = kcal(one), after = kcal(per);
-  assert.ok(spread(after) < spread(before) / 2, `spread ${spread(before)} -> ${spread(after)}`);
-  for (const k of after) assert.ok(Math.abs(k - 2000) / 2000 < 0.08, `day ${k}`);
-  assert.equal(per.per.size, 3);
-  for (const x of per.per.values()) { assert.ok(x.p >= 0.6 && x.p <= 2.5 && x.c >= 0.5 && x.c <= 2.5); assert.equal(x.p, Math.round(x.p * 20) / 20); }
-  assert.equal(per.p, one.p); assert.equal(per.c, one.c); // the week pair is kept for recipes outside the week
-  assert.ok(per.key.includes('sr:'));
-});
-test('sizeWeekByRecipe is deterministic and leaves an empty week on the one-pair answer', () => {
-  const recs = [steakRice, eggsOnly, lightMain]; const target = { kcal: 2000, protein: 120 };
-  assert.equal(sizeWeekByRecipe(twoDays, recs, SZ_ING, target, { days: twoDaysOn }).key, sizeWeekByRecipe(twoDays, recs, SZ_ING, target, { days: twoDaysOn }).key);
-  const empty = sizeWeekByRecipe([{ breakfast: null, lunch: null, dinner: null }], recs, SZ_ING, target, { days: [true] });
-  assert.equal(empty.per.size, 0); assert.deepEqual([empty.p, empty.c], [1, 1]);
-});
-test('sizeRecipes uses a recipe\'s own factors when the week gave it some, the week pair otherwise', () => {
-  const f = { p: 1.2, c: 2, per: new Map([['sr', { p: 0.8, c: 1.5 }]]) };
-  const [a, b] = sizeRecipes([steakRice, lightMain], f, SZ_ING);
-  assert.deepEqual(a.ingredients.map((x) => x.qty), [160, 75, 4]);
-  assert.deepEqual(b.ingredients.map((x) => x.qty), [2.4, 120]);
+test('real data: the cucumber tuna salad on a 3,000 kcal / 195 g target keeps its two tins (v94: four salads need 8 tins, not 16), and nothing leaves 0.5–1.5×', () => {
+  const ING = JSON.parse(fs.readFileSync(new URL('../data/ingredients.json', import.meta.url))).items;
+  const RAW = JSON.parse(fs.readFileSync(new URL('../data/recipes.json', import.meta.url))).items;
+  const t = { kcal: 3000, protein: 195 };
+  const tuna = sizeAll(RAW, t, ING).find((r) => r.id === 'cucumber_tuna_salad');
+  assert.equal(tuna.ingredients.find((x) => x.id === 'tuna').qty, 2);
+  assert.ok(tuna.ingredients.find((x) => x.id === 'bread').qty <= 3);
+  assert.ok(proteinPerPortion(tuna, ING) <= 80 && kcalPerPortion(tuna, ING) <= 800, `${proteinPerPortion(tuna, ING)} g, ${kcalPerPortion(tuna, ING)} kcal`);
+  for (const r of RAW) for (const tt of [t, { kcal: 1500, protein: 100 }, { kcal: 3500, protein: 230 }]) { const f = sizeFor(r, tt, ING); assert.ok(f.p >= SIZE_LIMITS.min && f.p <= SIZE_LIMITS.max && f.c >= SIZE_LIMITS.min && f.c <= SIZE_LIMITS.max, r.id); }
 });

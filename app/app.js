@@ -6,9 +6,10 @@ import { planWeek } from './autoplan.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v93';
+const APP_VERSION = 'v94';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
+  ['v94', '3 Nov 2026', 'Portions stay in line with the recipes. Each meal is sized once for your targets (protein first, carbs to your calories, never more than 1.5× the recipe), and that one size is what the tiles, the week, Shop and Cook all show, so nothing moves as you pick. A day that is short says so: add a snack.'],
   ['v93', '3 Nov 2026', 'New: cucumber tuna salad on toast, a no-cook cold lunch from @allsnackco.'],
   ['v91', '2 Nov 2026', 'Meal tiles now show each meal sized for you (a typical main or breakfast for your targets), so the numbers no longer change as you pick. Four more from @cookingforgains_: creamy bacon chicken ranch pasta (slow cooker), creamy sun-dried tomato chicken & rice, BBQ bacon chicken wraps, and the steak yum yum bowls are now beef & egg chipotle bowls with a mince-or-steak pick (Shop → Where can I save?). Each recipe is sized so every day lands on your calorie and protein targets, not just the week on average. Calories show on every meal when you choose. The chicken & egg smashes cook chicken breast instead of buying a roast chicken, and the beef rice bowl uses less mince: same dishes, about a third cheaper. Recipes and Pantry have a Back button.'],
   ['v90', '27 Oct 2026', 'Portions are sized in two parts: rice, pasta, oats and potatoes fill your calories, and the meat, fish, eggs and dairy are sized to your protein target, so a high-protein week no longer means extra meat and a bigger shop. Each day in the week grid now shows its calories under the protein. Cheaper swaps in the new recipes: thin-cut frying steak, whole eggs and grated cheddar in the yum yum bowls; black beans, passata and cheddar in the burritos; honey in the chipotle smash.'],
@@ -85,8 +86,8 @@ function notePlanned() {
   refreshTrialPill();
 }
 
-// ING(), RAW(), weekFactor() and REC() are asked for dozens of times per tap, so each remembers its last answer and rebuilds only when what it is made from changes.
-// The keys: the data arrays themselves (replaced on load), the custom lists (replaced or pushed to), the tweaks, the calorie target and the week's grid, days and snacks.
+// ING(), RAW() and REC() are asked for dozens of times per tap, so each remembers its last answer and rebuilds only when what it is made from changes.
+// The keys: the data arrays themselves (replaced on load), the custom lists (replaced or pushed to), the tweaks and the two targets. Never the week (v94).
 // Anything NEW that edits a recipe or ingredient object in place must call bustCaches().
 let ING_C = { a: null, b: null, n: -1, list: [] };
 const ING = () => { const a = DATA.ingredients, b = S.customIngredients || []; if (ING_C.a !== a || ING_C.b !== b || ING_C.n !== b.length) ING_C = { a, b, n: b.length, list: a.concat(b) }; return ING_C.list; };
@@ -123,49 +124,21 @@ function applyTweak(r) {
 let RAW_C = { a: null, b: null, n: -1, t: '', ing: null, list: [] };
 const RAW = () => { const a = DATA.recipes, b = S.customRecipes || [], t = JSON.stringify(S.tweaks || {}), ing = ING(); if (RAW_C.a !== a || RAW_C.b !== b || RAW_C.n !== b.length || RAW_C.t !== t || RAW_C.ing !== ing) RAW_C = { a, b, n: b.length, t, ing, list: a.concat(b).map(applyTweak) }; return RAW_C.list; };
 const RAW_ORIGINAL = (id) => DATA.recipes.concat(S.customRecipes).find((r) => r.id === id);
-let SCALED = { f: null, list: null, n: 0 };
-let RECF = { raw: null, m: new Map() }; // recipes sized for a week that isn't the live one, by factor (see recFor)
-const FACTORS = new Map(); // weekFactor answers, keyed by calorie target + the week's grid, days and snacks
+let SCALED = { key: '', raw: null, list: null };
 // Forget everything worked out from recipes, ingredients, tweaks or settings. Cheap to call; the next draw rebuilds what it needs.
-function bustCaches() { PREVIEW.clear(); RECF = { raw: null, m: new Map() }; ING_C = { a: null, b: null, n: -1, list: [] }; RAW_C = { a: null, b: null, n: -1, t: '', ing: null, list: [] }; SCALED = { f: null, list: null, n: 0 }; FACTORS.clear(); META.clear(); }
-// Snacks a day at their written size (snacks are never resized), so the sizing leaves room for them.
-function snacksAt1x(w) {
-  const raw = RAW(), ing = ING(); const rec = (RAW_C.byId ||= Object.fromEntries(raw.map((r) => [r.id, r])));
-  const active = (w.days || []).filter(Boolean).length || 1;
-  let k = 0, g = 0;
-  for (const [id, n] of Object.entries(w.snacks || {})) if (rec[id] && n) { k += P.kcalPerPortion(rec[id], ing) * n; g += P.proteinPerPortion(rec[id], ing) * n; }
-  return { k: k / active, g: g / active };
-}
-// { p, c, per, key }: the week's pair of factors (everything but the carbs, and the carbs: v90, the carbs fill the calories and the rest is sized to the
-// protein target), each recipe's own pair (v91: sized so every day lands on the targets, P.sizeWeekByRecipe), and a string to compare them by.
-function weekFactor(w, kcalTarget = S.settings.kcalTarget, proteinTarget = S.settings.proteinTarget) {
-  if (!w || !w.grid) return { p: 1, c: 1, per: new Map(), key: '1|1' };
-  // Remembered: this is asked ~70 times per tap and each answer used to cost a pass over the whole week. If the sum ever depends on more (goal, weight), add it to the key.
-  const raw = RAW(), ing = ING(); const key = `${kcalTarget}|${proteinTarget}|${JSON.stringify(w.grid)}|${JSON.stringify(w.days)}|${JSON.stringify(w.snacks || {})}`;
-  let c = FACTORS.get(key);
-  if (!c || c.raw !== raw || c.ing !== ing) {
-    const f = P.sizeWeekByRecipe(w.grid || [], raw, ing, { kcal: kcalTarget, protein: proteinTarget }, { days: w.days || [], snacks: snacksAt1x(w) });
-    if (FACTORS.size > 12) FACTORS.clear();
-    c = { f, raw, ing }; FACTORS.set(key, c);
-  }
-  return c.f;
-}
-// "1.4×" or "1.2–1.6×": the spread of a factor across the week's recipes, for Settings.
-const fRange = (f, k) => { const v = f.per && f.per.size ? [...f.per.values()].map((x) => x[k]) : [f[k]]; const lo = Math.min(...v), hi = Math.max(...v); return lo === hi ? `${lo}×` : `${lo}–${hi}×`; };
-const scaleBy = (raw, f) => P.sizeRecipes(raw, f, ING());
+function bustCaches() { ING_C = { a: null, b: null, n: -1, list: [] }; RAW_C = { a: null, b: null, n: -1, t: '', ing: null, list: [] }; SCALED = { key: '', raw: null, list: null }; META.clear(); }
+const rawById = () => { const list = RAW(); return (RAW_C.byId ||= Object.fromEntries(list.map((r) => [r.id, r]))); };
+const sizeTargets = (kcal = S.settings.kcalTarget, protein = S.settings.proteinTarget) => ({ kcal: kcal || 0, protein: protein || 0 });
+// Every recipe at its size for this person (v94, P.sizeAll): one size per recipe from the two targets, protein first, carbs to the calories,
+// never more than 1.5× the recipe as written. The same list feeds the picker tiles, the Recipes list, the week grid, Shop and Cook, so a
+// meal's numbers never move as meals are picked. Rebuilt when the recipes, the tweaks or the targets change; never when the week does.
 const REC = () => {
-  const raw = RAW(); const w = S.weeks?.[S.activeWeek];
-  const f = weekFactor(w);
-  if (SCALED.f?.key !== f.key || SCALED.raw !== raw) { SCALED = { f, raw, n: raw.length, list: scaleBy(raw, f) }; META.clear(); }
+  const raw = RAW(), t = sizeTargets(), key = `${t.kcal}|${t.protein}`;
+  if (SCALED.key !== key || SCALED.raw !== raw) { SCALED = { key, raw, list: P.sizeAll(raw, t, ING()) }; META.clear(); }
   return SCALED.list;
 };
-// The same recipes sized for ANY week object: the other week, or a what-if copy of this one (Shop's "Switch" buttons price a change on a copy, never on the live week). Leaves SCALED and META alone.
-function recFor(w) {
-  if (!w || w === S.weeks?.[S.activeWeek]) return REC();
-  const raw = RAW(), f = weekFactor(w); if (SCALED.raw === raw && SCALED.f?.key === f.key && SCALED.list) return SCALED.list;
-  if (RECF.raw !== raw || RECF.m.size > 8) RECF = { raw, m: new Map() };
-  if (!RECF.m.has(f.key)) RECF.m.set(f.key, scaleBy(raw, f)); return RECF.m.get(f.key);
-}
+// The sizes a week's meals get at a pair of targets, as one string: setTargets asks whether the portions really changed.
+function weekSizes(w, kcal, protein) { const ing = ING(), raw = rawById(); return Object.entries(w?.portions || {}).filter(([id, n]) => n > 0 && raw[id]).map(([id]) => { const f = P.sizeFor(raw[id], sizeTargets(kcal, protein), ing); return `${id}:${f.p}/${f.c}`; }).join(','); }
 const inLibrary = (id) => !S.library || S.library.includes(id);
 const ingById = (id) => ING().find((i) => i.id === id);
 // What actually gets bought for an ingredient id: the week's fruit pick, thighs instead of breast.
@@ -543,22 +516,10 @@ function removeAvoidText(term) { S.settings.avoidText = (S.settings.avoidText ||
 function suggestions(n = 6) { const list = REC(), ing = ING(), raw = (RAW_C.byId ||= Object.fromEntries(RAW().map((r) => [r.id, r]))); // ranked on the recipe as written: protein per £ is the same at any portion size, but the rounded resized numbers are not, and the first Quick pick used to swap the chips under your thumb
   return list.filter((r) => inLibrary(r.id) && !r.slots.includes('snack') && !isAvoided(r) && r.cookMinutes > 0).map((r) => { const o = raw[r.id] || r, c = P.costPerPortion(o, ing).cost; return { r, score: c ? P.proteinPerPortion(o, ing) / c : 0 }; }).sort((a, b) => b.score - a.score).slice(0, n).map((x) => x.r); }
 const META = new Map();
-// The picker tiles and the Recipes list show a meal sized for THIS PERSON's typical meal, whatever the week holds (v91): breakfasts about 26% of the
-// day's calories and protein, lunch and dinner 37% each, snacks as written. The week itself is sized exactly once it is picked (weekFactor), so the
-// grid, Shop and Cook can differ a little from these. What matters here: a tile's numbers never change as you pick, and a half-picked week can no
-// longer show every meal blown up to the 2.5× limit ("145g protein in a pesto pasta").
-const PREVIEW = new Map();
-function previewFor(r) {
-  const st = S.settings; const key = `${r.id}|${st.kcalTarget}|${st.proteinTarget}|${RAW_C.t}`; let m = PREVIEW.get(key); if (m) return m;
-  const ing = ING(); const raw = (RAW_C.byId ||= Object.fromEntries(RAW().map((x) => [x.id, x])))[r.id] || r;
-  const share = raw.slots.includes('snack') ? 0 : raw.slots[0] === 'breakfast' ? 0.26 : 0.37;
-  const sized = share ? P.sizeRecipes([raw], P.sizeWeek(P.mealSplit(raw, ing), { kcal: (st.kcalTarget || 0) * share, protein: (st.proteinTarget || 0) * share }), ing)[0] : raw;
-  m = { pp: P.proteinPerPortion(sized, ing), kcal: P.kcalPerPortion(sized, ing), c: P.costPerPortion(sized, ing) };
-  if (PREVIEW.size > 400) PREVIEW.clear(); PREVIEW.set(key, m); return m;
-}
+// A meal's protein, calories and cost at its size for this person (REC()): the same numbers on the picker tiles, the Recipes list, the week grid, Shop and Cook.
 function metaFor(r) { let m = META.get(r.id); if (!m) { const ing = ING(); m = { pp: P.proteinPerPortion(r, ing), kcal: P.kcalPerPortion(r, ing), c: P.costPerPortion(r, ing) }; META.set(r.id, m); } return m; }
 function mealMeta(r) {
-  const { pp, kcal, c } = previewFor(r);
+  const { pp, kcal, c } = metaFor(r);
   const cost = c.cost ? `~£${c.cost.toFixed(2)}` : '';
   const flex = '';
   const cold = r.cold ? '<span class="badge ok">cold ok</span>' : '';
@@ -631,8 +592,8 @@ function planTop(w) {
   const hasGrid = chosen.length || tubs.length || Object.keys(lockedCells(w)).length;
   const tips = (S.tips && S.tips.plan) ? '' : `<div class="card tipcard"><h3>How Fuel works</h3><ol class="tips"><li><b>Plan.</b> Tick the meals you fancy. Fuel fits them into your week.</li><li><b>Shop.</b> Your list is priced at four supermarkets. Buy from the cheapest.</li><li><b>Cook.</b> Batch cook on ${DAY_FULL[w.cookDay]}, box it up, and the week is sorted.</li></ol><p class="small">Targets, budget and milk are under the ⚙ gear, top right.</p><button class="btn small" data-action="tip-done" data-tip="plan">Got it</button></div>`;
   const gridTip = (S.tips && S.tips.grid) ? '' : `<div class="gridhelp gridtip"><span><b>Tap a meal</b> to swap or move it. <b>Tap a day</b> to skip it.</span><button class="btn ghost small" data-action="tip-done" data-tip="grid">Got it</button></div>`;
-  const fw = weekFactor(w); // v90: the carbs are sized to the calories, so a gap left means the carbs are already at their biggest (or the meals at their smallest)
-  const limitNote = st.filled < st.slots / 2 ? '' : st.avgKcal < kcalT * 0.93 && fw.p >= P.SIZE_LIMITS.pMax ? `These meals come to ${st.avgKcal.toLocaleString()} kcal a day even at the biggest portion size, under your ${kcalT.toLocaleString()} target. Add a snack or another meal to close the gap.` : st.avgKcal > kcalT * 1.07 && fw.p <= P.SIZE_LIMITS.pMin ? `These meals come to ${st.avgKcal.toLocaleString()} kcal a day even at the smallest portion size, over your ${kcalT.toLocaleString()} target. Drop a snack or a meal.` : '';
+  const dayK = st.kcalPerDay.filter((k, i) => live[i] && k > 0), avgK = dayK.length ? Math.round(dayK.reduce((a, b) => a + b, 0) / dayK.length) : 0; // the days with meals in, so a half-planned week is not averaged with its empty days
+  const limitNote = st.filled < st.slots / 2 || !avgK ? '' : avgK < kcalT * 0.93 ? `The planned days come to ${avgK.toLocaleString()} kcal, under your ${kcalT.toLocaleString()} target. Portions stay in line with the recipes (1.5× at most), so add a snack or two to close the gap.` : avgK > kcalT * 1.07 ? `The planned days come to ${avgK.toLocaleString()} kcal, over your ${kcalT.toLocaleString()} target. Drop a snack or swap in a lighter meal.` : '';
   // Joined midweek? Say so, and offer tonight / tomorrow as the cook day (the default is already today for a week that has started).
   let midweek = '';
   const goneDays = S.activeWeek === S.thisMon ? todayIdx() : 0;
@@ -658,7 +619,7 @@ function mealTile(r, w, free, colours) {
   const snack = r.slots.includes('snack');
   const n = (snack ? w.snacks[r.id] : w.portions[r.id]) || 0;
   const full = !snack && P.roomFor(r, free) <= 0;
-  const { pp, kcal, c } = previewFor(r);
+  const { pp, kcal, c } = metaFor(r);
   const keeps = r.cookMinutes === 0 ? 'No cooking' : r.freezer ? 'Freezes' : r.fridgeDays ? `Fridge ${r.fridgeDays} days` : 'Cook fresh';
   const chips = [c.cost ? P.gbp(c.cost) : '', r.cookMinutes ? `${r.cookMinutes} min` : '', keeps].filter(Boolean);
   const [inc, dec, add] = snack ? ['sinc', 'sdec', 'snack-add'] : ['inc', 'dec', 'pick-add'];
@@ -877,7 +838,7 @@ async function askExtraQty(it, current) {
 }
 // ONE place that prices a week's shop. Every screen that shows a shop total (Shop, Pantry bar, Settings, the shared list, the spend log) reads chosen.comparable from here, so two different totals can never show again.
 // comparable = what you pay if you go to that shop, with anything it doesn't sell priced at the cheapest other shop. all = true prices the week as if the Pantry were empty.
-function shopTotals(w, { recipes = recFor(w), all = false, thigh = S.settings.preferThigh } = {}) {
+function shopTotals(w, { recipes = REC(), all = false, thigh = S.settings.preferThigh } = {}) {
   const sn = shopNeeds(w, recipes, thigh); const isStock = (id) => !!ingById(id)?.staple;
   const ranked = P.compareShops(all ? sn.needsAll : sn.needs, ING()).map((b) => { const notSold = b.missing.filter((m) => (ingById(m.id)?.unavailable || []).includes(b.shop)); return { ...b, notSold, unpriced: b.missing.filter((m) => !notSold.includes(m)) }; });
   const byShop = Object.fromEntries(ranked.map((b) => [b.shop, b]));
@@ -926,6 +887,7 @@ async function autoPlanSheet(r, seed, extra = {}) {
   const notes = [];
   if (food > S.settings.budget + 0.004) notes.push(`£${S.settings.budget} is tight for ${st.filled} high-protein meals, so this is the cheapest sensible week FU£L could find.`);
   if (st.avg < S.settings.proteinTarget) notes.push(`It comes to ${S.settings.proteinTarget - st.avg}g a day under your protein target. A snack closes the gap.`);
+  if (S.settings.kcalTarget && st.avgKcal < S.settings.kcalTarget * 0.93) notes.push(`It comes to ${st.avgKcal.toLocaleString()} kcal a day against your ${S.settings.kcalTarget.toLocaleString()}: meals stay in line with the recipes, so a snack or two fills the rest.`);
   let img = `<div class="stat-grid" style="margin:10px 0 12px"><div class="stat"><b>${st.filled}</b><span>meals</span></div><div class="stat"><b>${st.avg}g</b><span>protein a day</span></div><div class="stat"><b>${P.gbp(food)}</b><span>food at ${esc(shop)}</span></div></div>`;
   try { const card = await drawShareCard(w); if (card) img = `<img class="sharecard" src="${URL.createObjectURL(card.blob)}" alt="My week: ${st.filled} meals, ${P.gbp(food)} of food at ${esc(shop)}, ${st.avg}g protein a day">`; } catch {}
   const changed = (extra.changed || []).filter(Boolean);
@@ -994,7 +956,7 @@ function applyIdeas(w, ideas) {
   }
   return { meals, thigh };
 }
-// What the till would really come to with these switches made. Meals are resized to the calorie target from the grid and packs come in fixed sizes, so trying it is the only honest price.
+// What the till would really come to with these switches made. Meals are sized to the targets and packs come in fixed sizes, so trying it is the only honest price.
 function tillIf(w, ideas) { const x = whatIf(w); const r = applyIdeas(x, ideas); return tillNow(x, { thigh: r.thigh || S.settings.preferThigh })?.total ?? null; }
 function saveIdeas(w) {
   const now = tillNow(w); const list = []; if (!now || !w.grid) return { list, all: 0 };
@@ -1206,7 +1168,7 @@ function checkinPreview() {
   const tubs = Object.entries(CI.planned).reduce((t, [rid, p]) => t + (recById(rid)?.freezer ? Math.max(0, p - (CI.eaten[rid] || 0)) : 0), 0) + Object.values(S.tubs || {}).reduce((t, n) => t + n, 0);
   if (tubs) out.push(`Use ${tubs} freezer tub${tubs > 1 ? 's' : ''} first, so you buy less.`);
   if (CI.out) out.push(`You ate out ${CI.out >= 3 ? '3 or more times' : CI.out === 1 ? 'once' : 'twice'}: mark a meal "out" next week and the shop drops.`);
-  if (CI.portions === 'more') out.push('Portions about 10% bigger, and the shop list with them.'); if (CI.portions === 'less') out.push('Portions about 10% smaller.');
+  if (CI.portions === 'more') out.push('Calorie target up 10%: bigger carb portions where the recipes allow, and the shop list with them.'); if (CI.portions === 'less') out.push('Calorie target down 10%: smaller carb portions.');
   if (!out.length) out.push('Plan a fresh week to your targets and budget.');
   return out;
 }
@@ -1375,11 +1337,13 @@ function newIngredientForm() {
 }
 
 // ----- Pantry -----
-// Live preview for Settings: at this calorie target, what portion size results, what the week averages, and what the shop costs.
+// Live preview for Settings: at these targets, what portion sizes result, what the week averages, and what the shop costs.
 function macroPreview(kTarget, pTarget) {
   const w = W(); const ing = ING();
-  const f = weekFactor(w, kTarget, pTarget);
-  const recipes = scaleBy(RAW(), f);
+  const t = sizeTargets(kTarget, pTarget), raw = rawById();
+  const recipes = P.sizeAll(RAW(), t, ing);
+  const sizes = Object.entries(w.portions || {}).filter(([id, n]) => n > 0 && raw[id]).map(([id]) => P.sizeFor(raw[id], t, ing));
+  const range = (k) => { const v = sizes.map((x) => x[k]); if (!v.length) return '1×'; const lo = Math.min(...v), hi = Math.max(...v); return lo === hi ? `${lo}×` : `${lo}–${hi}×`; };
   const rec = Object.fromEntries(recipes.map((r) => [r.id, r]));
   const active = w.days.filter(Boolean).length || 1;
   let sp = 0, sk = 0;
@@ -1392,8 +1356,8 @@ function macroPreview(kTarget, pTarget) {
   const kPct = Math.min(100, Math.round((st.avgKcal / (kTarget || 1)) * 100));
   const gapP = Math.round(pTarget - st.avg), gapK = Math.round(kTarget - st.avgKcal);
   const budget = S.settings.budget || 0;
-  const capped = f.p >= P.SIZE_LIMITS.pMax && gapK > kTarget * 0.07 ? 'Meals are at their biggest (2.5×); the rest has to come from snacks.' : f.p <= P.SIZE_LIMITS.pMin && gapK < -kTarget * 0.07 ? 'Meals are at their smallest; drop a snack or a meal to go lower.' : '';
-  return `<div class="macro"><div class="row"><span class="grow">${empty ? 'Nothing picked this week yet' : `Portions: <b>${fRange(f, 'p')}</b> the recipe · carbs <b>${fRange(f, 'c')}</b>`}</span></div>
+  const capped = gapK > kTarget * 0.07 ? `${gapK.toLocaleString()} kcal short a day: meals stay in line with the recipes (1.5× at most), so add a snack or two.` : gapK < -kTarget * 0.07 ? `${(-gapK).toLocaleString()} kcal over a day: drop a snack or swap in a lighter meal.` : '';
+  return `<div class="macro"><div class="row"><span class="grow">${empty ? 'Nothing picked this week yet' : `Portions: <b>${range('p')}</b> the recipe · carbs <b>${range('c')}</b>`}</span></div>
     <div class="row" style="margin-top:6px"><span class="lbl">Calories</span><div class="budget grow kcal ${kPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${kPct}%"></i></div><b class="val">${st.avgKcal.toLocaleString()}</b><span class="small muted">/ ${(kTarget || 0).toLocaleString()}</span></div>
     <div class="row" style="margin-top:6px"><span class="lbl">Protein</span><div class="budget grow ${pPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${pPct}%"></i></div><b class="val">${st.avg}g</b><span class="small muted">/ ${pTarget}g</span></div>
     ${shop ? `<div class="row" style="margin-top:6px"><span class="lbl">Shop</span><div class="budget grow ${shop.total > budget ? 'over' : ''}" style="margin:0"><i style="width:${Math.min(100, Math.round((shop.total / (budget || 1)) * 100))}%"></i></div><b class="val">${P.gbp(shop.total)}</b><span class="small muted">at ${P.SHOP_NAMES[shop.shop]} / £${budget}</span></div>` : ''}
@@ -1617,7 +1581,7 @@ function renderSettings() {
     <div class="row" style="margin-top:10px;gap:8px;align-items:center"><span class="grow small muted">${(() => { const t = weightTrend(S.weights); return t ? `Last weigh-in ${t.latest} kg on ${fmtDate(t.points[t.points.length - 1].date)} · ${t.points.length} logged` : 'No weigh-ins yet. The Sunday check-in asks, or add one here.'; })()}</span><button class="btn ghost small" data-action="weigh-add">Add</button></div>
   </div>
   <h2>Daily targets</h2><div class="card">
-    <p class="small muted" style="margin:0 0 10px">Calories size the portions and the shop. Protein is the aim.</p>
+    <p class="small muted" style="margin:0 0 10px">Protein sizes the meat, fish and eggs; calories size the rice, pasta and bread. Never more than 1.5× a recipe.</p>
     <label class="field">Calories <b data-val="kcalTarget">${(st.kcalTarget || 0).toLocaleString()}</b> kcal a day<input class="range" type="range" min="1200" max="4500" step="50" data-setting="kcalTarget" value="${st.kcalTarget || 2500}"></label>
     <label class="field">Protein <b data-val="proteinTarget">${st.proteinTarget}g</b> a day<input class="range" type="range" min="80" max="260" step="5" data-setting="proteinTarget" value="${st.proteinTarget}"></label>
     <div id="macro-preview">${macroPreview(st.kcalTarget, st.proteinTarget)}</div>
@@ -1678,16 +1642,16 @@ function ask(text, okLabel = 'Yes', danger = false) {
 }
 function toast(text, ms = 2200) { showHint(text); clearTimeout(toast.t); toast.t = setTimeout(hideHint, ms); }
 const GOAL_NAMES = { build: 'Build muscle', lean: 'Stay lean and strong', lose: 'Lose fat, keep muscle', eatwell: 'Just eat well' };
-// Calories set the portion size, so new targets mean new portions. Settings is updated in place (no redraw: focus stays put when you tab from weight to budget).
-// Returns true when the active week's portions really changed size (they do not on an empty week or at the 0.6x / 2.5x limits), so the toast never claims it wrongly.
+// The targets set the portion sizes (P.sizeFor), so new targets mean new portions. Settings is updated in place (no redraw: focus stays put when you tab from weight to budget).
+// Returns true when the active week's portions really changed size (they do not on an empty week or at the 0.5× / 1.5× limits), so the toast never claims it wrongly.
 function setTargets(kcal, prot) {
-  const st = S.settings, w = W(), before = weekFactor(w).key; st.kcalTarget = kcal; st.proteinTarget = prot; bustCaches(); if (w && w.done) shopDone(w); save(); // a finished shop's logged total follows the resize, so Shop and Settings → Money never disagree
+  const st = S.settings, w = W(), before = weekSizes(w, st.kcalTarget, st.proteinTarget); st.kcalTarget = kcal; st.proteinTarget = prot; bustCaches(); if (w && w.done) shopDone(w); save(); // a finished shop's logged total follows the resize, so Shop and Settings → Money never disagree
   for (const [k, v] of [['kcalTarget', kcal], ['proteinTarget', prot]]) {
     const r = document.querySelector(`#view input[data-setting="${k}"]`); if (r) r.value = v;
     const b = document.querySelector(`#view [data-val="${k}"]`); if (b) b.textContent = k === 'kcalTarget' ? v.toLocaleString() : v + 'g';
   }
   const mp = document.getElementById('macro-preview'); if (mp) mp.innerHTML = macroPreview(kcal, prot);
-  return weekFactor(w).key !== before;
+  return weekSizes(w, kcal, prot) !== before;
 }
 // Goal or bodyweight changed: the targets move with them, worked out the same way as the set-up questions. Sliders that were set by hand are never overwritten without asking.
 async function retarget(oldWeight, oldGoal) {
@@ -1719,7 +1683,7 @@ function introStep(n) {
   const budgets = [30, 40, 50, 60];
   const step = {
     1: `<div class="logo wordmark" aria-label="Fuel">FU<b>£</b>L</div>${cloud.enabled && !paidUp() ? `<p class="freeline">${S.trial?.codeName ? esc(S.trial.codeName) + '\u2019s code · ' : ''}Free for ${S.trial?.days || TRIAL_DAYS} days · no account · no card</p>` : ''}${gateInstallHint()}<h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${picked === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
-    2: `<h1>How much do you weigh?</h1><p>Kilos, roughly. Your daily protein and calorie targets come from this and your goal. Portions are sized to fit your calories.</p><input class="big" type="number" id="intro-weight" inputmode="decimal" placeholder="kg" value="${S.settings.onboarded ? wt : ''}" min="30" max="200"><div class="stat-row"><div><b id="iw-p">${S.settings.onboarded ? `${P.proteinTargetFor(wt, g)}g` : '—'}</b><span>protein a day</span></div><div><b id="iw-f">${S.settings.onboarded ? P.kcalTargetFor(wt, g).toLocaleString() : '—'}</b><span>kcal a day</span></div></div><button class="go" data-action="intro-weight">Next</button><button class="back" data-action="intro-back">Back</button>`,
+    2: `<h1>How much do you weigh?</h1><p>Kilos, roughly. Your daily protein and calorie targets come from this and your goal. Meals are sized to them, never more than 1.5× the recipe.</p><input class="big" type="number" id="intro-weight" inputmode="decimal" placeholder="kg" value="${S.settings.onboarded ? wt : ''}" min="30" max="200"><div class="stat-row"><div><b id="iw-p">${S.settings.onboarded ? `${P.proteinTargetFor(wt, g)}g` : '—'}</b><span>protein a day</span></div><div><b id="iw-f">${S.settings.onboarded ? P.kcalTargetFor(wt, g).toLocaleString() : '—'}</b><span>kcal a day</span></div></div><button class="go" data-action="intro-weight">Next</button><button class="back" data-action="intro-back">Back</button>`,
     3: `<h1>Weekly food budget?</h1><p>The shop list always shows what's left against it.</p><div class="chips">${budgets.map((b) => `<button class="opt ${S.settings.budget === b ? 'on' : ''}" data-action="intro-budget" data-budget="${b}">£${b}</button>`).join('')}</div><p style="margin-bottom:6px">Or type your own</p><input class="big" type="number" id="intro-budget" inputmode="numeric" placeholder="£" min="10" max="300"><p style="margin:14px 0 6px">Or work it out from what's left</p><div class="row" style="gap:8px"><input class="big grow" type="number" id="intro-loan-left" inputmode="numeric" placeholder="£ left" value="${S.loan?.left || ''}" style="margin:0"><input class="big grow" type="date" id="intro-loan-until" value="${S.loan?.until || ''}" style="margin:0;font-size:16px"></div><p class="small" id="intro-loan-out" style="margin:8px 0 0;min-height:1.4em"></p><button class="go" data-action="intro-budget-custom">Next</button><button class="back" data-action="intro-back">Back</button>`,
     4: `<h1>Anything you don't eat?</h1><p>Recipes with these are hidden. Tap all that apply.</p><div class="chips">${Object.entries(AVOID).map(([k, v]) => `<button class="opt ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><p style="margin:16px 0 6px">Anything else? Allergies, or things you just don't like.</p><div class="row"><input class="big grow" id="intro-avoid-text" data-enter="intro-avoid-add" placeholder="e.g. mushrooms" autocapitalize="none" style="font-size:18px;text-align:left;margin:0"><button class="go" style="width:auto;margin:0;padding:14px 18px;font-size:16px" data-action="intro-avoid-add">Add</button></div>${avoidTextChips('intro-avoid-rm')}<p style="margin:16px 0 6px">Which milk?</p><div class="chips">${[['milk', 'Dairy'], ['oat_milk', 'Oat'], ['almond_milk', 'Almond'], ['soya_milk', 'Soya']].map(([k, l]) => `<button class="opt ${(S.settings.milk || 'milk') === k ? 'on' : ''}" data-action="intro-milk" data-id="${k}">${l}</button>`).join('')}</div><button class="go" data-action="intro-next">Next</button><button class="back" data-action="intro-back">Back</button>`,
     5: `<h1>You're set.</h1><div class="steprow"><span>${ic('cal')}Plan</span><span>${ic('basket')}Shop</span><span>${ic('pan')}Cook</span></div><div class="stat-row"><div><b>${S.settings.proteinTarget}g</b><span>protein a day</span></div><div><b>${(S.settings.kcalTarget || 0).toLocaleString()}</b><span>kcal a day</span></div><div><b>£${S.settings.budget}</b><span>a week</span></div></div>${onTrial() ? `<div class="freebox"><b>${trialEnd() ? `Free until ${dayName(trialEnd())}.` : `Your first ${S.trial?.days === 14 ? '14 days are' : 'week is'} free, from the day you plan it.`}</b> Every feature. No card, nothing to cancel.</div>` : ''}<button class="go" data-action="intro-auto">Plan my week for me</button><button class="go ghostgo" data-action="intro-done">I'll pick my own meals</button><button class="back" data-action="intro-back">Back</button>`,
