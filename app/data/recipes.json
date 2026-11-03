@@ -7746,7 +7746,7 @@
   },
   {
    "id": "cucumber_tuna_salad",
-   "name": "Cucumber tuna salad",
+   "name": "Cucumber tuna salad on toast",
    "short": "Tuna salad",
    "slots": [
     "lunch",
@@ -7807,15 +7807,19 @@
     {
      "id": "salt",
      "qty": 1
+    },
+    {
+     "id": "bread",
+     "qty": 2
     }
    ],
    "method": [
     "Slice the cucumber and the red onion thin. Chop the gherkins, spring onions and dill.",
     "Into a big bowl: the cucumber, onion, gherkins, sweetcorn, spring onions, dill and the drained tuna, flaked.",
     "Sauce: mix the Greek yoghurt, mayo, mustard, a splash of juice from the gherkin jar, the paprika and salt.",
-    "Pour the sauce over and mix well. Eat straight away or keep it in the fridge for up to 2 days (the cucumber goes watery after that). No cooking."
+    "Pour the sauce over and mix well. Eat it on the toast or in a wrap. Keep it in the fridge for up to 2 days (the cucumber goes watery after that). No cooking."
    ],
-   "notes": "From @allsnackco on Instagram, a \"real macros\" repost of a cucumber tuna salad the creator puts at 550 kcal and 70 g protein (the repost's own count is 589 kcal and 84 g). The video names the ingredients but gives no amounts, so these are our measured version of what is shown, with two UK tins of tuna (US cans are bigger). The pickle juice is the gherkin jar's juice. Makes one bowl; it is a bowl, not a tub-and-reheat meal, so plan it on days you can eat it cold.",
+   "notes": "From @allsnackco on Instagram, a \"real macros\" repost of a cucumber tuna salad the creator puts at 550 kcal and 70 g protein (the repost's own count is 589 kcal and 84 g). The video names the ingredients but gives no amounts, so these are our measured version of what is shown, with two UK tins of tuna (US cans are bigger). The pickle juice is the gherkin jar's juice. Two slices of bread a portion are included so the meal sizes and prices as a whole meal (swap for a wrap or rice). Makes one bowl; eat it cold, so plan it on days you are not reheating.",
    "tags": [
     "cold-lunch",
     "quick"

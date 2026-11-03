@@ -6,10 +6,10 @@ import { planWeek } from './autoplan.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v92';
+const APP_VERSION = 'v93';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
-  ['v92', '3 Nov 2026', 'New: cucumber tuna salad, a no-cook cold lunch from @allsnackco.'],
+  ['v93', '3 Nov 2026', 'New: cucumber tuna salad on toast, a no-cook cold lunch from @allsnackco.'],
   ['v91', '2 Nov 2026', 'Meal tiles now show each meal sized for you (a typical main or breakfast for your targets), so the numbers no longer change as you pick. Four more from @cookingforgains_: creamy bacon chicken ranch pasta (slow cooker), creamy sun-dried tomato chicken & rice, BBQ bacon chicken wraps, and the steak yum yum bowls are now beef & egg chipotle bowls with a mince-or-steak pick (Shop → Where can I save?). Each recipe is sized so every day lands on your calorie and protein targets, not just the week on average. Calories show on every meal when you choose. The chicken & egg smashes cook chicken breast instead of buying a roast chicken, and the beef rice bowl uses less mince: same dishes, about a third cheaper. Recipes and Pantry have a Back button.'],
   ['v90', '27 Oct 2026', 'Portions are sized in two parts: rice, pasta, oats and potatoes fill your calories, and the meat, fish, eggs and dairy are sized to your protein target, so a high-protein week no longer means extra meat and a bigger shop. Each day in the week grid now shows its calories under the protein. Cheaper swaps in the new recipes: thin-cut frying steak, whole eggs and grated cheddar in the yum yum bowls; black beans, passata and cheddar in the burritos; honey in the chipotle smash.'],
   ['v89', '27 Oct 2026', '7 new recipes from Instagram: chipotle and creamy chicken & egg smash, steak & egg yum yum bowls, slow cooker chicken burritos, one-dish oven chicken biryani, a beef & egg chilli mayo rice bowl and apple crumble overnight oats.'],
