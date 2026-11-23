@@ -6,10 +6,10 @@ import { planWeek } from './autoplan.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v97';
+const APP_VERSION = 'v98';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
-  ['v97', '23 Nov 2026', 'The chicken burrito bowl gets a street corn salad on the side (sweetcorn, onion and jalapeños in a creamy lemon dressing, from @panaceapalm). The chicken, rice and beans stay exactly as they were, so the bowl has more protein than before, and one tin of sweetcorn does four bowls. Also, the chicken curry is now a spicy red one: paprika, cumin, turmeric, chilli and garam masala on top of the madras powder.'],
+  ['v98', '23 Nov 2026', 'The chicken burrito bowl gets a street corn side (sweetcorn, red onion, jalapeños and coriander in yoghurt, from @panaceapalm) and coriander and lemon in the rice. The chicken, rice and beans are the same amounts as before, so the bowl has more protein, and one tin of sweetcorn does four bowls. Also, the chicken curry is now a spicy red one: paprika, cumin, turmeric, chilli and garam masala on top of the madras powder.'],
   ['v94', '3 Nov 2026', 'Portions stay in line with the recipes. Each meal is sized once for your targets (protein first, carbs to your calories, never more than 1.5× the recipe), and that one size is what the tiles, the week, Shop and Cook all show, so nothing moves as you pick. A day that is short says so: add a snack.'],
   ['v93', '3 Nov 2026', 'New: cucumber tuna salad on toast, a no-cook cold lunch from @allsnackco.'],
   ['v91', '2 Nov 2026', 'Meal tiles now show each meal sized for you (a typical main or breakfast for your targets), so the numbers no longer change as you pick. Four more from @cookingforgains_: creamy bacon chicken ranch pasta (slow cooker), creamy sun-dried tomato chicken & rice, BBQ bacon chicken wraps, and the steak yum yum bowls are now beef & egg chipotle bowls with a mince-or-steak pick (Shop → Where can I save?). Each recipe is sized so every day lands on your calorie and protein targets, not just the week on average. Calories show on every meal when you choose. The chicken & egg smashes cook chicken breast instead of buying a roast chicken, and the beef rice bowl uses less mince: same dishes, about a third cheaper. Recipes and Pantry have a Back button.'],
