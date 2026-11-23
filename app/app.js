@@ -6,9 +6,10 @@ import { planWeek } from './autoplan.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v94';
+const APP_VERSION = 'v95';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
+  ['v95', '23 Nov 2026', 'The chicken burrito bowl gets a street corn salad on top (sweetcorn, feta, jalapeños, red onion, coriander and lime, from @panaceapalm), and the chicken curry is now a spicy red one: paprika, cumin, turmeric, chilli and garam masala on top of the madras powder.'],
   ['v94', '3 Nov 2026', 'Portions stay in line with the recipes. Each meal is sized once for your targets (protein first, carbs to your calories, never more than 1.5× the recipe), and that one size is what the tiles, the week, Shop and Cook all show, so nothing moves as you pick. A day that is short says so: add a snack.'],
   ['v93', '3 Nov 2026', 'New: cucumber tuna salad on toast, a no-cook cold lunch from @allsnackco.'],
   ['v91', '2 Nov 2026', 'Meal tiles now show each meal sized for you (a typical main or breakfast for your targets), so the numbers no longer change as you pick. Four more from @cookingforgains_: creamy bacon chicken ranch pasta (slow cooker), creamy sun-dried tomato chicken & rice, BBQ bacon chicken wraps, and the steak yum yum bowls are now beef & egg chipotle bowls with a mince-or-steak pick (Shop → Where can I save?). Each recipe is sized so every day lands on your calorie and protein targets, not just the week on average. Calories show on every meal when you choose. The chicken & egg smashes cook chicken breast instead of buying a roast chicken, and the beef rice bowl uses less mince: same dishes, about a third cheaper. Recipes and Pantry have a Back button.'],
