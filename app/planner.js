@@ -396,10 +396,12 @@ export const MEAL_SHARE = { breakfast: 0.26, main: 0.37 };
 export const isCarb = (item) => item?.category === 'carb';
 export const mealShare = (recipe) => (recipe.slots.includes('snack') ? 0 : recipe.slots[0] === 'breakfast' ? MEAL_SHARE.breakfast : MEAL_SHARE.main);
 // A meal's kcal and protein at 1×, split into carbs (c) and everything else (p).
+// A line marked `side: true` (a salad on the side) is an extra: it is left out of the split and never resized, so adding a side
+// cannot shrink the main part of the meal.
 export function mealSplit(recipe, ingredients) {
   const ing = byId(ingredients); const o = { pk: 0, pg: 0, ck: 0, cg: 0 };
-  for (const { id, qty } of recipe.ingredients) {
-    const it = ing[id]; if (!it) continue;
+  for (const { id, qty, side } of recipe.ingredients) {
+    const it = ing[id]; if (!it || side) continue;
     const m = it.unit === 'each' ? qty : qty / 100; const c = isCarb(it);
     o[c ? 'ck' : 'pk'] += (it.kcal || 0) * m; o[c ? 'cg' : 'pg'] += (it.protein || 0) * m;
   }
@@ -420,6 +422,6 @@ export function sizeAll(recipes, target, ingredients) {
   const ing = byId(ingredients);
   return recipes.map((r) => {
     const f = sizeFor(r, target, ingredients); if (f.p === 1 && f.c === 1) return r;
-    return { ...r, ingredients: r.ingredients.map((q) => ({ id: q.id, qty: Math.round(q.qty * (isCarb(ing[q.id]) ? f.c : f.p) * 100) / 100 })) };
+    return { ...r, ingredients: r.ingredients.map((q) => (q.side ? q : { id: q.id, qty: Math.round(q.qty * (isCarb(ing[q.id]) ? f.c : f.p) * 100) / 100 })) };
   });
 }

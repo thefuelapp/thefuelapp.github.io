@@ -6,10 +6,10 @@ import { planWeek } from './autoplan.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v96';
+const APP_VERSION = 'v97';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
-  ['v96', '23 Nov 2026', 'The chicken burrito bowl gets a street corn salad on top (sweetcorn, jalapeños, red onion, coriander and lime, from @panaceapalm), and the chicken curry is now a spicy red one: paprika, cumin, turmeric, chilli and garam masala on top of the madras powder.'],
+  ['v97', '23 Nov 2026', 'The chicken burrito bowl gets a street corn salad on the side (sweetcorn, onion and jalapeños in a creamy lemon dressing, from @panaceapalm). The chicken, rice and beans stay exactly as they were, so the bowl has more protein than before, and one tin of sweetcorn does four bowls. Also, the chicken curry is now a spicy red one: paprika, cumin, turmeric, chilli and garam masala on top of the madras powder.'],
   ['v94', '3 Nov 2026', 'Portions stay in line with the recipes. Each meal is sized once for your targets (protein first, carbs to your calories, never more than 1.5× the recipe), and that one size is what the tiles, the week, Shop and Cook all show, so nothing moves as you pick. A day that is short says so: add a snack.'],
   ['v93', '3 Nov 2026', 'New: cucumber tuna salad on toast, a no-cook cold lunch from @allsnackco.'],
   ['v91', '2 Nov 2026', 'Meal tiles now show each meal sized for you (a typical main or breakfast for your targets), so the numbers no longer change as you pick. Four more from @cookingforgains_: creamy bacon chicken ranch pasta (slow cooker), creamy sun-dried tomato chicken & rice, BBQ bacon chicken wraps, and the steak yum yum bowls are now beef & egg chipotle bowls with a mince-or-steak pick (Shop → Where can I save?). Each recipe is sized so every day lands on your calorie and protein targets, not just the week on average. Calories show on every meal when you choose. The chicken & egg smashes cook chicken breast instead of buying a roast chicken, and the beef rice bowl uses less mince: same dishes, about a third cheaper. Recipes and Pantry have a Back button.'],
@@ -113,7 +113,7 @@ function applyTweak(r) {
   const t = S.tweaks && S.tweaks[r.id]; if (!t || (!(t.drop || []).length && !(t.add || []).length)) return r;
   const drop = new Set(t.drop || []);
   // A stand-in takes the place of what it replaces; anything else added goes on the end.
-  const ingredients = r.ingredients.flatMap((x) => { if (!drop.has(x.id)) return [x]; const sw = (t.add || []).find((a) => a.for === x.id); return sw ? [{ id: sw.id, qty: sw.qty }] : []; }).concat((t.add || []).filter((x) => !x.for).map((x) => ({ id: x.id, qty: x.qty })));
+  const ingredients = r.ingredients.flatMap((x) => { if (!drop.has(x.id)) return [x]; const sw = (t.add || []).find((a) => a.for === x.id); return sw ? [{ id: sw.id, qty: sw.qty, ...(x.side ? { side: true } : {}) }] : []; }).concat((t.add || []).filter((x) => !x.for).map((x) => ({ id: x.id, qty: x.qty })));
   // Rewrite the method so it still reads right: steps that mention a dropped ingredient say so; a swap says what to use instead; extras get a step of their own.
   const notes = (t.drop || []).map((d) => { const from = ingById(d); const sw = (t.add || []).find((x) => x.for === d); const to = sw && ingById(sw.id); return { kw: keywordFor(from), text: to ? `use ${to.name.toLowerCase()} instead of ${(from?.name || d).toLowerCase()}` : `skip the ${(from?.name || d).toLowerCase()}` }; }).filter((n) => n.kw);
   let touched = false;

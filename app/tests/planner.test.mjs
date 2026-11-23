@@ -377,3 +377,16 @@ test('real data: the cucumber tuna salad on a 3,000 kcal / 195 g target keeps it
   assert.ok(proteinPerPortion(tuna, ING) <= 80 && kcalPerPortion(tuna, ING) <= 800, `${proteinPerPortion(tuna, ING)} g, ${kcalPerPortion(tuna, ING)} kcal`);
   for (const r of RAW) for (const tt of [t, { kcal: 1500, protein: 100 }, { kcal: 3500, protein: 230 }]) { const f = sizeFor(r, tt, ING); assert.ok(f.p >= SIZE_LIMITS.min && f.p <= SIZE_LIMITS.max && f.c >= SIZE_LIMITS.min && f.c <= SIZE_LIMITS.max, r.id); }
 });
+test('a side (side: true) is left out of the sizing and never resized, so adding one cannot shrink the main (v97: the burrito bowl with its corn salad never has less protein or chicken than the bowl alone)', () => {
+  const ING = JSON.parse(fs.readFileSync(new URL('../data/ingredients.json', import.meta.url))).items;
+  const bowl = JSON.parse(fs.readFileSync(new URL('../data/recipes.json', import.meta.url))).items.find((r) => r.id === 'burrito_bowl');
+  const sides = bowl.ingredients.filter((x) => x.side); assert.ok(sides.length >= 3);
+  const plain = { ...bowl, ingredients: bowl.ingredients.filter((x) => !x.side) };
+  for (let protein = 100; protein <= 260; protein += 5) for (const kcal of [1800, 2500, 3000, 3500]) {
+    const t = { kcal, protein }; assert.deepEqual(sizeFor(bowl, t, ING), sizeFor(plain, t, ING));
+    const [a] = sizeAll([bowl], t, ING), [b] = sizeAll([plain], t, ING);
+    assert.ok(proteinPerPortion(a, ING) >= proteinPerPortion(b, ING));
+    assert.equal(a.ingredients.find((x) => x.id === 'chicken_breast').qty, b.ingredients.find((x) => x.id === 'chicken_breast').qty);
+    for (const s of sides) assert.equal(a.ingredients.find((x) => x.id === s.id).qty, s.qty);
+  }
+});

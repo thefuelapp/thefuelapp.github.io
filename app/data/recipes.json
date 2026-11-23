@@ -1982,10 +1982,10 @@
     },
     {
      "id": "skyr",
-     "qty": 65
+     "qty": 40
     },
     {
-     "id": "lime",
+     "id": "lemon",
      "qty": 0.25
     },
     {
@@ -1998,32 +1998,32 @@
     },
     {
      "id": "sweetcorn",
-     "qty": 85
+     "qty": 50,
+     "side": true
     },
     {
-     "id": "red_onion",
-     "qty": 0.13
+     "id": "onion",
+     "qty": 0.13,
+     "side": true
     },
     {
      "id": "jalapenos",
-     "qty": 5
+     "qty": 5,
+     "side": true
     },
     {
      "id": "light_mayo",
-     "qty": 10
-    },
-    {
-     "id": "coriander",
-     "qty": 3
+     "qty": 10,
+     "side": true
     }
    ],
    "method": [
     "Toss diced chicken in the garlic paste and fajita seasoning, fry or air-fry until charred at the edges.",
     "Rice cooked and cooled. Warm the beans with the chopped tomatoes and a pinch of the seasoning for a quick salsa.",
-    "Street corn salad: drain the sweetcorn and mix it with finely diced red onion, chopped jalapeños and chopped coriander. Stir in the light mayo, about a third of the skyr, the juice of half the lime and a pinch of the seasoning. Keep it in its own pot in the fridge.",
-    "Tub in layers: rice, beans and salsa, chicken, pepper strips. When eating: reheat if you want it hot, then the cold corn salad on top with the cheese and a spoon of skyr with the rest of the lime juice."
+    "Street corn salad: drain the sweetcorn and mix it with finely diced onion and chopped jalapeños. Stir in the light mayo, about half of the skyr, a squeeze of the lemon and a pinch of the seasoning. Keep it in its own pot in the fridge.",
+    "Tub in layers: rice, beans and salsa, chicken, pepper strips. When eating: reheat if you want it hot, then the cold corn salad on the side with the cheese and a spoon of skyr with lemon juice on top."
    ],
-   "notes": "Eats cold or hot, so it's a uni lunch. Fajita flavour without the wraps. The street corn salad is from @panaceapalm's Mexican street corn chicken bowls on Instagram (350g sweetcorn, half a red onion, 1 jalapeño, 100g 0% Greek yoghurt, 3 tbsp light mayo, 80g feta, coriander and half a lime for 4 bowls). Here the feta is left out, skyr stands in for the Greek yoghurt, jarred jalapeños for the fresh one, and a pinch of fajita seasoning for the Tajín and cayenne, which UK supermarkets rarely stock. The video's creamy coriander sauce on top is left out: the spoon of skyr and lime does that job. For the freezer, tub the rice, beans and chicken and make the corn salad fresh; it keeps 3 days in the fridge.",
+   "notes": "Eats cold or hot, so it's a uni lunch. Fajita flavour without the wraps. The street corn salad on the side is from @panaceapalm's Mexican street corn chicken bowls on Instagram (350g sweetcorn, half a red onion, 1 jalapeño, 100g 0% Greek yoghurt, 3 tbsp light mayo, 80g feta, coriander and half a lime for 4 bowls). This is the cheap version: one tin of sweetcorn does four bowls, a normal onion stands in for the red one, the skyr and lemon already in the bowl for the Greek yoghurt and lime, jarred jalapeños for the fresh one and a pinch of fajita seasoning for the Tajín and cayenne. The feta and the video's creamy coriander sauce are left out; fresh coriander is a nice extra if you have some. For the freezer, tub the rice, beans and chicken and make the corn salad fresh; it keeps 3 days in the fridge.",
    "tags": [
     "mexican",
     "cold-lunch"
