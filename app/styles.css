@@ -1141,3 +1141,42 @@ h2.pickgroup span, h2 span { font-size: 12px; }
 /* v91: calories on every meal tile, under the protein */
 .mt-top { flex-wrap: wrap; row-gap: 3px; }
 .mt-top small { flex-basis: 100%; font-size: 13px; font-weight: 700; opacity: .9; line-height: 1.1; }
+
+/* v99 Shop list: one short line per item, the whole row is the tick, ticked lines drop into "In the trolley", an Undo bar after each tick */
+.shophead.slim { padding-top: 12px; padding-bottom: 12px; }
+.shophead .leftn { font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap; } .shophead .leftn b { font-family: var(--display); font-weight: 800; font-size: 24px; letter-spacing: -.02em; color: var(--text); }
+.shophead .budget.prog { height: 8px; margin: 8px 0 2px; } .shophead .budget.prog i { background: var(--mint); transition: width .2s; }
+#pricefold > summary { min-height: 44px; } #pricefold .shops { grid-template-columns: 1fr; } #pricefold .fold, #pricefold .card { box-shadow: none; } #pricefold .cupcheck { margin-top: 0; }
+.card.list .line { align-items: center; gap: 12px; padding: 6px 0; min-height: 52px; cursor: pointer; }
+.card.list .line .grow { min-width: 0; }
+.card.list .line .name { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card.list .line .sub { margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card.list .line .cost { margin-top: 0; }
+.card.list .line input[type=checkbox] { -webkit-appearance: none; appearance: none; flex: none; width: 28px; height: 28px; margin: 0; border: 2px solid var(--muted); border-radius: 50%; background: transparent; }
+.card.list .line input[type=checkbox]:checked { border-color: var(--mint); background: var(--mint) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 16px no-repeat; }
+.card.list h4.aisle span { color: var(--muted); }
+.trolley { margin-top: 14px; border-top: 2px solid var(--line); }
+.trolley summary { list-style: none; display: flex; align-items: center; gap: 8px; min-height: 48px; cursor: pointer; font-size: 15px; font-weight: 700; }
+.trolley summary::-webkit-details-marker { display: none; }
+.trolley summary span { background: var(--mint-soft); color: var(--mint); border-radius: 999px; padding: 2px 9px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.trolley summary i { margin-left: auto; font-style: normal; font-weight: 600; font-size: 12px; color: var(--muted); }
+.card.list .trolley .line.done { opacity: .6; }
+#undo { position: fixed; left: 12px; right: 12px; bottom: calc(68px + env(safe-area-inset-bottom)); max-width: 520px; margin: 0 auto; z-index: 30; display: flex; align-items: center; gap: 10px; background: #14122a; color: #fff; border-radius: 16px; padding: 6px 6px 6px 14px; font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(20, 18, 42, .25); opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .15s, transform .15s; }
+#undo.on { opacity: 1; pointer-events: auto; transform: none; }
+#undo span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#undo button { flex: none; min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; background: #fff; color: #14122a; font: inherit; font-weight: 800; cursor: pointer; }
+:root[data-theme=dark] #undo { background: #f5f5f7; color: #14122a; } :root[data-theme=dark] #undo button { background: #14122a; color: #fff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme=light]) #undo { background: #f5f5f7; color: #14122a; } :root:not([data-theme=light]) #undo button { background: #14122a; color: #fff; } }
+/* an arrow on every tap-to-open section, so it reads as something you can press; it flips when the section is open */
+.fold:not(.cookfold) > summary, .trolley > summary { position: relative; padding-right: 36px; }
+.fold:not(.cookfold) > summary::after, .trolley > summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 10px; height: 10px; margin-top: -8px; border-right: 2.5px solid var(--text); border-bottom: 2.5px solid var(--text); border-radius: 1px; transform: rotate(45deg); transition: transform .15s; }
+.fold:not(.cookfold)[open] > summary::after, .trolley[open] > summary::after { transform: rotate(-135deg); margin-top: -2px; }
+.trolley summary i { margin-left: auto; } .trolley:not([open]) summary i { display: none; }
+/* the shopping list gets its own title, so where it starts is plain */
+.card.list.main { border: 1.5px solid rgba(20, 18, 42, .32); padding-top: 14px; margin-top: 14px; }
+.listhead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 6px; }
+.listhead h3 { margin: 0; font-family: var(--display); font-weight: 800; font-size: 24px; letter-spacing: -.03em; line-height: 1.05; }
+.listhead span { font-size: 14px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.card.list.main h4.aisle:first-of-type { margin-top: 10px; }
+:root[data-theme=dark] .card.list.main { border-color: rgba(245, 245, 247, .38); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme=light]) .card.list.main { border-color: rgba(245, 245, 247, .38); } }

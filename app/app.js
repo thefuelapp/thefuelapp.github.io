@@ -6,9 +6,10 @@ import { planWeek } from './autoplan.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v98';
+const APP_VERSION = 'v99';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
+  ['v99', '23 Nov 2026', 'A faster shopping list. It now starts at the top of Shop, each item is one short line, and a ticked item drops into In the trolley at the bottom so the list gets shorter as you go. Ticked something by mistake? Tap Undo, or open In the trolley and tap it to put it back. Shop prices and savings are under one button at the top.'],
   ['v98', '23 Nov 2026', 'The chicken burrito bowl gets a street corn side (sweetcorn, red onion, jalapeños and coriander in yoghurt, from @panaceapalm) and coriander and lemon in the rice. The chicken, rice and beans are the same amounts as before, so the bowl has more protein, and one tin of sweetcorn does four bowls. Also, the chicken curry is now a spicy red one: paprika, cumin, turmeric, chilli and garam masala on top of the madras powder.'],
   ['v94', '3 Nov 2026', 'Portions stay in line with the recipes. Each meal is sized once for your targets (protein first, carbs to your calories, never more than 1.5× the recipe), and that one size is what the tiles, the week, Shop and Cook all show, so nothing moves as you pick. A day that is short says so: add a snack.'],
   ['v93', '3 Nov 2026', 'New: cucumber tuna salad on toast, a no-cook cold lunch from @allsnackco.'],
@@ -337,6 +338,7 @@ async function boot() {
   v.addEventListener('toggle', (e) => { if (e.target.classList?.contains('pantry-rest') && !S.pantrySearch && !!S.pantryRestOpen !== e.target.open) { S.pantryRestOpen = e.target.open; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} } }, true); // this device only, so no cloud push
   v.addEventListener('toggle', (e) => { const id = e.target.dataset?.cook; if (id) { if (e.target.open) cookOpen.add(id); else cookOpen.delete(id); } }, true);
   v.addEventListener('toggle', (e) => { if (e.target.id !== 'savefold' || e.target.open === saveOpen) return; saveOpen = e.target.open; if (saveOpen) render(); }, true);
+  v.addEventListener('toggle', (e) => { if (e.target.id === 'pricefold') priceOpen = e.target.open; else if (e.target.id === 'trolleyfold') trolleyOpen = e.target.open; }, true);
   v.addEventListener('pointerdown', onDragStart);
   v.addEventListener('touchmove', (e) => { if (drag.active) e.preventDefault(); }, { passive: false });
   v.addEventListener('contextmenu', (e) => { if (e.target.closest('.cell')) e.preventDefault(); });
@@ -399,7 +401,7 @@ async function syncOnSignIn() {
 const SUB_SCREENS = ['recipes', 'pantry', 'settings']; // screens reached from More (or a link), not from the tab bar: they carry a Back button
 function markTabs() { const w = W(); if (!w) return; const d = { plan: Object.values(w.portions || {}).some((n) => n > 0), shop: !!w.done }; document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('done', !!d[b.dataset.tab])); }
 function render(opts = {}) {
-  if (S.tab !== 'shop') { saveUndo = null; saveOpen = false; } // leaving Shop drops the Undo: the week may be edited elsewhere
+  if (S.tab !== 'shop') { saveUndo = null; saveOpen = false; priceOpen = false; trolleyOpen = false; hideUndo(); } // leaving Shop drops the Undo: the week may be edited elsewhere
   const view = document.getElementById('view'); const y = view.scrollTop;
   document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === S.tab || (b.dataset.tab === 'more' && ['recipes', 'pantry', 'settings'].includes(S.tab)))); markTabs();
   const page = ({ home: renderHome, more: renderMore, plan: renderPlan, cook: renderCook, shop: renderShop, recipes: renderRecipes, pantry: renderPantry, settings: renderSettings })[S.tab] || renderHome;
@@ -944,6 +946,7 @@ async function shareWeek() {
 
 // ----- Shop → "Where can I save?": switches Fuel can make for you -----
 let saveUndo = null;  // the week as it was before the last switch. Memory only: never saved, never synced.
+let priceOpen = false, trolleyOpen = false; // v99 Shop: the 'Prices by shop and savings' fold and the 'In the trolley' fold, this visit
 let saveOpen = false; // the fold stays open across the redraw a switch causes; the switches are only worked out while it is open
 // A throwaway copy of a week to try a change on. The live week is never touched, so nothing can be saved or drawn half-changed.
 const whatIf = (w) => ({ ...w, grid: w.grid.map((d) => ({ ...d })), fresh: { ...(w.fresh || {}) } });
@@ -1038,27 +1041,29 @@ function renderShop() {
   // the list for the chosen shop
   const online = { tesco: (q) => `https://www.tesco.com/groceries/en-GB/search?query=${encodeURIComponent(q)}`, asda: (q) => `https://www.asda.com/groceries/search/${encodeURIComponent(q)}`, sainsburys: (q) => `https://www.sainsburys.co.uk/gol-ui/SearchResults/${encodeURIComponent(q)}` };
   const cheapestFor = (id) => { let m = null; for (const s of P.SHOPS) { const l = byShop[s]?.lines.find((x) => x.id === id); if (l && (m === null || l.cost < m.cost)) m = { cost: l.cost, shop: s }; } return m; };
+  // v99: one short line per item (what it is, then the pack to pick up), the whole row is the tick, and a ticked line leaves the list for
+  // "In the trolley" at the end, so the list gets shorter as you shop. Basics sit in their aisles with everything else.
+  const tickKey = (l) => `${chosen.shop}:${l.id}`;
   const lineHtml = (l) => {
-    const k = `${chosen.shop}:${l.id}`; const done = !!w.ticks[k];
-    const cheap = cheapestFor(l.id); const elsewhere = cheap && cheap.shop !== chosen.shop && l.cost - cheap.cost >= 0.3 ? `<span class="sub alt">${P.gbp(cheap.cost)} at ${P.SHOP_NAMES[cheap.shop]}</span>` : '';
-    const link = online[chosen.shop] ? `<a class="find" href="${online[chosen.shop](l.pack.name)}" target="_blank" rel="noopener" aria-label="Find at ${P.SHOP_NAMES[chosen.shop]}">↗</a>` : '';
+    const k = tickKey(l); const done = !!w.ticks[k];
     const shelfName = l.pack.name.replace(/\s*\((?!\d+\s?(g|ml|kg|l)\b)[^)]*\)/g, '').trim(); // drop notes like "(Aldi has no natural skyr)" but keep sizes like "(580g)"
-    return `<label class="line ${done ? 'done' : ''}"><input type="checkbox" data-tick="${k}" ${done ? 'checked' : ''}><span class="grow"><span class="name">${l.n > 1 ? `<b class="n">${l.n} ×</b> ` : ''}${esc(shelfName)}</span><span class="sub">${esc((usedBy[l.id] || []).join(', '))}</span>${elsewhere}</span><span class="cost">${P.gbp(l.cost)}</span>${link}</label>`;
+    const what = (ingById(l.id)?.name || shelfName).replace(/\s*\([^)]*\)/g, '').trim();
+    const size = (shelfName.match(/\d+(?:\.\d+)?\s?(?:kg|g|ml|l|cl)\b|\d+\s?(?:pack|pk)\b/gi) || []).pop() || ''; // the pack size leads the second line, where a long shelf name would otherwise cut it off
+    return `<label class="line ${done ? 'done' : ''}"><input type="checkbox" data-tick="${k}" data-what="${esc(what)}" ${done ? 'checked' : ''}><span class="grow"><span class="name">${l.n > 1 ? `<b class="n">${l.n} ×</b> ` : ''}${esc(what)}</span><span class="sub">${esc(size ? `${size} · ${shelfName.replace(size, '').replace(/\s{2,}/g, ' ').trim()}` : shelfName)}</span></span><span class="cost">${P.gbp(l.cost)}</span></label>`;
   };
-  // grouped by aisle so the list reads top to bottom as you walk the shop; ticked lines sink to the end of their aisle
-  const aisleHtml = (ls) => { const groups = {}; for (const l of ls) (groups[aisleOf(ingById(l.id))] ||= []).push(l); return AISLES.filter(([k]) => groups[k]).map(([k, label]) => { const g = groups[k]; const sorted = [...g].sort((a, b) => (w.ticks[`${chosen.shop}:${a.id}`] ? 1 : 0) - (w.ticks[`${chosen.shop}:${b.id}`] ? 1 : 0)); return `<h4 class="aisle">${label}<span>${P.gbp(P.round2(g.reduce((t, l) => t + l.cost, 0)))}</span></h4>${sorted.map(lineHtml).join('')}`; }).join(''); };
-  const weekLines = chosen.lines.filter((l) => !isStock(l.id)), stockLines = chosen.lines.filter((l) => isStock(l.id));
-  const lines = aisleHtml(weekLines);
-  const stockNames = [...stockLines.map((l) => ingById(l.id)?.name), ...chosen.notSold.filter((m) => isStock(m.id)).map((m) => m.name)].filter(Boolean).map((n) => n.replace(/\s*\([^)]*\)/g, '').toLowerCase());
-  const stockList = stockNames.slice(0, 3).join(', ') + (stockNames.length > 3 ? ` and ${stockNames.length - 3} more` : '');
-  const stockHtml = stockLines.length ? `<h2>Stock up <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">${stockLines.filter((l) => w.ticks[`${chosen.shop}:${l.id}`]).length}/${stockLines.length} ticked · ${P.gbp(chosen.stock)}</span></h2><div class="card list"><p class="small muted" style="margin:4px 0 2px">Bought once, then in your pantry.${chosen.elsewhere - chosen.elsewhereWeek > 0.004 ? ` That includes ${chosen.notSold.filter((m) => isStock(m.id)).map((m) => m.name.toLowerCase()).join(', ')}, which ${P.SHOP_NAMES[chosen.shop]} doesn't sell.` : ''}</p>${aisleHtml(stockLines)}</div>` : '';
+  // grouped by aisle so the list reads top to bottom as you walk the shop
+  const aisleHtml = (ls) => { const groups = {}; for (const l of ls) (groups[aisleOf(ingById(l.id))] ||= []).push(l); return AISLES.filter(([k]) => groups[k]).map(([k, label]) => `<h4 class="aisle">${label}<span>${groups[k].length}</span></h4>${groups[k].map(lineHtml).join('')}`).join(''); };
+  const weekLines = chosen.lines.filter((l) => !isStock(l.id));
+  const toGet = chosen.lines.filter((l) => !w.ticks[tickKey(l)]), got = chosen.lines.filter((l) => w.ticks[tickKey(l)]);
+  const lines = aisleHtml(toGet);
+  const trolleyHtml = got.length ? `<details class="trolley" id="trolleyfold" ${trolleyOpen ? 'open' : ''}><summary>In the trolley <span>${got.length}</span><i>Tap one to put it back</i></summary>${got.map(lineHtml).join('')}</details>` : '';
   const aisleGroups = {}; for (const l of weekLines) (aisleGroups[aisleOf(ingById(l.id))] ||= []).push(l);
   const breakdown = AISLES.filter(([k]) => aisleGroups[k]).map(([k, label]) => `${label.split(',')[0].split(' &')[0]} ${P.gbp(P.round2(aisleGroups[k].reduce((t, l) => t + l.cost, 0)))}`).concat(chosen.stock ? [`Stock-ups ${P.gbp(chosen.stock)}`] : [], chosen.elsewhereWeek ? [`From another shop ${P.gbp(chosen.elsewhereWeek)}`] : []).join(' · '); // adds up to the one total, so it lives under "Why £X?" and not beside the big number
   const extraRows = extras(w).map((e) => { const it = ingById(e.id); const l = chosen.lines.find((x) => x.id === e.id); return `<div class="line"><span class="grow"><span class="name">${esc(it.name)}</span><span class="sub">${e.scope === 'week' ? 'this week only' : 'every week'}${l ? ` · ${esc(l.pack.name.replace(/\s*\([^)]*\)/g, ''))}` : ' · no price at this shop'}</span></span><button class="chip" data-action="extra-qty" data-id="${e.id}" data-scope="${e.scope}">${P.fmtQty(e.qty, it.unit)}${it.unit === 'each' ? (e.qty === 1 ? ' piece' : ' pieces') : ''}</button><span class="cost">${l ? P.gbp(l.cost) : '—'}</span><button class="btn ghost small" data-action="extra-remove" data-id="${e.id}" data-scope="${e.scope}" aria-label="Remove">×</button></div>`; }).join('');
   const extrasCard = `${extraRows ? `<h2>Extras</h2><div class="card">${extraRows}</div>` : ''}<button class="btn ghost block" data-action="extra-add" style="margin:10px 0 4px">+ Add something to this shop</button>`; // Cameron: keep the extras, lose the text around them
   const complete = chosen.lines.length > 0 && chosen.lines.every((l) => w.ticks[`${chosen.shop}:${l.id}`]);
   const doneBox = complete ? `<div class="done-box"><b>Shop done ✓</b> ${P.gbp(chosen.comparable)} at ${P.SHOP_NAMES[chosen.shop]}${w.done?.date ? ` on ${fmtDate(w.done.date)}` : ''}. Logged under Settings → Money.</div>` : '';
-  const notSold = chosen.notSold.filter((m) => !isStock(m.id)).map((m) => esc(m.name)); const unpriced = chosen.unpriced.map((m) => esc(m.name));
+  const notSold = chosen.notSold.map((m) => esc(m.name.replace(/\s*\([^)]*\)/g, ''))); const unpriced = chosen.unpriced.map((m) => esc(m.name));
   const missing = (notSold.length ? `<div class="warn-box">Not sold at ${P.SHOP_NAMES[chosen.shop]}: ${notSold.join(', ')}. Pick ${notSold.length > 1 ? 'them' : 'it'} up elsewhere; the price above already counts ${notSold.length > 1 ? 'them' : 'it'}.</div>` : '') + (unpriced.length ? `<div class="warn-box">No ${P.SHOP_NAMES[chosen.shop]} price on file for: ${unpriced.join(', ')}.${chosen.shop === 'lidl' ? ' Lidl publishes no prices online.' : ''}</div>` : '');
   const done = chosen.lines.filter((l) => !isStock(l.id) && w.ticks[`${chosen.shop}:${l.id}`]).length; const weekCount = chosen.lines.filter((l) => !isStock(l.id)).length;
   // item-by-item, folded away
@@ -1112,17 +1117,18 @@ function renderShop() {
   const verdictHtml = verdict.state === 'ok' ? `<p class="verdict ok">✓ ${P.gbp(verdict.left)} under your ${P.gbp(budget)}</p>` : `<p class="verdict over">${P.gbp(verdict.over)} over your ${P.gbp(budget)} · <a href="#" data-action="open-save">Where can I save?</a></p>`;
   return `${shopTop}
   ${doneBox}
-  <div class="card shophead"><span class="lbl">${ic('basket', 15)}This week's food</span><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.weekly)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]} · ${weekCount} item${weekCount === 1 ? '' : 's'}</span></span></div>
-    <div class="budget ${verdict.state === 'over' ? 'over' : ''}"><i style="width:${verdict.pct}%"></i></div>
-    ${verdictHtml}
+  <div class="card shophead slim"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.weekly)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]}</span></span><span class="leftn"><b>${toGet.length}</b> left</span></div>
+    <div class="budget prog"><i style="width:${chosen.lines.length ? Math.round(got.length / chosen.lines.length * 100) : 0}%"></i></div>
+    ${verdictHtml}${chosen.stock > 0.004 ? `<p class="small muted" style="margin:2px 0 0">Plus ${P.gbp(chosen.stock)} of cupboard basics, bought once.</p>` : ''}
   </div>
-  <h4 class="h4">Where are you shopping?</h4><div class="shops">${chips}</div>
-  ${cupHtml}
-  ${whyHtml}
-  ${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
-  <h2>${P.SHOP_NAMES[chosen.shop]} list <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">${done} of ${weekCount} ticked</span></h2>
-  <div class="card list">${missing}${lines || '<p class="muted">Nothing priced at this shop.</p>'}</div>
-  ${stockHtml}
+  <details class="fold" id="pricefold" ${priceOpen ? 'open' : ''}><summary><b>Prices by shop and savings</b><span class="muted small">${cupHtml ? 'Compare shops and tick off what you own' : bestWeek && bestWeek.lines.length ? `${P.SHOP_NAMES[bestWeek.shop]} is cheapest this week` : 'Compare the four shops'}</span></summary>
+    <div class="shops" style="margin-top:10px">${chips}</div>
+    ${cupHtml}
+    ${whyHtml}
+    ${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
+  </details>
+  ${missing}
+  <div class="card list main"><div class="listhead"><h3>${P.SHOP_NAMES[chosen.shop]} shopping list</h3><span>${toGet.length ? `${toGet.length} to get` : 'All done'}</span></div>${lines || (got.length ? '<p class="muted" style="margin:6px 0">Everything is in the trolley.</p>' : '<p class="muted">Nothing priced at this shop.</p>')}${trolleyHtml}</div>
   ${extrasCard}
   ${factsHtml}
   <div class="rowbtns" style="margin:6px 0 10px"><button class="btn ghost" data-action="share-list">Share list</button><button class="btn ghost" data-action="copy-list">Copy</button>${online[chosen.shop] ? `<a class="btn ghost" href="${online[chosen.shop]('')}" target="_blank" rel="noopener">Shop online</a>` : ''}</div>
@@ -1733,6 +1739,9 @@ function dropPicked(target) {
 }
 function showHint(text) { let h = document.getElementById('hint'); if (!h) { h = document.createElement('div'); h.id = 'hint'; document.body.appendChild(h); } h.textContent = text; h.classList.add('on'); }
 function hideHint() { document.getElementById('hint')?.classList.remove('on'); }
+// A bar above the tab bar for a few seconds after a tick on the Shop list: one tap puts a mis-tapped line back.
+function showUndo(text, fn, ms = 5000) { let u = document.getElementById('undo'); if (!u) { u = document.createElement('div'); u.id = 'undo'; u.setAttribute('role', 'status'); u.innerHTML = '<span></span><button type="button">Undo</button>'; document.body.appendChild(u); } u.firstChild.textContent = text; u.lastChild.onclick = () => { hideUndo(); fn(); }; u.classList.add('on'); clearTimeout(showUndo.t); showUndo.t = setTimeout(hideUndo, ms); }
+function hideUndo() { clearTimeout(showUndo.t); document.getElementById('undo')?.classList.remove('on'); }
 function onDragStart(e) {
   const cell = e.target.closest('.cell'); if (!cell || cell.classList.contains('empty') || cell.classList.contains('off') || e.button > 0 || drag.src) return;
   if (picked) return; // a tap while holding something is handled by the click handler
@@ -1868,7 +1877,7 @@ function onAction(e) {
   else if (a === 'save-switch') applySave(el.dataset.key);
   else if (a === 'save-all') applySave(null);
   else if (a === 'save-undo') undoSave();
-  else if (a === 'open-save') { e.preventDefault(); saveOpen = true; render(); document.getElementById('savefold')?.scrollIntoView({ block: 'start' }); }
+  else if (a === 'open-save') { e.preventDefault(); saveOpen = true; priceOpen = true; render(); document.getElementById('savefold')?.scrollIntoView({ block: 'start' }); }
   else if (a === 'choice-toggle') {
     const it = ingById(el.dataset.choice); const cur = chosenFor(w, it); const v = el.dataset.val;
     const next = cur.includes(v) ? cur.filter((x) => x !== v) : cur.concat([v]);
@@ -2029,7 +2038,7 @@ function onChange(e) {
     relayout(); refreshPlan(rowSel(r.id));
   }
   else if (t.dataset.snackPick) { const r = recById(t.dataset.snackPick); if (t.checked) w.snacks[r.id] = 7; else delete w.snacks[r.id]; save(); refreshPlan(rowSel(r.id)); }
-  else if (t.dataset.tick) { w.ticks[t.dataset.tick] = t.checked; t.closest('.line').classList.toggle('done', t.checked); const was = !!w.done; shopDone(w); save(); if (was !== !!w.done) render(); } // redraw only when the shop becomes done or stops being done (green box, tick on the Shop tab); the old test compared after the change, so it never fired
+  else if (t.dataset.tick) { const k = t.dataset.tick, on = t.checked, what = t.dataset.what || 'Item'; w.ticks[k] = on; shopDone(w); save(); render(); if (on) showUndo(`In the trolley: ${what}`, () => { w.ticks[k] = false; shopDone(w); save(); render(); }); else hideUndo(); } // redraw only when the shop becomes done or stops being done (green box, tick on the Shop tab); the old test compared after the change, so it never fired
   else if (t.dataset.settingBool) { S.settings[t.dataset.settingBool] = t.checked; bustCaches(); save(); render(); }
   else if (t.dataset.settingStr) {
     // Goal moves the calorie and protein targets (and so the portions) in place; milk and the rest just redraw.
