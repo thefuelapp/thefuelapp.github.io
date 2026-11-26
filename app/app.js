@@ -452,7 +452,8 @@ function render(opts = {}) {
   const bar = `<div class="brandbar">${S.tab === 'settings' ? '' : `<button class="gear" data-action="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>`}<span class="wordmark" aria-label="Fuel">FU<b>£</b>L</span>${S.tab === 'settings' ? '' : trialPill()}</div>`;
   view.innerHTML = (inRecipe || SUB_SCREENS.includes(S.tab) ? '' : bar) + body;
   view.scrollTop = opts.top ? 0 : y;
-  if (opts.anim) { view.classList.remove('push', 'pop'); void view.offsetWidth; view.classList.add(opts.anim); }
+  view.classList.remove('push', 'pop'); // a page turn never outlives the next draw (an animation paused in the background would leave the page dim)
+  if (opts.anim) { void view.offsetWidth; view.classList.add(opts.anim); view.addEventListener('animationend', () => view.classList.remove('push', 'pop'), { once: true }); }
 }
 
 // ----- Home (v86): one card per question. Am I on budget? Am I hitting protein? Do I need to cook? Is it working over the term? What's next? -----
