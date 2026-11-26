@@ -6,9 +6,10 @@ import { planWeek } from './autoplan.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v100';
+const APP_VERSION = 'v101';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
+  ['v101', '26 Nov 2026', 'Cook is rebuilt: how long is left, the next recipe as one big photo with Start cooking on it, and a page for each recipe where you tick ingredients off as you get them out. Finish a recipe and it is marked cooked. Settings now looks like your phone settings: tap a row and it opens from the bottom. Shop is tidier underneath the list. And it feels more like an app: swipe right to go back, flick a sheet down to close it, a small tap you can feel on buttons, the right keyboard for numbers and email, and tap the tab you are on to jump to the top.'],
   ['v100', '26 Nov 2026', 'A whole new look. Home shows your week at a glance, with photos of the meals you are eating: tap one and it opens on Cook. Choosing meals is now a wall of photos. Every recipe has a Start cooking button that shows one step at a time, with a timer and what that step needs, and keeps the screen awake. Fourteen colour themes under Settings, Look. Everything else works the way it did.'],
   ['v99', '23 Nov 2026', 'A faster shopping list. It now starts at the top of Shop, each item is one short line, and a ticked item drops into In the trolley at the bottom so the list gets shorter as you go. Ticked something by mistake? Tap Undo, or open In the trolley and tap it to put it back. Shop prices and savings are under one button at the top.'],
   ['v98', '23 Nov 2026', 'The chicken burrito bowl gets a street corn side (sweetcorn, red onion, jalapeños and coriander in yoghurt, from @panaceapalm) and coriander and lemon in the rice. The chicken, rice and beans are the same amounts as before, so the bowl has more protein, and one tin of sweetcorn does four bowls. Also, the chicken curry is now a spicy red one: paprika, cumin, turmeric, chilli and garam masala on top of the madras powder.'],
@@ -216,6 +217,12 @@ const ICON = {
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
   go: '<path d="M7 17 17 7M9 7h8v8"/>',
   left: '<path d="M15 5l-7 7 7 7"/>',
+  right: '<path d="M9 5l7 7-7 7"/>',
+  down: '<path d="M5 9l7 7 7-7"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  share: '<path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 12.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-6.5"/>',
+  copy: '<rect x="8.5" y="8.5" width="12" height="12" rx="2.5"/><path d="M15.5 8.5V6A2.5 2.5 0 0 0 13 3.5H6A2.5 2.5 0 0 0 3.5 6v7A2.5 2.5 0 0 0 6 15.5h2.5"/>',
+  user: '<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   cog: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
 };
@@ -367,12 +374,11 @@ async function boot() {
   // v87: until the first week is planned, the app opens on Plan (Home has nothing to answer yet), and "what's new" is only for people who were here before
   if (!everPlanned() && S.tab === 'home') S.tab = 'plan';
   if (!S.settings.onboarded) S.seenVersion = APP_VERSION;
-  document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { justAdded.clear(); if (b.dataset.tab !== S.tab) pantryBase = null; S.tab = b.dataset.tab; planAdd = null; save(); render({ top: true }); } });
+  document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { haptic('tick'); if (b.dataset.tab === S.tab && !(S.tab === 'cook' && cookView) && document.getElementById('view').scrollTop > 0) { document.getElementById('view').scrollTo({ top: 0, behavior: 'smooth' }); return; } justAdded.clear(); if (b.dataset.tab !== S.tab) pantryBase = null; if (b.dataset.tab === 'cook') cookView = null; S.tab = b.dataset.tab; planAdd = null; save(); render({ top: true }); } });
   const v = document.getElementById('view');
   v.addEventListener('click', onAction); v.addEventListener('change', onChange); v.addEventListener('input', onInput);
   // Shop's "Where can I save?" fold: its switches are only worked out once it is opened. 'toggle' doesn't bubble, hence capture; the equality test stops the redrawn, already-open fold looping.
   v.addEventListener('toggle', (e) => { if (e.target.classList?.contains('pantry-rest') && !S.pantrySearch && !!S.pantryRestOpen !== e.target.open) { S.pantryRestOpen = e.target.open; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} } }, true); // this device only, so no cloud push
-  v.addEventListener('toggle', (e) => { const id = e.target.dataset?.cook; if (id) { if (e.target.open) cookOpen.add(id); else cookOpen.delete(id); } }, true);
   v.addEventListener('toggle', (e) => { if (e.target.id !== 'savefold' || e.target.open === saveOpen) return; saveOpen = e.target.open; if (saveOpen) render(); }, true);
   v.addEventListener('toggle', (e) => { if (e.target.id === 'pricefold') priceOpen = e.target.open; else if (e.target.id === 'trolleyfold') trolleyOpen = e.target.open; }, true);
   v.addEventListener('pointerdown', onDragStart);
@@ -441,9 +447,12 @@ function render(opts = {}) {
   const view = document.getElementById('view'); const y = view.scrollTop;
   document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === S.tab || (b.dataset.tab === 'more' && ['recipes', 'pantry', 'settings'].includes(S.tab)))); markTabs();
   const page = ({ home: renderHome, more: renderMore, plan: renderPlan, cook: renderCook, shop: renderShop, recipes: renderRecipes, pantry: renderPantry, settings: renderSettings })[S.tab] || renderHome;
-  view.classList.toggle('has-dock', page === renderPlan); // Plan ends in the sticky dock: #view's bottom padding is taken off the sticky area, which left the dock floating 48px above the tab bar
-  document.getElementById('view').innerHTML = `<div class="brandbar">${S.tab === 'settings' ? '' : `<button class="gear" data-action="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>`}<span class="wordmark" aria-label="Fuel">FU<b>£</b>L</span>${S.tab === 'settings' ? '' : trialPill()}</div>` + page();
+  const body = page(); const inRecipe = S.tab === 'cook' && !!cookView; // the recipe page and the screens under More carry their own Back, so no brand bar
+  view.classList.toggle('has-dock', page === renderPlan || inRecipe); view.classList.toggle('bare', inRecipe);
+  const bar = `<div class="brandbar">${S.tab === 'settings' ? '' : `<button class="gear" data-action="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>`}<span class="wordmark" aria-label="Fuel">FU<b>£</b>L</span>${S.tab === 'settings' ? '' : trialPill()}</div>`;
+  view.innerHTML = (inRecipe || SUB_SCREENS.includes(S.tab) ? '' : bar) + body;
   view.scrollTop = opts.top ? 0 : y;
+  if (opts.anim) { view.classList.remove('push', 'pop'); void view.offsetWidth; view.classList.add(opts.anim); }
 }
 
 // ----- Home (v86): one card per question. Am I on budget? Am I hitting protein? Do I need to cook? Is it working over the term? What's next? -----
@@ -471,12 +480,12 @@ function sparkline(pts, { refY = null, H = 92, W = 300 } = {}) {
 function homeTop(w) {
   const recipes = REC(), ing = ING();
   const planned = Object.values(w.portions || {}).some((n) => n > 0) || Object.keys(lockedCells(w)).length > 0;
-  const T = planned ? shopTotals(w) : null; const c = T ? T.chosen : null; const lines = c ? c.lines.filter((l) => !T.isStock(l.id)) : [];
+  const T = planned ? shopTotals(w) : null; const c = T ? T.chosen : null; const lines = c ? c.lines : []; // every line on the list, basics included, so Home and Shop count the same
   const ticked = c ? lines.filter((l) => w.ticks[`${c.shop}:${l.id}`]).length : 0;
   const rs = planned ? P.runSheet(weekCounts(w, { fresh: freshMap(w), skipFresh: true }), recipes) : null;
   const cookGone = planned && cookDate(w, S.activeWeek) < todayISO();
   const due = checkinWeeks();
-  const steps = [{ k: 'plan', word: 'Plan', done: planned }, { k: 'shop', word: 'Shop', done: !!w.done }, { k: 'cook', word: 'Cook', done: planned && cookGone && !!w.done }];
+  const steps = [{ k: 'plan', word: 'Plan', done: planned }, { k: 'shop', word: 'Shop', done: !!w.done }, { k: 'cook', word: 'Cook', done: planned && ((cookGone && !!w.done) || cookedAll(w)) }];
   const left = steps.filter((x) => !x.done).length; const now = steps.findIndex((x) => !x.done);
   const chips = `<div class="hsteps">${steps.map((x, i) => `${i ? '<i></i>' : ''}<button class="${x.done ? 'done' : i === now ? 'now' : ''}" data-action="go-tab" data-to="${x.k}">${x.word}${x.done ? ic('check', 14) : ''}</button>`).join('')}<span>${left ? `${left} to go` : 'All done'}</span></div>`;
   let next = null;
@@ -532,15 +541,18 @@ function renderHome() {
   return `${head}${next}${pair}${homeMenu(w)}${rows}${freeWeekCard()}${protCard}${spend}${weight}${wn}`;
 }
 // ----- More: everything that isn't a step. Recipes, Pantry and Settings are the same pages as before, reached from here. -----
+// v101: one kind of row everywhere a list of settings or links is shown. A group is a rounded panel; a row shows a label, its value and an arrow.
+const gr = (label, val, attrs, o = {}) => `<button class="gr ${o.cls || ''}" ${attrs}>${o.icon ? ic(o.icon, 20) : ''}<span class="gr-l">${label}${o.sub ? `<small>${o.sub}</small>` : ''}</span>${val ? `<span class="gr-v">${val}</span>` : ''}${o.plain ? '' : ic('right', 16)}</button>`;
+const grLink = (label, href, o = {}) => `<a class="gr" href="${href}" ${o.blank ? 'target="_blank" rel="noopener"' : ''}>${o.icon ? ic(o.icon, 20) : ''}<span class="gr-l">${label}</span>${ic('right', 16)}</a>`;
+const gsw = (label, key, on, sub = '') => `<label class="gr"><span class="gr-l">${label}${sub ? `<small>${sub}</small>` : ''}</span><input type="checkbox" class="switch" role="switch" data-setting-bool="${key}" ${on ? 'checked' : ''}></label>`;
+const gl = (head, rows, foot = '') => `${head ? `<h2>${head}</h2>` : ''}<div class="gl">${rows}</div>${foot ? `<p class="gl-foot">${foot}</p>` : ''}`;
 function renderMore() {
-  const due = checkinWeeks();
-  const btn = (to, icon, title, sub) => `<button class="morebtn" data-action="go-tab" data-to="${to}">${ic(icon, 22)}<span class="grow"><b>${title}</b><span class="sub muted">${sub}</span></span><span class="chev">›</span></button>`;
+  const due = checkinWeeks(); const done = (S.checkins || {})[S.thisMon];
   return `<h1>More</h1>
-  <div class="card morelist">${btn('recipes', 'book', 'Recipes', `${REC().filter((r) => inLibrary(r.id)).length} in your list · find more · add your own`)}${btn('pantry', 'tub', 'Pantry', 'What you have, use-by dates')}${btn('settings', 'cog', 'Settings', 'Targets, budget, look, account')}</div>
-  <h2>Sunday check-in</h2><div class="card">${due.map((k) => `<button class="btn block" data-action="checkin-start" data-week="${k}" style="margin-bottom:8px">Check in on ${k === S.thisMon ? 'this week' : `the week of ${fmtDate(k)}`}</button>`).join('')}${due.includes(S.thisMon) ? '' : `<button class="btn ghost block" data-action="checkin-start" data-week="${S.thisMon}">${(S.checkins || {})[S.thisMon] ? 'This week is checked in · do it again' : 'Check in on this week early'}</button>`}<p class="small muted" style="margin:8px 0 0">Three taps: what got eaten, the till, the portions. Next week plans itself from it.</p></div>
-  <h2>What's new</h2><div class="card">${WHATS_NEW.map(([v, d, t]) => `<div class="line"><span class="grow"><span class="name">${v} · ${d}</span><span class="sub">${esc(t)}</span></span></div>`).join('')}</div>
-  <p class="small muted" style="text-align:center">${esc(CONFIG.APP_NAME)} ${APP_VERSION} · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></p>
-  <p class="small muted" style="text-align:center">Meal photos show a similar dish, from Unsplash photographers.</p>`;
+  ${gl('', gr('Recipes', `${REC().filter((r) => inLibrary(r.id)).length} in your list`, 'data-action="go-tab" data-to="recipes"', { icon: 'book' }) + gr('Pantry', 'What you have', 'data-action="go-tab" data-to="pantry"', { icon: 'tub' }) + gr('Settings', '', 'data-action="go-tab" data-to="settings"', { icon: 'cog' }))}
+  ${gl('Sunday check-in', due.map((k) => gr(`Check in on ${k === S.thisMon ? 'this week' : `the week of ${fmtDate(k)}`}`, 'Due', `data-action="checkin-start" data-week="${k}"`, { icon: 'check', cls: 'due' })).join('') + (due.includes(S.thisMon) ? '' : gr(done ? 'Check in on this week again' : 'Check in on this week early', done ? 'Done' : '', `data-action="checkin-start" data-week="${S.thisMon}"`, { icon: 'check' })), 'Three taps: what got eaten, the till, the portions. Next week plans itself from it.')}
+  ${gl('About', gr('What is new', APP_VERSION, 'data-action="set-sheet" data-sheet="whatsnew"') + grLink('Terms', 'terms.html') + grLink('Privacy', 'privacy.html'))}
+  <p class="gl-foot" style="text-align:center;margin-top:18px">${esc(CONFIG.APP_NAME)} ${APP_VERSION}<br>Meal photos show a similar dish, from Unsplash photographers.</p>`;
 }
 
 // ----- Plan -----
@@ -774,67 +786,74 @@ function lateWarnings(w) {
 }
 function defaultPortions(r) { return r.slots[0] === 'breakfast' ? 4 : 3; }
 
-// ----- Cook -----
-function renderCook() {
-  const w = W(); const recipes = REC(), ing = ING();
-  const all = weekCounts(w);
-  const fm = freshMap(w);
-  const counts = weekCounts(w, { fresh: fm, skipFresh: true });
-  const rs = P.runSheet(counts, recipes);
+// ----- Cook (v101): how long is left, the next recipe as one big photo with Start cooking on it, the rest as posters. Each opens its own page. -----
+const hm = (m) => (m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? ` ${String(m % 60).padStart(2, '0')}` : ''}` : `${m} min`);
+const REHEAT = { none: 'Eat it cold', microwave: 'Microwave 2–3 min, stir halfway', hob: 'Warm it through in a pan', 'air-fryer': 'Air-fryer 6 min at 180°C' };
+function cookData(w) {
+  const all = weekCounts(w), fm = freshMap(w);
+  const rs = P.runSheet(weekCounts(w, { fresh: fm, skipFresh: true }), REC());
   const fresh = Object.entries(all).filter(([rid, n]) => n > 0 && recById(rid)?.cookMinutes === 0).map(([rid, n]) => ({ recipe: recById(rid), portions: n }));
   for (const c of P.freshCells(w.grid, fm)) { const r = recById(c.id); if (r) fresh.push({ recipe: r, portions: 1, day: P.DAYS[c.day] }); }
-  const head = `${titleRow('Cook', 3, '')}${weekSwitch()}`;
-  if (!rs.list.length && !fresh.length) return `${head}<div class="card"><p><b>Nothing to cook yet.</b></p><p class="small muted">Pick your meals first and your cook list builds itself.</p><button class="btn block" style="margin-top:10px" data-action="go-tab" data-to="plan">Pick my meals</button></div>`;
-  const cookDay = P.DAYS[w.cookDay];
-  const cookOn = cookDate(w, S.activeWeek); const gone = cookOn < todayISO();
-  const when = cookOn === todayISO() ? `Tonight · ${cookShort(w)}` : cookOn === addDays(todayISO(), 1) ? `Tomorrow · ${cookShort(w)}` : cookShort(w);
-  const colours = P.mealColours([...rs.list.map((x) => x.recipe.id), ...fresh.map((x) => x.recipe.id)]);
-  const dot = (id) => photoImg(recById(id), 'thumb');
-  const sheet = rs.list.map((x) => `<li>${dot(x.recipe.id)}<b style="display:inline">${esc(x.recipe.name)}</b><span class="chips"><em>${x.portions} portion${x.portions > 1 ? 's' : ''}</em><em>${x.recipe.cookMinutes} min</em><em>${esc(x.recipe.equipment.join(', '))}</em></span></li>`).join('');
   const grouped = {};
   for (const x of fresh) { const g = (grouped[x.recipe.id] ||= { recipe: x.recipe, portions: 0, days: [] }); g.portions += x.portions; if (x.day && !g.days.includes(x.day)) g.days.push(x.day); }
-  const freshList = Object.values(grouped).map((g) => `<li data-cookfresh="${g.recipe.id}"><div class="row"><span class="grow">${dot(g.recipe.id)}<b>${esc(g.recipe.name)}</b><span class="chips"><em>${g.portions} portion${g.portions > 1 ? 's' : ''}</em><em>${g.days.length ? `on ${g.days.join(', ')}` : `${g.recipe.slots[0]}, a few minutes each`}</em>${g.recipe.cookMinutes ? `<em>${g.recipe.cookMinutes} min</em>` : ''}</span></span>${g.recipe.cookMinutes > 0 && S.freshDefault[g.recipe.id] ? `<button class="btn ghost small" data-action="fresh-default" data-id="${g.recipe.id}" data-on="0">Batch it instead</button>` : ''}</div>
-    ${g.recipe.cookMinutes > 0 ? `<p class="small muted" style="margin:4px 0 0">Each portion: ${P.scaleIngredients(g.recipe, 1, ing).map((i) => `${esc(i.name)} ${P.fmtQty(i.qty, i.unit)}`).join(', ')}.</p>` : ''}</li>`).join('');
+  return { rs, fm, fresh: Object.values(grouped) };
+}
+const cookedAll = (w) => { const l = cookData(w).rs.list; return l.length > 0 && l.every((x) => (w.cooked || {})[x.recipe.id]); };
+function renderCook() {
+  const w = W(); const { rs, fm, fresh } = cookData(w);
+  if (cookView && !rs.list.some((x) => x.recipe.id === cookView) && !fresh.some((x) => x.recipe.id === cookView)) cookView = null;
+  if (cookView) return cookPage(w, cookView, rs, fm, fresh);
+  const head = `${titleRow('Cook', 3, '')}${weekSwitch()}`;
+  if (!rs.list.length && !fresh.length) return `${head}<p class="lit">Nothing to cook yet. <b>Pick your meals</b> and the cook list builds itself.</p><button class="btn block" data-action="go-tab" data-to="plan">Pick my meals</button>`;
+  const cookOn = cookDate(w, S.activeWeek), t = todayISO(); const gone = cookOn < t;
+  const ck = w.cooked || {}; const todo = rs.list.filter((x) => !ck[x.recipe.id]); const minsLeft = todo.reduce((m, x) => m + x.recipe.cookMinutes, 0);
+  const whenWord = cookOn === t ? 'tonight' : cookOn === addDays(t, 1) ? 'tomorrow' : `on ${P.DAYS[w.cookDay]}`;
+  const headCard = rs.list.length ? `<div class="card shophead slim ckhead"><div class="row"><span class="grow">${todo.length ? `<b class="bigtotal">${hm(minsLeft)}</b> <span class="muted">to cook ${whenWord}</span>` : `<b class="bigtotal">Done</b> <span class="muted">all ${rs.list.length} cooked</span>`}</span><span class="leftn"><b>${todo.length}</b> left</span></div>
+    <div class="budget prog"><i style="width:${Math.round(((rs.list.length - todo.length) / rs.list.length) * 100)}%"></i></div></div>` : '';
+  const dayRow = `<button class="tapr ${gone ? 'gone' : ''}" data-action="cookday-sheet"><span class="grow"><b>Cook day</b><span>${cookShort(w)}${gone ? ' · gone' : ''}</span></span><em>Change</em></button>`;
+  const facts = (x) => `${x.portions} portion${x.portions > 1 ? 's' : ''} · ${x.recipe.cookMinutes} min`;
+  const next = todo[0]; const pos = (x) => rs.list.indexOf(x) + 1;
+  const hero = next ? `<div class="ckhero" data-cook="${next.recipe.id}"><button class="ckhero-open" data-action="cook-view" data-id="${next.recipe.id}" aria-label="${esc(next.recipe.name)}: open the recipe">${photoImg(next.recipe)}<span class="mt-scrim"></span><span class="ck-n">${pos(next)} of ${rs.list.length}</span><span class="mt-txt"><small>${todo.length === rs.list.length ? 'Start here' : 'Up next'}</small><b class="mt-name">${esc(next.recipe.name)}</b><span>${facts(next)} · ${esc(next.recipe.equipment.join(', '))}</span></span></button><button class="btn block" data-action="cm-open" data-id="${next.recipe.id}">Start cooking</button></div>` : '';
+  const rest = rs.list.filter((x) => x !== next);
+  const tiles = rest.length ? `<div class="ckgrid">${rest.map((x) => `<button class="cktile ${ck[x.recipe.id] ? 'cooked' : ''}" data-action="cook-view" data-id="${x.recipe.id}" data-cook="${x.recipe.id}">${photoImg(x.recipe)}<span class="mt-scrim"></span><span class="ck-n">${ck[x.recipe.id] ? `${ic('check', 14)}Cooked` : pos(x)}</span><span class="mt-txt"><b class="mt-name">${esc(x.recipe.name)}</b><span>${facts(x)}</span></span></button>`).join('')}</div>` : '';
+  const freshRows = fresh.length ? `<h2>Made fresh, not batched</h2><div class="gl">${fresh.map((g) => `<button class="gr" data-action="cook-view" data-id="${g.recipe.id}" data-cookfresh="${g.recipe.id}">${photoImg(g.recipe, 'thumb')}<span class="gr-l">${esc(g.recipe.name)}<small>${g.portions} portion${g.portions > 1 ? 's' : ''} · ${g.days.length ? `on ${g.days.join(', ')}` : `${g.recipe.slots[0]}, a few minutes each`}</small></span>${ic('right', 16)}</button>`).join('')}</div>` : '';
   const usesRice = rs.list.some(({ recipe: r }) => (r.ingredients || []).some((x) => /rice/.test(x.id || '')));
-  const cards = rs.list.map(({ recipe: r, portions: n }) => {
-    const scaled = P.scaleIngredients(r, n, ing);
-    const tp = P.tubPlan(r, w.grid, w.cookDay, fm);
-    const reheat = { none: 'Eat it cold', microwave: 'Microwave 2–3 min, stir halfway', hob: 'Warm it through in a pan', 'air-fryer': 'Air-fryer 6 min at 180°C' }[r.reheat] || '';
-    const store = [
-      tp.fridge.length ? `<li><b>Fridge</b> ${tp.fridge.length} tub${tp.fridge.length > 1 ? 's' : ''} for ${dayList(tp.fridge)}. Eat by ${tp.eatBy}.</li>` : '',
-      tp.freezer.length ? `<li><b>Freezer</b> ${tp.freezer.length} tub${tp.freezer.length > 1 ? 's' : ''} for ${dayList(tp.freezer)}. Move each one to the fridge the night before.</li>` : '',
-      reheat ? `<li><b>Reheat</b> ${reheat}.</li>` : '',
-    ].join('');
-    const tubsChip = `${tp.fridge.length ? `${tp.fridge.length} fridge` : ''}${tp.fridge.length && tp.freezer.length ? ' · ' : ''}${tp.freezer.length ? `${tp.freezer.length} freezer` : ''}`;
-    return `<details class="fold cookfold" data-cook="${r.id}" ${cookOpen.has(r.id) ? 'open' : ''}><summary><span class="grow">${dot(r.id)}<b style="display:inline">${esc(r.name)}</b><span class="chips"><em>${n} portion${n > 1 ? 's' : ''}</em><em>${r.cookMinutes} min</em><em>${esc(r.equipment.join(', '))}</em>${tubsChip ? `<em>${tubsChip}</em>` : ''}</span></span><span class="open">Open ›</span></summary>
-      <div class="cookhero">${photoImg(r)}<button class="btn block" data-action="cm-open" data-id="${r.id}">Start cooking<span> · one step at a time</span></button></div>
-      <div class="seg"><button class="on">Batch on ${cookDay}</button><button data-action="fresh-default" data-id="${r.id}" data-on="1">Make fresh each time</button></div>
-      <h4 class="sub">Ingredients for ${n}</h4>
-      <div class="ing-list">${scaled.map((s) => `<span>${esc(s.name)}</span><b>${P.fmtQty(s.qty, s.unit)}</b>`).join('')}</div>
-      <h4 class="sub">Method</h4>
-      <ol class="steps">${r.method.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
-      ${r.notes ? `<p class="small muted">${esc(r.notes)}</p>` : ''}
-      <h4 class="sub">Then box it up · ${tp.total} tub${tp.total === 1 ? '' : 's'}</h4>
-      <ul class="store">${store}</ul>
-      ${tp.late.length ? `<div class="warn-box">${dayList(tp.late)}: past its fridge life by then and it doesn't freeze. Cook ${tp.late.length > 1 ? 'those' : 'that one'} fresh, or move ${tp.late.length > 1 ? 'them' : 'it'} earlier on the Plan tab.</div>` : ''}
-      ${tp.total < n ? `<p class="small muted">${n - tp.total} portion${n - tp.total > 1 ? 's' : ''} not in the week grid.</p>` : ''}
-    </details>`;
-  }).join('');
-  return `${head}
-  <div class="card cookday ${gone ? 'gone' : ''}"><span class="lbl">${ic('cal', 15)}Cook day</span><b class="mid">${cookShort(w)}${gone ? ' · gone' : ''}</b>${cookDayChips(w)}</div>
-  <div class="card"><span class="lbl">${ic('pan', 15)}${esc(when)}</span><b class="mid">${rs.list.length} recipe${rs.list.length === 1 ? '' : 's'} · ${rs.minutes} min</b><ol class="steps cooklist" style="margin-top:10px">${sheet}</ol>
-  ${fresh.length ? `<h4 class="sub">Fresh each day</h4><ul class="clean">${freshList}</ul>` : ''}
-  ${usesRice ? `<p class="small muted" style="margin-top:10px">Rice: freeze cooked rice the same day unless it's eaten within 24 hours.</p>` : ''}</div>
-  <h2>Recipes</h2>
-  ${cards}
-  ${S.activeWeek === S.thisMon ? `<div class="card nextcard"><b>All boxed up?</b><button class="btn block" data-action="go-tab" data-to="plan" data-week="${S.nextMon}">Plan next week</button></div>` : `<div class="card nextcard"><b>All boxed up?</b><button class="btn block" data-action="go-tab" data-to="plan">Back to Plan</button></div>`}`;
+  const nextRow = S.activeWeek === S.thisMon
+    ? `<button class="nextrow" data-action="go-tab" data-to="plan" data-week="${S.nextMon}"><span class="grow"><small>All boxed up?</small><b>Plan next week</b><span>${fmtDate(S.nextMon)} – ${fmtDate(addDays(S.nextMon, 6))}</span></span><i>${ic('go', 20)}</i></button>`
+    : `<button class="nextrow" data-action="go-tab" data-to="home"><span class="grow"><small>All boxed up?</small><b>Back to Home</b><span>See how the week adds up</span></span><i>${ic('go', 20)}</i></button>`;
+  return `${head}${headCard}${dayRow}${hero}${tiles}${freshRows}
+  ${usesRice ? `<p class="small muted" style="margin:14px 0 0">Rice: freeze cooked rice the same day unless it is eaten within 24 hours.</p>` : ''}
+  <div style="margin-top:22px">${nextRow}</div>`;
+}
+// One recipe on its own page: the photo, three numbers, what to get out (tick as you go), the method, where the tubs go. Start cooking stays at the bottom.
+function cookPage(w, id, rs, fm, fresh) {
+  const r = recById(id); const ing = ING(); const batch = rs.list.find((x) => x.recipe.id === id); const fr = fresh.find((x) => x.recipe.id === id);
+  const n = batch ? batch.portions : 1; const mt = metaFor(r);
+  const scaled = P.scaleIngredients(r, n, ing); const tp = batch ? P.tubPlan(r, w.grid, w.cookDay, fm) : null; const cooked = !!(w.cooked || {})[id];
+  const eye = batch ? `${rs.list.indexOf(batch) + 1} of ${rs.list.length} · ${cooked ? 'cooked' : `batch on ${P.DAYS[w.cookDay]}`}` : `Made fresh${fr && fr.days.length ? ` on ${fr.days.join(', ')}` : ''}`;
+  const fact = (v, l) => `<div><b>${v}</b><span>${l}</span></div>`;
+  const facts = batch ? `<div class="rp-facts">${fact(n, n === 1 ? 'portion' : 'portions')}${fact(r.cookMinutes, 'minutes')}${fact(tp.total, tp.total === 1 ? 'tub' : 'tubs')}</div>`
+    : `<div class="rp-facts">${fact(fr ? fr.portions : 1, 'this week')}${fact(`${Math.round(mt.pp)}g`, 'protein each')}${r.cookMinutes ? fact(r.cookMinutes, 'minutes') : fact(Math.round(mt.kcal), 'kcal each')}</div>`;
+  const seg = r.cookMinutes > 0 ? `<div class="seg"><button class="${batch ? 'on' : ''}" ${batch ? '' : `data-action="fresh-default" data-id="${id}" data-on="0"`}>Batch on ${P.DAYS[w.cookDay]}</button><button class="${batch ? '' : 'on'}" ${batch ? `data-action="fresh-default" data-id="${id}" data-on="1"` : ''}>Make fresh each time</button></div>` : '';
+  const ingRows = scaled.map((x, i) => { const k = `${id}:${i}`; return `<label class="gr tickrow ${cookGot.has(k) ? 'done' : ''}"><input type="checkbox" data-cookgot="${k}" ${cookGot.has(k) ? 'checked' : ''}><span class="gr-l">${esc(x.name)}</span><span class="gr-v">${P.fmtQty(x.qty, x.unit)}</span></label>`; }).join('');
+  const store = tp ? [tp.fridge.length ? ['Fridge', `${tp.fridge.length} tub${tp.fridge.length > 1 ? 's' : ''} for ${dayList(tp.fridge)}. Eat by ${tp.eatBy}.`] : null, tp.freezer.length ? ['Freezer', `${tp.freezer.length} tub${tp.freezer.length > 1 ? 's' : ''} for ${dayList(tp.freezer)}. Move each one to the fridge the night before.`] : null, REHEAT[r.reheat] ? ['Reheat', `${REHEAT[r.reheat]}.`] : null].filter(Boolean) : [];
+  return `<div class="rp-hero">${photoImg(r)}<span class="mt-scrim"></span><button class="rp-back" data-action="cook-back" aria-label="Back to Cook">${ic('left', 20)}</button><div class="rp-t"><small>${eye}</small><h1>${esc(r.name)}</h1></div></div>
+  ${facts}${seg}
+  <h2>${batch ? `Get out, for ${n}` : 'Get out, for each portion'}</h2><div class="gl onp">${ingRows}</div>
+  <h2>Method</h2><ol class="rp-steps">${r.method.map((m, i) => `<li><b>${i + 1}</b><p>${esc(m)}</p></li>`).join('')}</ol>
+  ${r.notes ? `<p class="rp-note">${esc(r.notes)}</p>` : ''}
+  ${store.length ? `<h2>Then box it up</h2><div class="gl">${store.map(([a, b]) => `<div class="gr"><span class="gr-l">${a}<small>${b}</small></span></div>`).join('')}</div>` : ''}
+  ${tp && tp.late.length ? `<div class="warn-box">${dayList(tp.late)}: past its fridge life by then and it does not freeze. Cook ${tp.late.length > 1 ? 'those' : 'that one'} fresh, or move ${tp.late.length > 1 ? 'them' : 'it'} earlier on the Plan tab.</div>` : ''}
+  ${tp && tp.total < n ? `<p class="small muted">${n - tp.total} portion${n - tp.total > 1 ? 's' : ''} not in the week grid.</p>` : ''}
+  ${batch ? `<button class="btn ghost block" style="margin-top:18px" data-action="cook-done" data-id="${id}" data-on="${cooked ? 0 : 1}">${cooked ? 'Cooked. Tap to undo' : 'Mark as cooked'}</button>` : ''}
+  ${r.method.length ? `<div class="ckdock"><button class="btn block" data-action="cm-open" data-id="${id}">Start cooking<span> · one step at a time</span></button></div>` : ''}`;
 }
 // ----- Cook mode (v100): one step on the screen with the photo, a timer when the step has a time in it, and what that step needs. -----
 const CM = { id: null, step: 0, timer: null, tick: null, lock: null };
 function cmSteps(r, w) {
   const tp = P.tubPlan(r, w.grid, w.cookDay, freshMap(w));
-  const reheat = { none: 'Eat it cold', microwave: 'Microwave 2–3 min, stir halfway', hob: 'Warm it through in a pan', 'air-fryer': 'Air-fryer 6 min at 180°C' }[r.reheat] || '';
-  const box = [tp.fridge.length ? `Fridge: ${tp.fridge.length} tub${tp.fridge.length > 1 ? 's' : ''} for ${dayList(tp.fridge)}. Eat by ${tp.eatBy}.` : '', tp.freezer.length ? `Freezer: ${tp.freezer.length} tub${tp.freezer.length > 1 ? 's' : ''} for ${dayList(tp.freezer)}. Move each one to the fridge the night before.` : '', reheat ? `To reheat: ${reheat.charAt(0).toLowerCase() + reheat.slice(1)}.` : ''].filter(Boolean);
+  const reheat = REHEAT[r.reheat] || '';
+  const box = !(weekCounts(w, { fresh: freshMap(w), skipFresh: true })[r.id] > 0) ? [] : [tp.fridge.length ? `Fridge: ${tp.fridge.length} tub${tp.fridge.length > 1 ? 's' : ''} for ${dayList(tp.fridge)}. Eat by ${tp.eatBy}.` : '', tp.freezer.length ? `Freezer: ${tp.freezer.length} tub${tp.freezer.length > 1 ? 's' : ''} for ${dayList(tp.freezer)}. Move each one to the fridge the night before.` : '', reheat ? `To reheat: ${reheat.charAt(0).toLowerCase() + reheat.slice(1)}.` : ''].filter(Boolean);
   return [...r.method.map((t) => ({ t })), ...(box.length ? [{ t: `Box it up. ${box.join(' ')}`, box: true }] : [])];
 }
 // The first sentence is what to do now: it is bright, the rest of the step sits back a little.
@@ -858,7 +877,7 @@ function cmRender() {
       ${timer}
       ${need.length ? `<p class="cm-need"><b>You need</b> ${need.map((x) => `${P.fmtQty(x.qty, x.unit)} ${esc(x.name.replace(/\s*\([^)]*\)/g, '').toLowerCase())}`).join(' · ')}</p>` : ''}
       ${k === 0 && r.notes ? `<p class="cm-need">${esc(r.notes)}</p>` : ''}</div>
-    <div class="cm-nav"><button class="btn ghost" data-action="${k === 0 ? 'cm-close' : 'cm-back'}">${k === 0 ? 'Close' : 'Back'}</button><button class="btn" data-action="${last ? 'cm-close' : 'cm-next'}">${last ? 'Done' : 'Next step'}</button></div>`;
+    <div class="cm-nav"><button class="btn ghost" data-action="${k === 0 ? 'cm-close' : 'cm-back'}">${k === 0 ? 'Close' : 'Back'}</button><button class="btn" data-action="${last ? 'cm-done' : 'cm-next'}">${last ? 'Done' : 'Next step'}</button></div>`;
   el.hidden = false;
 }
 async function cmOpen(id) { CM.id = id; CM.step = 0; cmRender(); try { CM.lock = await navigator.wakeLock?.request('screen'); } catch {} }
@@ -868,7 +887,7 @@ function cmTimerStart(mins) {
   cmTimerStop(); const r = recById(CM.id); CM.timer = { end: Date.now() + mins * 60000, what: `Step ${CM.step + 1}`, done: false };
   CM.tick = setInterval(() => {
     const t = CM.timer; if (!t) return; const leftMs = t.end - Date.now(); const c = document.getElementById('cm-clock');
-    if (leftMs <= 0 && !t.done) { t.done = true; clearInterval(CM.tick); CM.tick = null; navigator.vibrate?.([300, 150, 300, 150, 300]); cmBeep(); if (CM.id) cmRender(); else toast(`${r ? r.name : 'Timer'}: time is up`, 5000); return; }
+    if (leftMs <= 0 && !t.done) { t.done = true; clearInterval(CM.tick); CM.tick = null; haptic('warn'); navigator.vibrate?.([300, 150, 300, 150, 300]); cmBeep(); if (CM.id) cmRender(); else toast(`${r ? r.name : 'Timer'}: time is up`, 5000); return; }
     if (c) c.textContent = cmClock(leftMs);
   }, 500);
   cmRender();
@@ -919,13 +938,13 @@ function extrasSheet(q = '') {
   const have = new Set(extras().map((e) => e.id)); const s = q.trim().toLowerCase();
   const hits = s ? ING().filter((it) => !it.hidden && !(it.choices || []).length && !have.has(it.id) && (it.name.toLowerCase().includes(s) || String(it.aka || '').toLowerCase().includes(s))).slice(0, 12) : [];
   return `<h3>Add something to the shop</h3><p class="small muted">Type what you want. Anything from the 290 priced ingredients is priced in with the rest of the list.</p>
-  <label class="field" style="margin:8px 0 0">What do you want to add?<input class="search" style="width:100%;font-size:18px;margin:6px 0 0" placeholder="e.g. milk, avocado, crisps" value="${esc(q)}" data-extra-search autofocus autocapitalize="none"></label>
+  <label class="field" style="margin:8px 0 0">What do you want to add?<input class="search" style="width:100%;font-size:18px;margin:6px 0 0" placeholder="e.g. milk, avocado, crisps" value="${esc(q)}" data-extra-search autofocus inputmode="search" enterkeyhint="search" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
   <div id="extra-list" style="margin-top:8px">${hits.map((it) => `<button class="line" style="width:100%;text-align:left;background:none;border:0;border-bottom:1px solid #f3ecdc" data-action="extra-pick" data-id="${it.id}"><span class="grow"><span class="name">${esc(it.name)}</span><span class="sub">${(it.packs || []).length ? 'priced' : 'no price on file'} · sold by ${it.unit === 'each' ? 'the piece' : it.unit}</span></span></button>`).join('')}${s.length >= 2 ? `<button class="btn ghost block" style="margin-top:10px" data-action="extra-custom" data-name="${esc(q.trim())}">${hits.length ? 'Not there? ' : 'Not in the list. '}Add “${esc(q.trim())}” as my own item</button>` : ''}</div>
   <button class="btn ghost block" data-action="close-sheet" style="margin-top:10px">Done</button>`;
 }
 async function askExtraQty(it, current) {
   const unitWord = it.unit === 'each' ? 'how many' : `how much (${it.unit})`;
-  const v = await askText(`${it.name}: ${unitWord} each week?`, it.unit === 'each' ? 'e.g. 2' : it.unit === 'ml' ? 'e.g. 2000' : 'e.g. 500');
+  const v = await askNumber(`${it.name}: ${unitWord} each week?`, it.unit === 'each' ? '2' : it.unit === 'ml' ? '2000' : '500', it.unit === 'each' ? '' : it.unit);
   if (v === null) return null;
   const n = parseFloat(String(v).replace(/[^0-9.]/g, ''));
   if (!(n > 0)) { toast('Type a number'); return null; }
@@ -1121,7 +1140,7 @@ function renderShop() {
   for (const e of extras(w)) (usedBy[e.id] ||= []).push(e.scope === 'week' ? 'extra this week' : 'extra every week');
   const choiceHtml = Object.keys(rawNeeds).map(ingById).filter((it) => it?.choices?.length).map((it) => { const picks = chosenFor(w, it); return `<div class="small muted" style="margin-bottom:6px"><b>${esc(it.name)}</b> · pick yours</div><div class="chip-row">${it.choices.map((c) => `<button class="chip ${picks.includes(c) ? 'on' : ''}" data-action="choice-toggle" data-choice="${it.id}" data-val="${c}">${esc((ingById(c)?.name || c).replace(/^Frozen /, ''))}</button>`).join('')}</div>`; }).join('');
   const shopTop = `${titleRow('Shop', 2, '')}${weekSwitch()}`; const head = shopTop + tipCard('shop');
-  if (!Object.keys(needsAll).length) return `${head}<div class="card"><p><b>Nothing to buy yet.</b></p><p class="small muted">Pick your meals first and your list builds itself.</p><button class="btn block" style="margin-top:10px" data-action="go-tab" data-to="plan">Pick my meals</button></div><h2>Also buy every week</h2><div class="card"><p class="small muted">Things that aren't part of a meal but you always get. They're priced into the list.</p><button class="btn ghost small" data-action="extra-add" style="margin-top:4px">+ Add something</button></div>`;
+  if (!Object.keys(needsAll).length) return `${head}<p class="lit">Nothing to buy yet. <b>Pick your meals</b> and the list builds itself.</p><button class="btn block" data-action="go-tab" data-to="plan">Pick my meals</button>${gl('Also buy every week', gr('Add something', '', 'data-action="extra-add"', { icon: 'plus' }), 'Things that are not part of a meal but you always get. They are priced into the list.')}`;
   const split = P.cheapestSplit(needs, ing);
   const budget = S.settings.budget;
   // The budget is judged on the one total. If only one-off stock-ups push it over we say so kindly (amber, not red): next week is just the food.
@@ -1155,7 +1174,7 @@ function renderShop() {
   const aisleGroups = {}; for (const l of weekLines) (aisleGroups[aisleOf(ingById(l.id))] ||= []).push(l);
   const breakdown = AISLES.filter(([k]) => aisleGroups[k]).map(([k, label]) => `${label.split(',')[0].split(' &')[0]} ${P.gbp(P.round2(aisleGroups[k].reduce((t, l) => t + l.cost, 0)))}`).concat(chosen.stock ? [`Stock-ups ${P.gbp(chosen.stock)}`] : [], chosen.elsewhereWeek ? [`From another shop ${P.gbp(chosen.elsewhereWeek)}`] : []).join(' · '); // adds up to the one total, so it lives under "Why £X?" and not beside the big number
   const extraRows = extras(w).map((e) => { const it = ingById(e.id); const l = chosen.lines.find((x) => x.id === e.id); return `<div class="line"><span class="grow"><span class="name">${esc(it.name)}</span><span class="sub">${e.scope === 'week' ? 'this week only' : 'every week'}${l ? ` · ${esc(l.pack.name.replace(/\s*\([^)]*\)/g, ''))}` : ' · no price at this shop'}</span></span><button class="chip" data-action="extra-qty" data-id="${e.id}" data-scope="${e.scope}">${P.fmtQty(e.qty, it.unit)}${it.unit === 'each' ? (e.qty === 1 ? ' piece' : ' pieces') : ''}</button><span class="cost">${l ? P.gbp(l.cost) : '—'}</span><button class="btn ghost small" data-action="extra-remove" data-id="${e.id}" data-scope="${e.scope}" aria-label="Remove">×</button></div>`; }).join('');
-  const extrasCard = `${extraRows ? `<h2>Extras</h2><div class="card">${extraRows}</div>` : ''}<button class="btn ghost block" data-action="extra-add" style="margin:10px 0 4px">+ Add something to this shop</button>`; // Cameron: keep the extras, lose the text around them
+  const extrasCard = extraRows ? `<h2>Extras</h2><div class="card">${extraRows}</div>` : '';
   const complete = chosen.lines.length > 0 && chosen.lines.every((l) => w.ticks[`${chosen.shop}:${l.id}`]);
   const doneBox = complete ? `<div class="done-box"><b>Shop done ✓</b> ${P.gbp(chosen.comparable)} at ${P.SHOP_NAMES[chosen.shop]}${w.done?.date ? ` on ${fmtDate(w.done.date)}` : ''}. Logged under Settings → Money.</div>` : '';
   const notSold = chosen.notSold.map((m) => esc(m.name.replace(/\s*\([^)]*\)/g, ''))); const unpriced = chosen.unpriced.map((m) => esc(m.name));
@@ -1207,7 +1226,9 @@ function renderShop() {
   }
   // The two numbers people screenshot: the cheapest protein on the list, and what a meal works out at (the meal deal is a reference, not a claim).
   const stS = P.gridStats(liveGrid(w), recipes, ing, snackExtra(w), liveDays(w)); const cp = cheapestProtein(chosen.lines.filter((l) => ['protein', 'dairy'].includes(ingById(l.id)?.category)), ingById); const pm = mealCost(chosen.weekly, stS.filled);
-  const factsHtml = cp || pm ? `<div class="card shopfacts"><div class="row">${cp ? `<div class="grow"><span class="lbl">Cheapest protein this week</span><b class="mid">30g for ${cp.pencePer30g >= 100 ? P.gbp(cp.pencePer30g / 100) : `${cp.pencePer30g}p`}</b><span class="sub muted">${esc(cp.name.replace(/\s*\([^)]*\)/g, '').toLowerCase())}</span></div>` : ''}${pm ? `<div class="grow"><span class="lbl">A meal</span><b class="mid">${P.gbp(pm)}</b><span class="sub muted">Tesco meal deal £3.85, Clubcard price (Which?, 2026)</span></div>` : ''}</div></div>` : '';
+  const factsHtml = cp || pm ? `<div class="pair ${cp && pm ? '' : 'one'}" style="margin-top:22px">${pm ? `<div class="pc onp"><small>A meal costs</small><b>${P.gbp(pm)}</b><span>Tesco meal deal £3.85, Clubcard price (Which?, 2026)</span></div>` : ''}${cp ? `<div class="pc"><small>Cheapest protein</small><b>${cp.pencePer30g >= 100 ? P.gbp(cp.pencePer30g / 100) : `${cp.pencePer30g}p`}</b><span>for 30g · ${esc(cp.name.replace(/\s*\([^)]*\)/g, '').toLowerCase())}</span></div>` : ''}</div>` : '';
+  const toolRows = gl('', gr('Add something to this shop', '', 'data-action="extra-add"', { icon: 'plus' }) + gr('Share the list', '', 'data-action="share-list"', { icon: 'share' }) + gr('Copy the list', '', 'data-action="copy-list"', { icon: 'copy', plain: true }) + (online[chosen.shop] ? grLink(`Shop online at ${P.SHOP_NAMES[chosen.shop]}`, online[chosen.shop](''), { icon: 'basket', blank: true }) : ''));
+  const cd = cookData(w).rs; const nextRow = `<button class="nextrow" data-action="go-tab" data-to="cook"><span class="grow"><small>Next · step 3 of 3</small><b>Cook ${cookShort(w)}</b><span>${cd.list.length ? `${cd.list.length} recipe${cd.list.length === 1 ? '' : 's'} · ${hm(cd.minutes)}` : 'Nothing to batch cook'}</span></span><i>${ic('go', 20)}</i></button>`;
   // v88: price → where are you shopping → basics → save fold → the list → stock-ups → extras → facts → share → next
   const verdictHtml = verdict.state === 'ok' ? `<p class="verdict ok">✓ ${P.gbp(verdict.left)} under your ${P.gbp(budget)}</p>` : `<p class="verdict over">${P.gbp(verdict.over)} over your ${P.gbp(budget)} · <a href="#" data-action="open-save">Where can I save?</a></p>`;
   return `${shopTop}
@@ -1225,12 +1246,12 @@ function renderShop() {
   ${missing}
   <div class="card list main onp"><div class="listhead"><h3>${P.SHOP_NAMES[chosen.shop]} shopping list</h3><span>${toGet.length ? `${toGet.length} to get` : 'All done'}</span></div>${lines || (got.length ? '<p class="muted" style="margin:6px 0">Everything is in the trolley.</p>' : '<p class="muted">Nothing priced at this shop.</p>')}${trolleyHtml}</div>
   ${extrasCard}
+  ${toolRows}
   ${factsHtml}
-  <div class="rowbtns" style="margin:6px 0 10px"><button class="btn ghost" data-action="share-list">Share list</button><button class="btn ghost" data-action="copy-list">Copy</button>${online[chosen.shop] ? `<a class="btn ghost" href="${online[chosen.shop]('')}" target="_blank" rel="noopener">Shop online</a>` : ''}</div>
   ${unpricedAll.length ? `<div class="card"><h3>No price anywhere yet</h3><p class="small muted">${unpricedAll.map(esc).join(', ')}. Left out of the total.</p></div>` : ''}
   ${haveRows ? `<details class="fold"><summary><b>Already in your pantry</b><span class="muted small">${haveIds.length} left off the list${pantrySave > 0.004 ? ` · ${P.gbp(pantrySave)} saved` : ''}</span></summary>${haveRows}</details>` : ''}
-  <button class="btn block big" data-action="go-tab" data-to="cook" style="margin-top:14px">Next: Cook</button>
-  <details class="fold" style="margin-top:12px"><summary><span class="muted small">About these prices</span></summary><p class="small muted">Prices on this week's lists were read on: ${T.ranked.filter((b) => b.lines.length).map((b) => `${P.SHOP_NAMES[b.shop]} ${dateRange(listDates(T, b))}`).join(' · ')}.</p><p class="small muted">${esc(DATA.priceNote || '')}</p></details>`;
+  <div style="margin-top:22px">${nextRow}</div>
+  <details class="fold quiet"><summary><b>About these prices</b></summary><p class="small muted">Prices on this week's lists were read on: ${T.ranked.filter((b) => b.lines.length).map((b) => `${P.SHOP_NAMES[b.shop]} ${dateRange(listDates(T, b))}`).join(' · ')}.</p><p class="small muted">${esc(DATA.priceNote || '')}</p></details>`;
 }
 // A day that has gone: was the meal eaten? If not, it goes in the freezer as a tub and straight into next week's first free slot.
 async function pastCell(w, day, slot) {
@@ -1368,17 +1389,17 @@ function renderRecipes() {
   const ideasHtml = S.ideasOpen ? `<div class="card" id="ideas"><h3>Meal ideas <span class="muted small">${ideasCount} not in your list</span></h3>
     <div class="chip-row"><button class="chip ${!tag ? 'on' : ''}" data-action="idea-tag" data-tag="">All</button>${TAGS.map(([k, l]) => `<button class="chip ${tag === k ? 'on' : ''}" data-action="idea-tag" data-tag="${k}">${l}</button>`).join('')}</div>
     ${ideas.length ? ideas.map((r) => recipeRow(r, `<button class="btn small" data-action="lib-add" data-id="${r.id}">+ Add</button>`)).join('') : '<p class="muted">Nothing left to add here. Try another filter, or type one in.</p>'}</div>` : '';
-  return `<div class="settings-head"><button class="btn ghost small" data-action="screen-back">‹ Back</button><h1>Recipes</h1></div>${stepLine(0, 'Every meal you can pick from.')}
+  return `<div class="navbar"><button class="navback" data-action="screen-back">${ic('left', 18)}Back</button></div><h1>Recipes</h1>${stepLine(0, 'Every meal you can pick from.')}
   <button class="btn block ${S.ideasOpen ? 'ghost' : ''}" data-action="ideas-toggle" style="margin-bottom:10px">${S.ideasOpen ? 'Hide meal ideas' : `✨ Find more meal ideas (${ideasCount})`}</button>
   ${ideasHtml}
   <div class="row" style="margin-bottom:12px"><button class="btn ghost grow" data-action="add-recipe">+ Type a recipe in</button></div>
-  <input class="search" placeholder="Search ${mine.length} of your recipes" value="${esc(S.search || '')}" data-search>
+  <input class="search" placeholder="Search ${mine.length} of your recipes" value="${esc(S.search || '')}" data-search inputmode="search" enterkeyhint="search" autocapitalize="none" autocorrect="off" spellcheck="false">
   <h2>My recipes</h2><div class="card">${list || '<p class="muted">Nothing here yet. Add some from the ideas above.</p>'}</div>
   <div class="card nextcard"><b>Found something you fancy?</b><p class="small muted">Every meal here is on the Plan page, ready to tick.</p><button class="btn block" data-action="go-tab" data-to="plan">Back to Plan</button></div>`;
 }
 function linkForm() {
   return `<h3>Add from a link</h3><p class="small muted">Instagram only opens for a logged-in browser, so the app can't read the reel itself. Paste the link here; Claude turns it into a priced recipe and pushes it to the app.</p>
-  <form id="link-form"><label class="field">Reel or recipe link<input name="url" type="url" required placeholder="https://www.instagram.com/reel/…"></label>
+  <form id="link-form"><label class="field">Reel or recipe link<input name="url" type="url" inputmode="url" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required placeholder="https://www.instagram.com/reel/…"></label>
   <label class="field">Anything to change? (optional)<input name="note" placeholder="e.g. swap thighs for breast, no coriander"></label>
   <button class="btn block" type="submit">Save to the list</button></form>`;
 }
@@ -1407,7 +1428,7 @@ function tweakSheet(id) {
   const opts = ING().filter((i) => !i.hidden).sort((a, b) => a.name.localeCompare(b.name)).map((i) => `<option value="${i.id}">${esc(i.name)} (${i.unit})</option>`).join('');
   return `<h3>${esc(base.name)}</h3><p class="small muted">Untick anything you don't want in it, and pick a stand-in if you like. This only changes your copy. The shop list, the numbers and the method follow it.</p>
   <div id="tweak-list">${rows}${added}</div>
-  <h2>Add something</h2><div class="row"><select id="tweak-add-id" class="grow">${opts}</select><input id="tweak-add-qty" type="number" step="any" min="0" placeholder="per portion" style="width:110px"><button class="btn small" data-action="tweak-add" data-id="${id}">Add</button></div>
+  <h2>Add something</h2><div class="row"><select id="tweak-add-id" class="grow">${opts}</select><input id="tweak-add-qty" type="number" inputmode="decimal" step="any" min="0" placeholder="per portion" style="width:110px"><button class="btn small" data-action="tweak-add" data-id="${id}">Add</button></div>
   <div class="row" style="margin-top:14px"><button class="btn grow" data-action="tweak-done" data-id="${id}">Done</button>${(t.drop.length || t.add.length) ? `<button class="btn ghost" data-action="tweak-reset" data-id="${id}">Back to original</button>` : ''}</div>`;
 }
 function setTweak(id, fn) { S.tweaks ||= {}; const t = S.tweaks[id] || { drop: [], add: [] }; fn(t); if (!t.drop.length && !t.add.length) delete S.tweaks[id]; else S.tweaks[id] = t; bustCaches(); save(); }
@@ -1416,7 +1437,7 @@ function recipeForm() {
   return `<h3>Add a recipe</h3><form id="recipe-form">
   <label class="field">Name<input name="name" required></label>
   <div class="small muted">Slots</div><div class="chip-row">${P.SLOTS.map((s) => `<label class="chip"><input type="checkbox" name="slot" value="${s}" hidden>${s}</label>`).join('')}</div>
-  <div class="row"><label class="field grow">Fridge days<input name="fridgeDays" type="number" min="0" max="7" value="3"></label><label class="field grow">Batch cook minutes<input name="cookMinutes" type="number" min="0" value="30"></label></div>
+  <div class="row"><label class="field grow">Fridge days<input name="fridgeDays" type="number" inputmode="numeric" min="0" max="7" value="3"></label><label class="field grow">Batch cook minutes<input name="cookMinutes" type="number" inputmode="numeric" min="0" value="30"></label></div>
   <div class="chip-row"><label class="chip"><input type="checkbox" name="cold" hidden>ok cold</label><label class="chip on"><input type="checkbox" name="freezer" hidden checked>freezes</label></div>
   <label class="field">Reheat<select name="reheat"><option value="microwave">Microwave</option><option value="none">Eat cold</option><option value="hob">Hob</option><option value="air-fryer">Air-fryer</option></select></label>
   <div class="small muted" style="margin-top:8px">Ingredients per portion</div><div id="ing-rows"></div>
@@ -1425,13 +1446,13 @@ function recipeForm() {
   <label class="field">Method, one step per line<textarea name="method"></textarea></label>
   <label class="field">Source link (optional)<input name="source"></label>
   <button class="btn block" type="submit" style="margin-top:8px">Save recipe</button></form>
-  <template id="ing-row-t"><div class="ing-row"><select name="ing">${opts}</select><input name="qty" type="number" step="any" placeholder="qty" required><button type="button" data-action="rm-row">×</button></div></template>`;
+  <template id="ing-row-t"><div class="ing-row"><select name="ing">${opts}</select><input name="qty" type="number" inputmode="decimal" step="any" placeholder="qty" required><button type="button" data-action="rm-row">×</button></div></template>`;
 }
 function newIngredientForm() {
   return `<h3>New ingredient</h3><form id="ing-form">
   <label class="field">Name<input name="name" required></label>
   <label class="field">Unit<select name="unit"><option value="g">grams</option><option value="ml">ml</option><option value="each">each</option></select></label>
-  <label class="field">Protein per 100g/ml (or per each)<input name="protein" type="number" step="any" value="0"></label>
+  <label class="field">Protein per 100g/ml (or per each)<input name="protein" type="number" inputmode="decimal" step="any" value="0"></label>
   <label class="field">Category<select name="category"><option>protein</option><option>carb</option><option>veg</option><option>fruit</option><option>dairy</option><option>tin</option><option>sauce</option><option>spice</option><option>cupboard</option></select></label>
   <label class="field">Kept in<select name="store"><option>fridge</option><option>freezer</option><option>cupboard</option></select></label>
   <p class="small muted">It'll show as "no price on file" on the Shop tab until Claude adds a price.</p>
@@ -1477,7 +1498,7 @@ function accountCard() {
 function checkoutUrl() { return CONFIG.CHECKOUT_URL && cloud.user ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}client_reference_id=${encodeURIComponent(cloud.user.id)}&prefilled_email=${encodeURIComponent(cloud.user.email)}` : ''; }
 function authFormHtml(mode, dark) {
   const link = '';
-  return `<form id="signin-form" data-mode="${mode}"><input class="big ${dark ? '' : 'field'}" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:18px;text-align:left"><input class="big ${dark ? '' : 'field'}" name="password" type="password" required minlength="8" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:18px;text-align:left;margin-top:10px"><button class="${dark ? 'go' : 'btn block'}" type="submit" style="margin-top:10px">${mode === 'signup' ? 'Make my account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
+  return `<form id="signin-form" data-mode="${mode}"><input class="big ${dark ? '' : 'field'}" name="email" type="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:18px;text-align:left"><input class="big ${dark ? '' : 'field'}" name="password" type="password" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required minlength="8" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:18px;text-align:left;margin-top:10px"><button class="${dark ? 'go' : 'btn block'}" type="submit" style="margin-top:10px">${mode === 'signup' ? 'Make my account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
     <p class="small" style="margin-top:12px">${mode === 'signup' ? `Already have an account? <a href="#" data-action="auth-mode" data-mode="signin" ${link}>Sign in</a>` : `New here? <a href="#" data-action="auth-mode" data-mode="signup" ${link}>Make an account</a> · <a href="#" data-action="auth-forgot" ${link}>Forgot password?</a>`}</p>`;
 }
 let GROWTH_OK = false; // the mates card only shows once the backend for it answers (supabase/growth.sql)
@@ -1506,7 +1527,7 @@ function gateScreen() {
        <p class="gfoot"><button class="back" data-action="gate-refresh">I've paid, refresh</button><span>·</span><button class="back" data-action="signout">Sign out</button></p>`
     : (S.authMode || 'signup') === 'signup' ? `<div class="gcard"><b>Make an account to keep it</b><small>Then pay ${price} once. Your plan comes with you.</small>${authFormHtml('signup', true)}</div>`
     : `<div class="gcard"><b>Sign in to keep it</b><small>Already bought FU£L or used a code? Sign in and it opens.</small>${authFormHtml('signin', true)}</div>`;
-  const code = cloud.user ? `<form id="code-form" class="gcard codecard"><label for="gate-code"><b>Have a code?</b><small>From a friend, a club, or the founder.</small></label><div class="row"><input id="gate-code" class="big grow" name="code" required placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" spellcheck="false"><button class="go" type="submit">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>` : '';
+  const code = cloud.user ? `<form id="code-form" class="gcard codecard"><label for="gate-code"><b>Have a code?</b><small>From a friend, a club, or the founder.</small></label><div class="row"><input id="gate-code" class="big grow" name="code" required placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go"><button class="go" type="submit">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>` : '';
   el.innerHTML = `<div class="wrap gate-access"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>Your free week's up.</h1>
     <p>${weeks ? `Your ${weeks > 1 ? `${weeks} weeks` : 'week'}, your recipes and your shop lists are all still here.` : 'Everything you set up is still here.'} Keep them for ${price}, once.</p>
     ${buy}${matesHtml(true)}${code}
@@ -1574,7 +1595,9 @@ async function shareMates() {
 }
 // What the chosen (or cheapest) shop comes to at the till right now, worked out the way the Shop tab does it (things that shop doesn't sell
 // are priced at the cheapest other shop). Pantry shows it live, so ticking something visibly takes it off the bill.
-const cookOpen = new Set(); // Cook: which recipe folds are open (this visit only)
+let cookView = null; // Cook: the recipe whose page is open (this visit only)
+const cookGot = new Set(); // Cook: ingredients ticked off while getting things out (this visit only)
+let setSheet = null; // Settings: which sheet is open, so a change inside it can redraw it
 const justAdded = new Set(); // meals ticked under "More meals" this visit: they stay in that section (under your thumb) until you close it, then join your list
 let planMore = false; // Plan's "More meals" section (recipes not in your list yet), opened from the picker so nobody is sent off to Recipes and stranded
 let planAdd = null; // Plan page: true = Add meals view, false = Your week view, null = decide from the week. Never saved.
@@ -1631,8 +1654,8 @@ function renderPantry() {
   const restTicked = rest.filter((it) => w.pantry[it.id] !== undefined).length;
   const restHtml = rest.length && (!q || groupsHtml) ? `<details class="pantry-rest" ${q || S.pantryRestOpen ? 'open' : ''}><summary><span><b>The rest of your cupboard</b><small>Things your other recipes use. None of it is needed ${label}, so none of it is on the shop list.</small><small class="cnt">${rest.length} things${restTicked ? ` · ${restTicked} ticked` : ''}</small></span></summary>${groupsHtml}</details>` : '';
   const none = q && !wkHit.length && !groupsHtml ? `<p class="muted">Nothing called "${esc(S.pantrySearch)}" in your cupboard.</p>` : '';
-  return `<div class="settings-head"><button class="btn ghost small" data-action="screen-back">‹ Back</button><h1>Pantry</h1></div>${stepLine(0, `<strong>Your cupboard.</strong> Tick what you have; it comes off the shop list.`)}${weekSwitch()}${tipCard('pantry')}<div id="useby-banner">${useByInner('pantry')}</div><div class="pantryprice" id="pantryprice">${pantryPriceHtml(w)}</div>
-  <div class="row" style="margin-bottom:12px"><input class="search grow" placeholder="Search the cupboard" value="${esc(S.pantrySearch || '')}" data-pantry-search><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>
+  return `<div class="navbar"><button class="navback" data-action="screen-back">${ic('left', 18)}Back</button></div><h1>Pantry</h1>${stepLine(0, `<strong>Your cupboard.</strong> Tick what you have; it comes off the shop list.`)}${weekSwitch()}${tipCard('pantry')}<div id="useby-banner">${useByInner('pantry')}</div><div class="pantryprice" id="pantryprice">${pantryPriceHtml(w)}</div>
+  <div class="row" style="margin-bottom:12px"><input class="search grow" placeholder="Search the cupboard" value="${esc(S.pantrySearch || '')}" data-pantry-search inputmode="search" enterkeyhint="search" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>
   <h2 class="pweekhead">On ${whose} shopping list${wk.length ? ` <span class="muted" id="pantry-week-count">${wkTicked} of ${wk.length} ticked</span>` : ''}</h2>${wk.length ? `<p class="small muted" style="margin:-4px 0 8px">Only what your planned meals need. Got it already? Tick it.</p>` : ''}${weekHtml}${restHtml}${none}
   <div class="card nextcard"><b>Ticked what you have?</b><p class="small muted">Your shop list and its price are already up to date.</p><button class="btn block" data-action="go-tab" data-to="shop">Back to Shop</button></div>`;
 }
@@ -1653,62 +1676,60 @@ function moneyCard() {
   const plannedRow = planned ? `<div class="line"><span class="grow"><span class="name">This week, planned</span><span class="sub">${P.SHOP_NAMES[planned.shop]} · tick off the whole shop to log it</span></span><span class="cost muted">${P.gbp(planned.total)}</span></div>` : '';
   return `${stats}${plannedRow}${rows}`;
 }
+const MILKS = [['milk', 'Dairy (semi-skimmed)'], ['oat_milk', 'Oat'], ['almond_milk', 'Almond'], ['soya_milk', 'Soya']];
+// v101 Settings: grouped rows like the phone's own Settings. A row shows the value; tapping it opens a sheet from the bottom to change it.
 function renderSettings() {
-  const st = S.settings;
-  const goal = (k, l) => `<option value="${k}" ${st.goal === k ? 'selected' : ''}>${l}</option>`;
+  const st = S.settings; const wt = weightTrend(S.weights); const open = (k) => `data-action="set-sheet" data-sheet="${k}"`;
   const access = !cloud.enabled ? '' : paidUp() ? `Yours for life${cloud.planExpires ? ` until ${fmtDate(cloud.planExpires.slice(0, 10))}` : ''}` : matesUnlocked() ? 'Free for life: 3 mates planned a week' : !trialEnd() ? `Free ${S.trial?.days === 14 ? 'fortnight' : 'week'} · starts when you plan a week` : trialLeft() ? `Free week, day ${trialDay()} of ${trialTotalDays()} · free until ${dayName(trialEnd())}` : 'Free week over';
-  const buyBtn = cloud.enabled && !paidUp() && !matesUnlocked() && CONFIG.CHECKOUT_URL ? `<button class="btn block" data-action="buy-open" style="margin-top:12px">Upgrade now · ${esc(CONFIG.PRICE_LABEL || '£4.99')} once, for life</button>` : '';
-  const extrasAcct = cloud.enabled && !paidUp() ? `${buyBtn}${matesUnlocked() ? '' : matesHtml(false)}` : '';
-  const account = !cloud.enabled
-    ? `<div class="acct"><div class="avatar">☺</div><div class="grow"><b>This phone only</b><span class="sub muted">Everything is saved here. Sign-in and sync switch on with the cloud project.</span></div></div>`
-    : cloud.status === 'error' ? `<div class="bad-box">Cloud problem: ${esc(cloud.error || 'unknown')}. The app keeps working on this phone.</div>${extrasAcct}`
-    : !cloud.user ? `<div class="acct"><div class="avatar">☺</div><div class="grow"><b>Your plan lives on this phone</b><span class="sub muted">${access}</span></div></div>${onTrial() ? trialSegs() : ''}
-       <div class="row" style="margin-top:12px;gap:8px"><button class="btn ghost grow" data-action="account" data-mode="signup">Save to an account</button><button class="btn ghost grow" data-action="account" data-mode="signin">Sign in</button></div>${extrasAcct}`
-    : `<div class="acct"><div class="avatar">${esc((cloud.user.email || '?')[0].toUpperCase())}</div><div class="grow"><b>${esc(cloud.user.email)}</b><span class="sub muted">${access}${cloud.lastSync ? ` · synced ${new Date(cloud.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}</span></div></div>
-       <div class="row" style="margin-top:12px;gap:8px"><button class="btn ghost grow" data-action="signout">Sign out</button>${paidUp() ? '' : '<button class="btn ghost grow" data-action="code-sheet">Have a code?</button>'}</div>${extrasAcct}`;
-  return `<div class="settings-head"><button class="btn ghost small" data-action="settings-back">‹ Back</button><h1>Settings</h1></div>
-  <h2>Account</h2><div class="card">${account}</div>
-  <h2>You</h2><div class="card">
-    <div class="setgrid">
-      <label class="field">Bodyweight (kg)<input type="number" inputmode="numeric" data-setting="weight" value="${st.weight}"></label>
-      <label class="field">Weekly food budget (£)<input type="number" inputmode="numeric" data-setting="budget" value="${st.budget}"></label>
-    </div>
-    <label class="field">Goal<select data-setting-str="goal">${goal('build', 'Build muscle')}${goal('lean', 'Stay lean and strong')}${goal('lose', 'Lose fat, keep muscle')}${goal('eatwell', 'Just eat well')}</select></label>
-    <p class="small muted" style="margin:8px 0 0">Change these and the targets and portions follow.</p>
-    ${S.loan ? `<p class="small muted" style="margin:6px 0 0">£${S.loan.perWeek} a week from £${S.loan.left} till ${fmtDate(S.loan.until)}. <a href="#" data-action="loan-clear">Forget this</a></p>` : ''}
-  </div>
-  <h2>Look</h2><p class="small muted" style="margin:-4px 0 10px">Pick the colours. It changes straight away.</p><div class="looks">${Object.entries(LOOKS).map(([k, L]) => `<button class="look ${lookKey() === k ? 'on' : ''}" data-action="look" data-look="${k}" aria-pressed="${lookKey() === k}"><span class="lchip" style="background:rgb(${L.pg})"><i style="background:${L.p}"></i><i style="background:${L.ac}"></i></span><b>${L.name}</b>${lookKey() === k ? ic('check', 16) : ''}</button>`).join('')}</div>
-  <h2>Weigh-ins</h2><div class="card">
-    <label class="check"><input type="checkbox" data-setting-bool="adjustTargets" ${st.adjustTargets === false ? '' : 'checked'}><span>Offer to adjust my targets from my weight<span class="sub">Suggests +200 or −200 kcal from your weigh-ins. Never automatic.</span></span></label>
-    <div class="row" style="margin-top:10px;gap:8px;align-items:center"><span class="grow small muted">${(() => { const t = weightTrend(S.weights); return t ? `Last weigh-in ${t.latest} kg on ${fmtDate(t.points[t.points.length - 1].date)} · ${t.points.length} logged` : 'No weigh-ins yet. The Sunday check-in asks, or add one here.'; })()}</span><button class="btn ghost small" data-action="weigh-add">Add</button></div>
-  </div>
-  <h2>Daily targets</h2><div class="card">
-    <p class="small muted" style="margin:0 0 10px">Protein sizes the meat, fish and eggs; calories size the rice, pasta and bread. Never more than 1.5× a recipe.</p>
+  const canBuy = cloud.enabled && !paidUp() && !matesUnlocked();
+  const prof = (av, name, sub) => `<div class="gr prof"><span class="avatar">${av}</span><span class="gr-l">${name}${sub ? `<small>${sub}</small>` : ''}${onTrial() && trialEnd() ? trialSegs() : ''}</span></div>`;
+  const account = !cloud.enabled ? prof(ic('user', 22), 'This phone only', 'Everything is saved here.')
+    : (cloud.status === 'error' ? `<div class="bad-box" style="margin:10px 14px">Cloud problem: ${esc(cloud.error || 'unknown')}. The app keeps working on this phone.</div>` : '')
+      + (!cloud.user ? prof(ic('user', 22), 'Your plan lives on this phone', access) + gr('Save to an account', '', 'data-action="account" data-mode="signup"') + gr('Sign in', '', 'data-action="account" data-mode="signin"')
+        : prof(esc((cloud.user.email || '?')[0].toUpperCase()), esc(cloud.user.email), `${access}${cloud.lastSync ? ` · synced ${new Date(cloud.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}`) + (paidUp() ? '' : gr('Have a code?', '', 'data-action="code-sheet"')) + gr('Sign out', '', 'data-action="signout"', { plain: true }))
+      + (canBuy && CONFIG.CHECKOUT_URL ? gr('Upgrade', `${esc(CONFIG.PRICE_LABEL || '£4.99')} once, for life`, 'data-action="buy-open"', { cls: 'accent' }) : '')
+      + (canBuy && GROWTH_OK ? gr('Or free for life: bring 3 mates', `${Math.min(3, S.mate?.planned || 0)} of 3`, open('mates')) : '');
+  const L = LOOKS[lookKey()]; const avoidN = st.avoid.length + (st.avoidText || []).length;
+  const log = Object.values(S.spendLog || {}); const avg = log.length ? log.reduce((t, v) => t + v.total, 0) / log.length : 0;
+  return `<div class="navbar"><button class="navback" data-action="settings-back">${ic('left', 18)}Back</button></div><h1>Settings</h1>
+  ${gl('', account)}
+  ${gl('You', gr('Bodyweight', `${st.weight} kg`, open('weight')) + gr('Weekly food budget', `£${st.budget}`, open('budget')) + gr('Goal', GOAL_NAMES[st.goal] || '', open('goal')), `Change these and the targets and portions follow.${S.loan ? ` £${S.loan.perWeek} a week from £${S.loan.left} till ${fmtDate(S.loan.until)}. <a href="#" data-action="loan-clear">Forget this</a>` : ''}`)}
+  ${gl('Daily targets', gr('Calories', `${(st.kcalTarget || 0).toLocaleString()} kcal`, open('targets')) + gr('Protein', `${st.proteinTarget}g`, open('targets')), 'Protein sizes the meat, fish and eggs. Calories size the rice, pasta and bread.')}
+  ${gl('Look', gr('Colours', `<i class="lchip mini" style="background:rgb(${L.pg})"><i style="background:${L.p}"></i><i style="background:${L.ac}"></i></i>${L.name}`, open('look')))}
+  ${gl('Food', gr('Things you do not eat', avoidN ? `${avoidN} hidden` : 'None', open('avoid')) + gr('Milk', (MILKS.find(([k]) => k === (st.milk || 'milk')) || MILKS[0])[1], open('milk')) + gsw('Thigh fillets instead of breast', 'preferThigh', !!st.preferThigh, 'Swaps every breast line. Breast is cheaper per kilo right now.'))}
+  ${gl('Weigh-ins', gr('Add a weigh-in', wt ? `${wt.latest} kg · ${fmtDate(wt.points[wt.points.length - 1].date)}` : 'None yet', 'data-action="weigh-add"') + gsw('Suggest target changes', 'adjustTargets', st.adjustTargets !== false, 'Offers +200 or −200 kcal from your weigh-ins. Never automatic.'))}
+  ${gl('Money', gr('Spending by week', avg ? `${P.gbp(avg)} average` : 'Nothing logged yet', open('money')))}
+  ${gl('App', (isStandalone() ? '' : gr('Put FU£L on your home screen', '', open('install'))) + (cloud.enabled ? gsw('Count my visits, anonymously', 'countSteps', st.countSteps !== false, 'Which steps people get stuck on. A random number for this phone, never your name, email or plan.') : '') + gr('Show the intro again', '', 'data-action="intro"', { plain: true }) + gr('Show the tips again', '', 'data-action="tips-again"', { plain: true }) + gr('Copy a backup', '', 'data-action="export"', { plain: true }) + gr('Paste a backup', '', 'data-action="import"', { plain: true }))}
+  ${gl('About', gr('What is new', APP_VERSION, open('whatsnew')) + grLink('Terms', 'terms.html') + grLink('Privacy', 'privacy.html'))}
+  ${gl('', `<button class="gr danger" data-action="reset"><span class="gr-l">Reset everything</span></button>`)}
+  <p class="gl-foot" style="text-align:center;margin-top:18px">${esc(CONFIG.APP_NAME)} ${APP_VERSION} · prices checked ${dateRange(DATA.priceDates || [])}</p>
+  ${new URLSearchParams(location.search).has('debug') ? `<p class="small muted screenfacts" style="text-align:center;font-size:12px;opacity:.7;margin-top:-6px">${esc(screenFacts())}</p>` : ''}`;
+}
+// What each Settings row opens. One function so a change made inside a sheet can redraw it in place.
+function settingsSheet(kind) {
+  const st = S.settings; const done = `<button class="btn block" data-action="close-sheet" style="margin-top:16px">Done</button>`;
+  const opts = (key, list, cur) => `<div class="gl">${list.map(([k, l]) => `<button class="gr opt ${cur === k ? 'on' : ''}" data-action="set-pick" data-key="${key}" data-val="${k}"><span class="gr-l">${l}</span>${cur === k ? ic('check', 18) : ''}</button>`).join('')}</div>`;
+  const num = (key, title, note, unit, val, attrs) => `<h3>${title}</h3><p class="small muted" style="margin:0 0 12px">${note}</p><form id="set-num" data-key="${key}"><div class="numfield"><input class="big" name="v" type="number" ${attrs} value="${val}" enterkeyhint="done" autocomplete="off" required><span>${unit}</span></div><button class="btn block" type="submit" style="margin-top:14px">Save</button></form>`;
+  if (kind === 'weight') return num('weight', 'Bodyweight', 'Your calorie and protein targets follow your weight.', 'kg', st.weight, 'inputmode="decimal" step="0.1" min="30" max="200"');
+  if (kind === 'budget') return num('budget', 'Weekly food budget', 'What you want to spend on food in a week.', '£ a week', st.budget, 'inputmode="numeric" step="1" min="10" max="300"');
+  if (kind === 'goal') return `<h3>Your goal</h3><p class="small muted" style="margin:0 0 12px">Targets and portions follow it.</p>${opts('goal', Object.entries(GOAL_NAMES), st.goal)}`;
+  if (kind === 'milk') return `<h3>Milk</h3><p class="small muted" style="margin:0 0 12px">Every recipe and shop line switches.</p>${opts('milk', MILKS, st.milk || 'milk')}`;
+  if (kind === 'targets') return `<h3>Daily targets</h3><p class="small muted" style="margin:0 0 14px">Protein sizes the meat, fish and eggs; calories size the rice, pasta and bread. Never more than 1.5× a recipe.</p>
     <label class="field">Calories <b data-val="kcalTarget">${(st.kcalTarget || 0).toLocaleString()}</b> kcal a day<input class="range" type="range" min="1200" max="4500" step="50" data-setting="kcalTarget" value="${st.kcalTarget || 2500}"></label>
     <label class="field">Protein <b data-val="proteinTarget">${st.proteinTarget}g</b> a day<input class="range" type="range" min="80" max="260" step="5" data-setting="proteinTarget" value="${st.proteinTarget}"></label>
     <div id="macro-preview">${macroPreview(st.kcalTarget, st.proteinTarget)}</div>
-    <button class="btn ghost small" data-action="suggest-targets">Reset targets to match my weight and goal</button>
-  </div>
-  <h2>Things you don't eat</h2><div class="card">
-    <p class="small muted" style="margin:0 0 8px">Hidden from every list.</p>
-    <div class="chip-row">${Object.entries(AVOID).map(([k, v]) => `<button class="chip ${st.avoid.includes(k) ? 'on' : ''}" data-action="avoid" data-id="${k}">${v.label}</button>`).join('')}</div>
-    <div class="row" style="margin-top:10px"><input class="grow" id="settings-avoid-text" placeholder="Anything else, e.g. mushrooms" autocapitalize="none"><button class="btn small" data-action="settings-avoid-add">Add</button></div>${avoidTextChips('settings-avoid-rm')}
-  </div>
-  <h2>Money</h2><div class="card">${moneyCard()}</div>
-  <h2>Shopping</h2><div class="card">
-    <label class="field">Milk<select data-setting-str="milk">${[['milk', 'Dairy (semi-skimmed)'], ['oat_milk', 'Oat'], ['almond_milk', 'Almond'], ['soya_milk', 'Soya']].map(([k, l]) => `<option value="${k}" ${(st.milk || 'milk') === k ? 'selected' : ''}>${l}</option>`).join('')}</select><span class="sub">Every recipe and shop line switches.</span></label>
-    <label class="check"><input type="checkbox" data-setting-bool="preferThigh" ${st.preferThigh ? 'checked' : ''}><span>Buy thigh fillets instead of breast<span class="sub">Swaps every breast line. Breast is cheaper per kilo right now.</span></span></label>
-  </div>
-  ${isStandalone() ? '' : `<h2>On your phone</h2>${installCard(true)}`}
-  <h2>App</h2><div class="card">
-    ${cloud.enabled ? `<label class="check" style="margin-bottom:10px"><input type="checkbox" data-setting-bool="countSteps" ${st.countSteps === false ? '' : 'checked'}><span>Count my visits, anonymously<span class="sub">Tells us which steps people get stuck on, e.g. "planned a week". A random number for this phone, never your name, email or plan. <a href="privacy.html">How</a></span></span></label>` : ''}
-    <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-action="intro">Show the intro again</button><button class="btn ghost small" data-action="tips-again">Show the tips again</button><button class="btn ghost small" data-action="export">Copy backup</button><button class="btn ghost small" data-action="import">Paste backup</button></div>
-    <button class="btn danger block" data-action="reset" style="margin-top:12px">Reset everything</button>
-  </div>
-  <h2>What's new</h2><div class="card">${WHATS_NEW.map(([v, d, t]) => `<div class="line"><span class="grow"><span class="name">${v} · ${d}</span><span class="sub">${esc(t)}</span></span></div>`).join('')}</div>
-  <p class="small muted" style="text-align:center">${esc(CONFIG.APP_NAME)} ${APP_VERSION} · prices checked ${dateRange(DATA.priceDates || [])} · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></p>
-  ${new URLSearchParams(location.search).has('debug') ? `<p class="small muted screenfacts" style="text-align:center;font-size:12px;opacity:.7;margin-top:-6px">${esc(screenFacts())}</p>` : ''}`;
+    <button class="btn ghost block" data-action="suggest-targets" style="margin-top:12px">Reset to match my weight and goal</button>${done}`;
+  if (kind === 'look') return `<h3>Colours</h3><p class="small muted" style="margin:0 0 12px">Tap one. It changes straight away.</p><div class="looks">${Object.entries(LOOKS).map(([k, L]) => `<button class="look ${lookKey() === k ? 'on' : ''}" data-action="look" data-look="${k}" aria-pressed="${lookKey() === k}"><span class="lchip" style="background:rgb(${L.pg})"><i style="background:${L.p}"></i><i style="background:${L.ac}"></i></span><b>${L.name}</b>${lookKey() === k ? ic('check', 16) : ''}</button>`).join('')}</div>${done}`;
+  if (kind === 'avoid') return `<h3>Things you do not eat</h3><p class="small muted" style="margin:0 0 12px">Hidden from every list.</p><div class="chip-row">${Object.entries(AVOID).map(([k, v]) => `<button class="chip ${st.avoid.includes(k) ? 'on' : ''}" data-action="avoid" data-id="${k}">${v.label}</button>`).join('')}</div>
+    <div class="row" style="margin-top:12px;gap:8px"><input class="grow" id="settings-avoid-text" placeholder="Anything else, e.g. mushrooms" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done"><button class="btn small" data-action="settings-avoid-add">Add</button></div>${avoidTextChips('settings-avoid-rm')}${done}`;
+  if (kind === 'money') return `<h3>Spending by week</h3>${moneyCard()}${done}`;
+  if (kind === 'install') return `${installCard(true)}${done}`;
+  if (kind === 'mates') return `${matesHtml(false)}${done}`;
+  if (kind === 'whatsnew') return `<h3>What is new</h3><div class="wnlist">${WHATS_NEW.map(([v, d, t]) => `<div><b>${v} · ${d}</b><p>${esc(t)}</p></div>`).join('')}</div>${done}`;
+  return '';
 }
+function openSet(kind) { openSheet(settingsSheet(kind), () => { if (['settings', 'more'].includes(S.tab)) render(); }); setSheet = kind; if (kind === 'mates') refreshMates(); const f = document.querySelector('#sheet .numfield input'); if (f) { f.focus(); f.select?.(); } }
+function refreshSet() { if (!setSheet || document.getElementById('sheet').hidden) return false; const inner = document.getElementById('sheet-inner'), y = inner.scrollTop; inner.innerHTML = settingsSheet(setSheet); inner.scrollTop = y; return true; }
 
 // ---------- sheet ----------
 // ---------- Install: Chrome/Edge (Android, desktop) hand us a native install prompt; iPhone Safari can only Add to Home Screen ----------
@@ -1764,6 +1785,15 @@ async function retarget(oldWeight, oldGoal) {
   toast(`Targets now ${nums}.${resized ? ' Portions resized to match.' : ''}`, 3500);
 }
 function showText(title, txt) { openSheet(`<h3>${esc(title)}</h3><textarea class="field" style="width:100%;min-height:140px" readonly>${esc(txt)}</textarea><button class="btn block" data-action="close-sheet" style="margin-top:10px">Done</button>`); }
+function askNumber(title, placeholder, unit = '') {
+  return new Promise((resolve) => {
+    openSheet(`<h3>${esc(title)}</h3><form id="ask-num"><div class="numfield"><input class="big" id="ask-num-v" type="text" inputmode="decimal" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="${esc(placeholder)}">${unit ? `<span>${esc(unit)}</span>` : ''}</div><div class="row" style="margin-top:14px;gap:8px"><button type="button" class="btn ghost grow" data-dlg="0">Cancel</button><button type="submit" class="btn grow" data-dlg="1">OK</button></div></form>`);
+    const inner = document.getElementById('sheet-inner'); const done = (ok) => { const v = document.getElementById('ask-num-v')?.value ?? ''; inner.onclick = null; closeSheet(); resolve(ok ? v : null); };
+    inner.querySelector('form').onsubmit = (e) => { e.preventDefault(); e.stopPropagation(); done(true); };
+    inner.onclick = (e) => { const b = e.target.closest('[data-dlg="0"]'); if (b) done(false); };
+    document.getElementById('ask-num-v').focus();
+  });
+}
 function askText(title, placeholder) {
   return new Promise((resolve) => {
     openSheet(`<h3>${esc(title)}</h3><textarea id="ask-text" class="field" style="width:100%;min-height:140px" placeholder="${esc(placeholder)}"></textarea><div class="row" style="margin-top:10px"><button class="btn ghost grow" data-dlg="0">Cancel</button><button class="btn grow" data-dlg="1">OK</button></div>`);
@@ -1790,7 +1820,7 @@ function introStep(n) {
     1: `${gateInstallHint()}<h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${picked === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
     2: `<h1>How much do you weigh?</h1><p>Kilos, roughly. Your daily protein and calorie targets come from this and your goal. Meals are sized to them, never more than 1.5× the recipe.</p><input class="big" type="number" id="intro-weight" inputmode="decimal" placeholder="kg" value="${S.settings.onboarded ? wt : ''}" min="30" max="200"><div class="stat-row"><div><b id="iw-p">${S.settings.onboarded ? `${P.proteinTargetFor(wt, g)}g` : '—'}</b><span>protein a day</span></div><div><b id="iw-f">${S.settings.onboarded ? P.kcalTargetFor(wt, g).toLocaleString() : '—'}</b><span>kcal a day</span></div></div><button class="go" data-action="intro-weight">Next</button><button class="back" data-action="intro-back">Back</button>`,
     3: `<h1>Weekly food budget?</h1><p>The shop list always shows what's left against it.</p><div class="chips">${budgets.map((b) => `<button class="opt ${S.settings.budget === b ? 'on' : ''}" data-action="intro-budget" data-budget="${b}">£${b}</button>`).join('')}</div><p style="margin-bottom:6px">Or type your own</p><input class="big" type="number" id="intro-budget" inputmode="numeric" placeholder="£" min="10" max="300"><p style="margin:14px 0 6px">Or work it out from what's left</p><div class="row" style="gap:8px"><input class="big grow" type="number" id="intro-loan-left" inputmode="numeric" placeholder="£ left" value="${S.loan?.left || ''}" style="margin:0"><input class="big grow" type="date" id="intro-loan-until" value="${S.loan?.until || ''}" style="margin:0;font-size:16px"></div><p class="small" id="intro-loan-out" style="margin:8px 0 0;min-height:1.4em"></p><button class="go" data-action="intro-budget-custom">Next</button><button class="back" data-action="intro-back">Back</button>`,
-    4: `<h1>Anything you don't eat?</h1><p>Recipes with these are hidden. Tap all that apply.</p><div class="chips">${Object.entries(AVOID).map(([k, v]) => `<button class="opt ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><p style="margin:16px 0 6px">Anything else? Allergies, or things you just don't like.</p><div class="row"><input class="big grow" id="intro-avoid-text" data-enter="intro-avoid-add" placeholder="e.g. mushrooms" autocapitalize="none" style="font-size:18px;text-align:left;margin:0"><button class="go" style="width:auto;margin:0;padding:14px 18px;font-size:16px" data-action="intro-avoid-add">Add</button></div>${avoidTextChips('intro-avoid-rm')}<p style="margin:16px 0 6px">Which milk?</p><div class="chips">${[['milk', 'Dairy'], ['oat_milk', 'Oat'], ['almond_milk', 'Almond'], ['soya_milk', 'Soya']].map(([k, l]) => `<button class="opt ${(S.settings.milk || 'milk') === k ? 'on' : ''}" data-action="intro-milk" data-id="${k}">${l}</button>`).join('')}</div><button class="go" data-action="intro-next">Next</button><button class="back" data-action="intro-back">Back</button>`,
+    4: `<h1>Anything you don't eat?</h1><p>Recipes with these are hidden. Tap all that apply.</p><div class="chips">${Object.entries(AVOID).map(([k, v]) => `<button class="opt ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><p style="margin:16px 0 6px">Anything else? Allergies, or things you just don't like.</p><div class="row"><input class="big grow" id="intro-avoid-text" data-enter="intro-avoid-add" placeholder="e.g. mushrooms" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" style="font-size:18px;text-align:left;margin:0"><button class="go" style="width:auto;margin:0;padding:14px 18px;font-size:16px" data-action="intro-avoid-add">Add</button></div>${avoidTextChips('intro-avoid-rm')}<p style="margin:16px 0 6px">Which milk?</p><div class="chips">${[['milk', 'Dairy'], ['oat_milk', 'Oat'], ['almond_milk', 'Almond'], ['soya_milk', 'Soya']].map(([k, l]) => `<button class="opt ${(S.settings.milk || 'milk') === k ? 'on' : ''}" data-action="intro-milk" data-id="${k}">${l}</button>`).join('')}</div><button class="go" data-action="intro-next">Next</button><button class="back" data-action="intro-back">Back</button>`,
     5: `<h1>You're set.</h1><p class="lit"><b>${S.settings.proteinTarget}g</b> of protein and <b>${(S.settings.kcalTarget || 0).toLocaleString()}</b> kcal a day, on <b>£${S.settings.budget}</b> a week. Plan, shop, cook.</p>${onTrial() ? `<div class="freebox"><b>${trialEnd() ? `Free until ${dayName(trialEnd())}.` : `Your first ${S.trial?.days === 14 ? '14 days are' : 'week is'} free, from the day you plan it.`}</b> Every feature. No card, nothing to cancel.</div>` : ''}<span class="ring"><button class="go" data-action="intro-auto">Plan my week for me</button></span><button class="go ghostgo" data-action="intro-done">I'll pick my own meals</button><button class="back" data-action="intro-back">Back</button>`,
   }[n];
   el.innerHTML = `<div class="wrap ${n ? '' : 'welcome'}">${dots}${step}</div>`; el.hidden = false;
@@ -1808,12 +1838,65 @@ document.getElementById('intro').addEventListener('click', onAction);
 document.getElementById('cookmode').addEventListener('click', onAction);
 document.getElementById('gate').addEventListener('click', onAction);
 document.getElementById('gate').addEventListener('submit', onSubmit);
-function openSheet(html) { const s = document.getElementById('sheet'); document.getElementById('sheet-inner').innerHTML = html; s.hidden = false; }
-function closeSheet() { document.getElementById('sheet').hidden = true; }
-document.getElementById('sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') { closeSheet(); if (S.pendingBuy) { S.pendingBuy = false; save(); } } else onAction(e); });
+let sheetAfter = null; // run once when the sheet closes, however it closes (a settings sheet redraws the page behind it)
+function openSheet(html, after) { const s = document.getElementById('sheet'), inner = document.getElementById('sheet-inner'); inner.innerHTML = html; inner.style.transform = ''; inner.style.transition = ''; inner.scrollTop = 0; s.hidden = false; sheetAfter = after || null; if (!after) setSheet = null; }
+function closeSheet() { const s = document.getElementById('sheet'); const was = !s.hidden; s.hidden = true; const f = sheetAfter; sheetAfter = null; setSheet = null; if (was && f) f(); }
+function dismissSheet() { closeSheet(); if (S.pendingBuy) { S.pendingBuy = false; save(); } }
+document.getElementById('sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') dismissSheet(); else onAction(e); });
+
+// ---------- v101: five things a phone app does (swipe back, sheets you can flick away, the right keyboard, a tap you can feel, tap the top to go up) ----------
+// A tap you can feel. Android has navigator.vibrate. iPhone has no web vibration, but toggling a hidden switch control plays the system tick (iOS 17.4 and later).
+const HAPTIC = { tick: [8], tap: [12], save: [14, 70, 22], warn: [40, 70, 40, 70, 40] };
+function haptic(kind = 'tap') {
+  try {
+    if (navigator.vibrate) { if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return; navigator.vibrate(HAPTIC[kind] || HAPTIC.tap); return; }
+    if (!matchMedia('(pointer: coarse)').matches) return;
+    const once = () => { const l = document.createElement('label'); l.setAttribute('aria-hidden', 'true'); l.style.display = 'none'; const i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); l.appendChild(i); document.head.appendChild(l); l.click(); document.head.removeChild(l); };
+    once(); if (kind === 'save') setTimeout(once, 120); else if (kind === 'warn') { setTimeout(once, 120); setTimeout(once, 240); }
+  } catch {}
+}
+// Flick a sheet down to close it (only from the top of its own scroll, and never from inside a field or a slider).
+(() => {
+  const inner = document.getElementById('sheet-inner'); let y0 = null, dy = 0, ok = false;
+  inner.addEventListener('touchstart', (e) => { ok = e.touches.length === 1 && inner.scrollTop <= 0 && !e.target.closest('input, textarea, select'); y0 = e.touches[0].clientY; dy = 0; }, { passive: true });
+  inner.addEventListener('touchmove', (e) => { if (!ok || y0 === null) return; dy = e.touches[0].clientY - y0; if (dy > 8) { inner.style.transition = 'none'; inner.style.transform = `translateY(${dy - 8}px)`; } else inner.style.transform = ''; }, { passive: true });
+  const end = () => { if (y0 === null) return; y0 = null; if (!ok) return; inner.style.transition = 'transform .2s ease'; if (dy > 110) { inner.style.transform = 'translateY(105%)'; setTimeout(() => { dismissSheet(); inner.style.transition = ''; inner.style.transform = ''; }, 190); } else inner.style.transform = ''; dy = 0; };
+  inner.addEventListener('touchend', end); inner.addEventListener('touchcancel', end);
+})();
+// What "back" means on the screen you are looking at, or null when there is nowhere to go back to.
+function backTarget() {
+  if (['sheet', 'intro', 'gate'].some((id) => !document.getElementById(id).hidden)) return null;
+  if (CM.id) return { el: document.getElementById('cookmode'), go: () => { if (CM.step > 0) { CM.step -= 1; cmRender(); } else cmClose(); } };
+  if (S.tab === 'cook' && cookView) return { go: () => { cookView = null; render({ top: true, anim: 'pop' }); } };
+  if (SUB_SCREENS.includes(S.tab)) return { go: screenBack };
+  return null;
+}
+function screenBack() { S.tab = S.prevTab && !SUB_SCREENS.includes(S.prevTab) ? S.prevTab : 'more'; pantryBase = null; save(); render({ top: true, anim: 'pop' }); }
+// Swipe right from anywhere on the screen to go back, not just from the edge. The page follows the finger; let go past a third of the way, or flick, and it goes.
+(() => {
+  let g = null;
+  const skip = 'input, textarea, select, .hmenu, .day-pick, .wl-arc, [data-noswipe]';
+  document.addEventListener('touchstart', (e) => { g = null; if (e.touches.length !== 1 || e.target.closest(skip)) return; const b = backTarget(); if (!b) return; const t = e.touches[0]; g = { x: t.clientX, y: t.clientY, b, el: b.el || document.getElementById('view'), on: false, at: Date.now(), dx: 0 }; }, { passive: true });
+  document.addEventListener('touchmove', (e) => {
+    if (!g) return; const t = e.touches[0], dx = t.clientX - g.x, dy = t.clientY - g.y;
+    if (!g.on) { if (Math.abs(dy) > 10 && Math.abs(dy) >= Math.abs(dx)) { g = null; return; } if (dx > 14 && dx > Math.abs(dy) * 1.7) { g.on = true; g.el.style.transition = 'none'; } else return; }
+    g.dx = Math.max(0, dx - 14); g.el.style.transform = `translateX(${g.dx}px)`; g.el.style.opacity = String(1 - Math.min(0.4, g.dx / 800)); if (e.cancelable) e.preventDefault();
+  }, { passive: false });
+  const end = () => {
+    if (!g) return; const { el, b, dx, on, at } = g; g = null; if (!on) return;
+    const go = dx > Math.min(120, innerWidth * 0.3) || (dx > 36 && Date.now() - at < 280);
+    el.style.transition = 'transform .17s ease-out, opacity .17s ease-out';
+    if (go) { el.style.transform = 'translateX(100%)'; el.style.opacity = '0.4'; haptic('tick'); setTimeout(() => { el.style.transition = 'none'; el.style.transform = ''; el.style.opacity = ''; b.go(); }, 160); }
+    else { el.style.transform = ''; el.style.opacity = ''; }
+  };
+  document.addEventListener('touchend', end); document.addEventListener('touchcancel', end);
+})();
+// Tap the very top of the screen (or the tab you are already on) and the page runs back to the top. A web app cannot hear a tap on the status bar itself, so a thin strip under it listens instead.
+function scrollTopNow() { const v = document.getElementById('view'); if (v.scrollTop > 0) { v.scrollTo({ top: 0, behavior: 'smooth' }); haptic('tick'); } }
+(() => { const s = document.createElement('div'); s.id = 'topstrip'; s.setAttribute('aria-hidden', 'true'); document.body.appendChild(s); s.addEventListener('click', scrollTopNow); document.getElementById('statusband').addEventListener('click', scrollTopNow); })();
 document.getElementById('sheet').addEventListener('submit', onSubmit);
 document.getElementById('sheet').addEventListener('input', onInput);
-document.getElementById('sheet').addEventListener('change', (e) => { if (onTweakChange(e)) return; const chip = e.target.closest('.chip'); if (chip && e.target.type === 'checkbox') chip.classList.toggle('on', e.target.checked); });
+document.getElementById('sheet').addEventListener('change', (e) => { if (onTweakChange(e)) return; const d = e.target.dataset; if (d.setting || d.settingStr || d.settingBool) { onChange(e); return; } const chip = e.target.closest('.chip'); if (chip && e.target.type === 'checkbox') chip.classList.toggle('on', e.target.checked); });
 
 // ---------- drag and drop between grid cells ----------
 const drag = { src: null, ghost: null, over: null, active: false, x: 0, y: 0, lx: 0, ly: 0, timer: null, touch: false, raf: null, scrollDir: 0 };
@@ -1921,23 +2004,24 @@ function onAction(e) {
   if (picked && !(el && el.dataset.action === 'cell')) { dropPicked(null); }
   if (!el) return;
   const a = el.dataset.action, id = el.dataset.id; const w = W();
+  haptic(['inc', 'dec', 'week', 'cm-next', 'cm-back', 'avoid', 'look', 'cook-view', 'cook-back', 'set-sheet'].includes(a) ? 'tick' : 'tap');
   if (a === 'inc' || a === 'dec') {
     if (a === 'inc' && P.roomFor(recById(id), P.freeSlots(w.grid, w.days)) <= 0) return;
     w.portions[id] = Math.max(0, (w.portions[id] || 0) + (a === 'inc' ? 1 : -1));
     if (!w.portions[id]) delete w.portions[id];
     relayout(); refreshPlan(rowSel(id));
   } else if (a === 'week') { S.activeWeek = el.dataset.week; planAdd = null; save(); render(); }
-  else if (a === 'cookday') { closeSheet(); w.cookDay = +el.dataset.day; relayout(); if (S.tab === 'plan') refreshPlan(); else render(); }
+  else if (a === 'cookday') { closeSheet(); w.cookDay = +el.dataset.day; haptic('save'); relayout(); if (S.tab === 'plan') refreshPlan(); else render(); }
   else if (a === 'quick-pick') { const r = recById(id); const room = P.roomFor(r, P.freeSlots(w.grid, w.days)); if (r && w.portions[r.id]) { toast('Already in the week. Change the count in the list below.'); return; } if (r && room > 0) { if (S.library && !S.library.includes(r.id)) S.library.push(r.id); w.portions[r.id] = Math.min(defaultPortions(r), room); relayout(); holdPlace(el.closest('#useup-card') ? '#useup-card' : '#pick-head', () => render()); } else toast('No room left in the week for that'); }
   else if (a === 'relayout') { relayout(); refreshPlan(); }
   else if (a === 'dayx') { closeSheet(); const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); refreshPlan(); }
   else if (a === 'day-sheet') { const i = +el.dataset.day; const d = new Date(S.activeWeek + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + i); openSheet(`<h3>${DAY_FULL[i]} ${fmtDate(d.toISOString().slice(0, 10))}</h3><p class="small muted">${w.days[i] ? 'Skipping a day takes its meals out of the week, the shop and the cook.' : 'This day is skipped.'}</p><button class="btn block ${w.days[i] ? 'ghost' : ''}" data-action="dayx" data-day="${i}" style="margin-top:8px">${w.days[i] ? 'Skip this day' : 'Put this day back'}</button><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Cancel</button>`); }
-  else if (a === 'cookday-sheet') { openSheet(`<h3>Which day do you cook?</h3><p class="small muted">One batch cook, then it's boxed up for the week.</p>${cookDayChips(w)}<button class="btn ghost block" data-action="close-sheet" style="margin-top:10px">Done</button>`); }
+  else if (a === 'cookday-sheet') { openSheet(`<h3>Which day do you cook?</h3><p class="small muted" style="margin:0 0 12px">One batch cook, then it is boxed up for the week. A Sunday cook is the Sunday before the week.</p>${cookDayChips(w)}<button class="btn ghost block" data-action="close-sheet" style="margin-top:14px">Done</button>`); }
   
   else if (a === 'need') { delete w.pantry[id]; delete (w.useUp || {})[id]; dropUseBy(id); save(); render(); }
   else if (a === 'extra-add') { openSheet(extrasSheet('')); document.querySelector('[data-extra-search]')?.focus(); }
   else if (a === 'extra-custom') { const name = el.dataset.name; closeSheet(); (async () => {
-    const price = await askText(`${name}: what does one cost? (£)`, 'e.g. 1.50'); if (price === null) return; const pr = parseFloat(String(price).replace(/[^0-9.]/g, '')); if (!(pr >= 0)) { toast('Type a price'); return; }
+    const price = await askNumber(`${name}: what does one cost?`, '1.50', '£'); if (price === null) return; const pr = parseFloat(String(price).replace(/[^0-9.]/g, '')); if (!(pr >= 0)) { toast('Type a price'); return; }
     const id = 'custom_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
     if (!ingById(id)) { S.customIngredients.push({ id, name, unit: 'each', protein: 0, kcal: 0, category: 'cupboard', packs: [{ shop: 'any', name, size: 1, price: pr, checked: iso(new Date()) }] }); bustCaches(); }
     const n = await askExtraQty(ingById(id)); if (n === null) return;
@@ -1952,12 +2036,12 @@ function onAction(e) {
   else if (a === 'useby-meals') { pantryBase = null; S.activeWeek = S.thisMon; S.tab = 'plan'; planAdd = null; save(); render({ top: true }); document.getElementById('useup-card')?.scrollIntoView({ block: 'start' }); }
   else if (a === 'useup') { w.useUp ||= {}; if (w.useUp[id]) delete w.useUp[id]; else { w.useUp[id] = true; if (w.pantry[id] === undefined) w.pantry[id] = true; } save(); render(); }
   else if (a === 'pick-shop') { w.shop = el.dataset.shop; save(); render(); }
-  else if (a === 'look') { if (LOOKS[el.dataset.look]) { S.look = el.dataset.look; applyTheme(); save(); holdPlace('.looks', () => render()); } }
+  else if (a === 'look') { if (LOOKS[el.dataset.look]) { S.look = el.dataset.look; applyTheme(); save(); if (!refreshSet()) render(); } }
   else if (a === 'loan-clear') { e.preventDefault(); delete S.loan; save(); render(); }
   else if (a === 'whatsnew-seen') { S.seenVersion = APP_VERSION; save(); render(); }
   else if (a === 'adjust-yes') { const d = +el.dataset.kcal; setTargets(S.settings.kcalTarget + d, S.settings.proteinTarget); S.adjSnooze = addDays(todayISO(), 21); save(); render(); toast(`${S.settings.kcalTarget.toLocaleString()} kcal a day. Portions and the shop list resized.`, 3500); }
   else if (a === 'adjust-later') { S.adjSnooze = addDays(todayISO(), 7); save(); render(); }
-  else if (a === 'weigh-add') { askText('Weight today (kg)', 'e.g. 85.4').then((v) => { const kg = parseFloat(String(v ?? '').replace(',', '.')); if (v === null) return; if (!(kg >= 30 && kg <= 200)) { toast('Between 30 and 200 kg'); return; } const t = todayISO(); S.weights = (S.weights || []).filter((x) => x.date !== t); S.weights.push({ date: t, kg: Math.round(kg * 10) / 10 }); S.weights.sort((x, y) => x.date.localeCompare(y.date)); S.weights = S.weights.slice(-60); save(); render(); toast(`${kg} kg logged`); }); }
+  else if (a === 'weigh-add') { askNumber('Weight today', '85.4', 'kg').then((v) => { const kg = parseFloat(String(v ?? '').replace(',', '.')); if (v === null) return; if (!(kg >= 30 && kg <= 200)) { toast('Between 30 and 200 kg'); return; } const t = todayISO(); S.weights = (S.weights || []).filter((x) => x.date !== t); S.weights.push({ date: t, kg: Math.round(kg * 10) / 10 }); S.weights.sort((x, y) => x.date.localeCompare(y.date)); S.weights = S.weights.slice(-60); save(); haptic('save'); render(); toast(`${kg} kg logged`); }); }
   else if (a === 'checkin-start') { const k = el.dataset.week || checkinWeeks()[0] || S.thisMon; checkinStart(k); }
   else if (a === 'checkin-eaten' && CI) { const p = CI.planned[id] || 0; CI.eaten[id] = Math.max(0, Math.min(p, (CI.eaten[id] || 0) + +el.dataset.d)); checkinStep(1); }
   else if (a === 'checkin-out' && CI) { CI.out = +el.dataset.n; checkinStep(1); }
@@ -1988,17 +2072,17 @@ function onAction(e) {
     if (a === 'share-list' && navigator.share) { navigator.share({ title: 'Fuel shopping list', text: txt }).catch(() => {}); return; }
     (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => toast('List copied. Paste it anywhere.'), () => askText('Copy this list', txt));
   }
-  else if (a === 'avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); render(); }
-  else if (a === 'settings') { if (S.tab !== 'settings') S.prevTab = S.tab; S.tab = 'settings'; save(); render({ top: true }); }
-  else if (a === 'settings-back') { S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan'; save(); render({ top: true }); }
-  else if (a === 'screen-back') { S.tab = S.prevTab && !SUB_SCREENS.includes(S.prevTab) ? S.prevTab : 'more'; pantryBase = null; save(); render({ top: true }); } // v91: Recipes and Pantry go back to where they were opened from (More, or the Shop fold)
+  else if (a === 'avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); if (!refreshSet()) render(); }
+  else if (a === 'settings') { if (S.tab !== 'settings') S.prevTab = S.tab; S.tab = 'settings'; save(); render({ top: true, anim: 'push' }); }
+  else if (a === 'settings-back') { screenBack(); }
+  else if (a === 'screen-back') { screenBack(); } // v91: Recipes and Pantry go back to where they were opened from (More, or the Shop fold)
   else if (a === 'install') { if (installEvt) { installEvt.prompt(); installEvt.userChoice.then(() => { installEvt = null; }); } else toast('Use your browser menu: Install app / Add to Home Screen'); }
-  else if (a === 'tips-again') { S.tips = {}; save(); render(); toast('Tips are back on every tab'); }
+  else if (a === 'tips-again') { S.tips = {}; save(); haptic('save'); render(); toast('Tips are back on every tab'); }
   else if (a === 'tip-done') { S.tips ||= {}; S.tips[el.dataset.tip] = true; save(); holdPlace(S.tab === 'plan' ? '#pick-head' : '', () => render()); }
   else if (a === 'plan-add') { planAdd = true; render({ top: true }); }
   else if (a === 'plan-week') { planAdd = false; render({ top: true }); }
   // Next-step buttons inside a page. They must not carry data-tab (that lives on the tab bar only), so they name the tab in data-to; data-week also switches week.
-  else if (a === 'go-tab') { if (el.dataset.week && S.weeks[el.dataset.week]) S.activeWeek = el.dataset.week; if (el.dataset.to !== S.tab) pantryBase = null; if (SUB_SCREENS.includes(el.dataset.to) && !SUB_SCREENS.includes(S.tab)) S.prevTab = S.tab; S.tab = el.dataset.to; planAdd = null; save(); render({ top: true }); }
+  else if (a === 'go-tab') { if (el.dataset.week && S.weeks[el.dataset.week]) S.activeWeek = el.dataset.week; if (el.dataset.to !== S.tab) pantryBase = null; const deeper = SUB_SCREENS.includes(el.dataset.to) && !SUB_SCREENS.includes(S.tab); if (deeper) S.prevTab = S.tab; if (el.dataset.to === 'cook') cookView = null; S.tab = el.dataset.to; planAdd = null; save(); render({ top: true, anim: deeper ? 'push' : '' }); }
   else if (a === 'scroll-pick') { const v = document.getElementById('view'), h = document.getElementById('pick-head'); if (h) v.scrollTo({ top: v.scrollTop + h.getBoundingClientRect().top - v.getBoundingClientRect().top - 6 }); }
   else if (a === 'intro') openIntro();
   else if (a === 'intro-goal') { INTRO.goal = el.dataset.goal; S.settings.goal = INTRO.goal; bustCaches(); save(); introStep(2); }
@@ -2012,12 +2096,18 @@ function onAction(e) {
   else if (a === 'intro-avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); el.classList.toggle('on'); }
   else if (a === 'intro-avoid-add') { if (addAvoidText('intro-avoid-text')) introStep(4); else toast('Type something first'); }
   else if (a === 'intro-avoid-rm') { removeAvoidText(el.dataset.term); introStep(4); }
-  else if (a === 'settings-avoid-add') { if (addAvoidText('settings-avoid-text')) render(); else toast('Type something first'); }
-  else if (a === 'settings-avoid-rm') { removeAvoidText(el.dataset.term); render(); }
+  else if (a === 'settings-avoid-add') { if (addAvoidText('settings-avoid-text')) { if (!refreshSet()) render(); } else toast('Type something first'); }
+  else if (a === 'settings-avoid-rm') { removeAvoidText(el.dataset.term); if (!refreshSet()) render(); }
   else if (a === 'intro-next') { introStep(INTRO.step + 1); }
   else if (a === 'intro-back') { introStep(Math.max(1, INTRO.step - 1)); }
   else if (a === 'intro-start') { introStep(1); }
-  else if (a === 'cook-open') { const id = el.dataset.id; cookOpen.clear(); cookOpen.add(id); S.tab = 'cook'; planAdd = null; save(); render({ top: true }); requestAnimationFrame(() => { const t = document.querySelector(`#view [data-cook="${CSS.escape(id)}"], #view [data-cookfresh="${CSS.escape(id)}"]`); if (t) t.scrollIntoView({ block: 'start' }); }); }
+  else if (a === 'cook-view') { cookView = id; render({ top: true, anim: 'push' }); }
+  else if (a === 'cook-back') { cookView = null; render({ top: true, anim: 'pop' }); }
+  else if (a === 'cook-done') { (w.cooked ||= {})[id] = el.dataset.on === '1'; save(); haptic('save'); if (el.dataset.on === '1') { const left = cookData(w).rs.list.filter((x) => !w.cooked[x.recipe.id]).length; cookView = null; render({ top: true, anim: 'pop' }); toast(left ? `Cooked. ${left} to go` : 'All cooked. Nice work', 2600); } else render(); }
+  else if (a === 'cm-done') { const rid = CM.id; const batch = weekCounts(w, { fresh: freshMap(w), skipFresh: true })[rid] > 0; cmClose(); if (batch) { (w.cooked ||= {})[rid] = true; save(); haptic('save'); cookView = null; if (S.tab === 'cook') render({ top: true }); const left = cookData(w).rs.list.filter((x) => !w.cooked[x.recipe.id]).length; toast(left ? `Cooked. ${left} to go` : 'All cooked. Nice work', 2600); } }
+  else if (a === 'cook-open') { cookView = id; S.tab = 'cook'; planAdd = null; save(); render({ top: true, anim: 'push' }); }
+  else if (a === 'set-sheet') { openSet(el.dataset.sheet); }
+  else if (a === 'set-pick') { const k = el.dataset.key, oldGoal = S.settings.goal; S.settings[k] = el.dataset.val; bustCaches(); save(); haptic('save'); closeSheet(); if (k === 'goal' && oldGoal !== S.settings.goal) retarget(S.settings.weight, oldGoal).then(() => { if (S.tab === 'settings') render(); }); }
   else if (a === 'cm-open') { cmOpen(el.dataset.id); }
   else if (a === 'cm-close') { cmClose(); }
   else if (a === 'cm-next') { CM.step += 1; cmRender(); document.querySelector('#cookmode .cm-body')?.scrollTo(0, 0); }
@@ -2025,7 +2115,7 @@ function onAction(e) {
   else if (a === 'cm-timer') { cmTimerStart(+el.dataset.mins); }
   else if (a === 'cm-timer-stop') { cmTimerStop(); cmRender(); }
   else if (a === 'intro-done' || a === 'intro-auto') { S.settings.onboarded = true; S.seenVersion = APP_VERSION; S.tips ||= {}; S.tips.plan = true; /* the last set-up screen just showed the same three steps */ save(); closeIntro(); S.tab = 'plan'; planAdd = null; for (const wk of Object.values(S.weeks)) relayout(wk); render({ top: true }); if (a === 'intro-auto') autoPlan(1); }
-  else if (a === 'suggest-targets') { const resized = setTargets(P.kcalTargetFor(S.settings.weight, S.settings.goal), P.proteinTargetFor(S.settings.weight, S.settings.goal)); toast(`${S.settings.kcalTarget.toLocaleString()} kcal and ${S.settings.proteinTarget}g protein a day.${resized ? ' Portions resized to match.' : ''}`, 3500); }
+  else if (a === 'suggest-targets') { const resized = setTargets(P.kcalTargetFor(S.settings.weight, S.settings.goal), P.proteinTargetFor(S.settings.weight, S.settings.goal)); refreshSet(); haptic('save'); toast(`${S.settings.kcalTarget.toLocaleString()} kcal and ${S.settings.proteinTarget}g protein a day.${resized ? ' Portions resized to match.' : ''}`, 3500); }
   else if (a === 'sinc' || a === 'sdec') { w.snacks[id] = Math.max(0, (w.snacks[id] || 0) + (a === 'sinc' ? 1 : -1)); if (!w.snacks[id]) delete w.snacks[id]; save(); refreshPlan(rowSel(id)); }
   else if (a === 'fresh-default') { if (el.dataset.on === '1') S.freshDefault[id] = true; else delete S.freshDefault[id]; save(); render(); toast(el.dataset.on === '1' ? 'Made fresh each time, not batched' : 'Back on the batch list'); }
   else if (a === 'signout') { signOut().then(() => { gateScreen(); render(); }); }
@@ -2046,7 +2136,7 @@ function onAction(e) {
   else if (a === 'autoplan') { autoPlan(+(el.dataset.seed || 1)); }
   else if (a === 'autoplan-keep') { closeSheet(); }
   else if (a === 'share-week') { shareWeek(); }
-  else if (a === 'code-sheet') { openSheet(`<h3>Have a code?</h3><p class="small muted" style="margin:0 0 10px">From a friend, a club, a creator or the founder.</p><form id="code-form"><input class="field" id="gate-code" name="code" required placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" spellcheck="false" style="width:100%;font-size:18px;letter-spacing:.06em"><button class="btn block" type="submit" style="margin-top:10px">Use it</button><div id="code-msg" class="signin-msg" hidden></div></form><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Close</button>`); }
+  else if (a === 'code-sheet') { openSheet(`<h3>Have a code?</h3><p class="small muted" style="margin:0 0 10px">From a friend, a club, a creator or the founder.</p><form id="code-form"><input class="field" id="gate-code" name="code" required placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go" style="width:100%;font-size:18px;letter-spacing:.06em"><button class="btn block" type="submit" style="margin-top:10px">Use it</button><div id="code-msg" class="signin-msg" hidden></div></form><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Close</button>`); }
   else if (a === 'copy-link') { navigator.clipboard?.writeText(el.dataset.url).then(() => toast('Link copied'), () => showText('Your link', el.dataset.url)); }
   else if (a === 'plan-more') { planMore = !planMore; justAdded.clear(); render(); if (planMore) document.getElementById('more-meals')?.scrollIntoView({ block: 'start' }); }
   else if (a === 'plan-filter') { S.planFilter = el.dataset.filter; S.ideaTag = ''; planMore = false; justAdded.clear(); save(); const t = document.getElementById('pick-tabs'); const was = t && t.getBoundingClientRect().top <= 1; render(); if (was) document.getElementById('pick-tabs')?.scrollIntoView({ block: 'start' }); }
@@ -2145,8 +2235,9 @@ function onChange(e) {
     relayout(); refreshPlan(rowSel(r.id));
   }
   else if (t.dataset.snackPick) { const r = recById(t.dataset.snackPick); if (t.checked) w.snacks[r.id] = 7; else delete w.snacks[r.id]; save(); refreshPlan(rowSel(r.id)); }
-  else if (t.dataset.tick) { const k = t.dataset.tick, on = t.checked, what = t.dataset.what || 'Item'; w.ticks[k] = on; shopDone(w); save(); render(); if (on) showUndo(`In the trolley: ${what}`, () => { w.ticks[k] = false; shopDone(w); save(); render(); }); else hideUndo(); } // redraw only when the shop becomes done or stops being done (green box, tick on the Shop tab); the old test compared after the change, so it never fired
-  else if (t.dataset.settingBool) { S.settings[t.dataset.settingBool] = t.checked; bustCaches(); save(); render(); }
+  else if (t.dataset.tick) { const k = t.dataset.tick, on = t.checked, what = t.dataset.what || 'Item', was = !!w.done; w.ticks[k] = on; shopDone(w); save(); haptic(!was && w.done ? 'save' : 'tap'); render(); if (on) showUndo(`In the trolley: ${what}`, () => { w.ticks[k] = false; shopDone(w); save(); render(); }); else hideUndo(); } // redraw only when the shop becomes done or stops being done (green box, tick on the Shop tab); the old test compared after the change, so it never fired
+  else if (t.dataset.cookgot) { if (t.checked) cookGot.add(t.dataset.cookgot); else cookGot.delete(t.dataset.cookgot); t.closest('label')?.classList.toggle('done', t.checked); haptic('tick'); }
+  else if (t.dataset.settingBool) { S.settings[t.dataset.settingBool] = t.checked; bustCaches(); save(); haptic('tick'); }
   else if (t.dataset.settingStr) {
     // Goal moves the calorie and protein targets (and so the portions) in place; milk and the rest just redraw.
     const k = t.dataset.settingStr, oldGoal = S.settings.goal; S.settings[k] = t.value; bustCaches(); save();
@@ -2189,6 +2280,14 @@ function refreshCard(fn) { const v = document.getElementById('view'); const card
 function onSubmit(e) {
   e.preventDefault();
   const f = e.target; const fd = new FormData(f);
+  if (f.id === 'set-num') {
+    const k = f.dataset.key, v = parseFloat(String(fd.get('v')).replace(',', '.')), oldWeight = S.settings.weight;
+    if (k === 'weight' && !(v >= 30 && v <= 200)) { toast('Enter a weight between 30 and 200 kg'); haptic('warn'); return; }
+    if (k === 'budget' && !(v >= 1 && v <= 1000)) { toast('Enter a budget in pounds'); haptic('warn'); return; }
+    S.settings[k] = k === 'weight' ? Math.round(v * 10) / 10 : Math.round(v); bustCaches(); if (W() && W().done) shopDone(W()); save(); haptic('save'); closeSheet();
+    if (k === 'weight' && oldWeight !== S.settings[k]) retarget(oldWeight, S.settings.goal).then(() => { if (S.tab === 'settings') render(); });
+    return;
+  }
   if (f.id === 'signin-form') {
     const email = String(fd.get('email')).trim(); const password = String(fd.get('password') || '');
     const mode = f.dataset.mode || 'signin';

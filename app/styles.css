@@ -1377,3 +1377,114 @@ h1.stack { text-wrap: wrap; } h1.stack > span { white-space: nowrap; }
 .hsteps button { padding: 0 13px; } @media (max-width: 350px) { .hsteps > i { display: none; } h1.stack { font-size: 60px; } }
 #undo, :root[data-theme=dark] #undo, #hint, :root[data-theme=dark] #hint { background: var(--tabon); color: var(--tabontx); border-color: rgba(var(--txc), .2); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme=light]) #undo, :root:not([data-theme=light]) #hint { background: var(--tabon); color: var(--tabontx); } }
+
+/* =====================================================================================================================
+   v101: Cook rebuilt, Settings as grouped rows, Shop tidied, and one rule for edges.
+   Surfaces are fills, never outlines. A hairline only separates two rows inside a group.
+   Buttons are the accent (the thing to do) or a quiet fill (everything else). Rows are 52px, groups have 12px corners.
+   ===================================================================================================================== */
+:root { --fill: rgba(var(--txc), .09); --fill2: rgba(var(--txc), .16); }
+.onp { --fill: rgba(var(--ptc), .08); --fill2: rgba(var(--ptc), .16); }
+/* buttons */
+.btn { min-height: 44px; border-radius: 10px; } .btn.block, .btn.big { min-height: 54px; border-radius: 12px; }
+.btn.ghost, :root[data-theme=dark] .btn.ghost, .plandock .btn.ghost, :root[data-theme=dark] .plandock .btn.ghost { background: var(--fill); color: var(--text); border: 0; }
+.btn:active, .gr:active, .tapr:active, .nextrow:active, .cktile:active, .ckhero-open:active, .chip:active, .look:active, .navback:active, .rp-back:active, .hmeal:active, .pc:active { opacity: .7; }
+.chip, :root[data-theme=dark] .chip { background: var(--fill); border: 0; padding: 9px 14px; } .chip.on, :root[data-theme=dark] .chip.on { background: var(--p); color: var(--pt); }
+.brandbar .gear, .brandbar .trialpill { background: var(--fill); border: 0; } .brandbar .gear { border-radius: 50%; width: 38px; height: 38px; }
+.brandbar .trialpill.soon { background: var(--accent); color: var(--onac); }
+/* fields: a quiet fill, a ring only while typing */
+:root:root .card input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=date]), :root:root .search, :root:root label.field input:not([type=range]):not([type=checkbox]), :root:root label.field select, :root:root label.field textarea, :root:root .sheet-inner input:not([type=checkbox]):not([type=range]), :root:root .sheet-inner select, :root:root .sheet-inner textarea, :root:root input.big, :root:root #gate input.big, :root:root #intro input.big { background: var(--fill); border: 0; border-radius: 10px; color: var(--text); }
+:root:root input:not([type=checkbox]):not([type=radio]):not([type=range]):focus, :root:root select:focus, :root:root textarea:focus { outline: 2px solid var(--mark); outline-offset: 0; }
+::placeholder { color: var(--dim); opacity: 1; }
+/* surfaces */
+.fold, .shop-card, :root[data-theme=dark] .fold { background: var(--panel); border: 0; border-radius: 12px; }
+.fold.quiet, :root[data-theme=dark] .fold.quiet { background: transparent; padding: 0; margin: 4px 0 0; } .fold.quiet > summary { min-height: 44px; } .fold.quiet > summary b { font-size: 13.5px; font-weight: 700; color: var(--muted); }
+.card.list.main, :root[data-theme=dark] .card.list.main { border: 0; }
+.warn-box, :root[data-theme=dark] .warn-box { background: transparent; border: 0; border-left: 2px solid var(--warntx); border-radius: 0; padding: 2px 0 2px 12px; margin: 12px 0; color: var(--muted); font-size: 13.5px; line-height: 1.45; }
+.done-box, :root[data-theme=dark] .done-box { border-radius: 12px; padding: 13px 14px; }
+.seg, :root[data-theme=dark] .seg { background: var(--fill); border-radius: 11px; padding: 3px; margin: 0 0 6px; }
+.seg button, :root[data-theme=dark] .seg button { min-height: 40px; border-radius: 9px; font-size: 13.5px; font-weight: 700; color: var(--muted); box-shadow: none; }
+.seg button.on, :root[data-theme=dark] .seg button.on { background: var(--p); color: var(--pt); box-shadow: none; }
+.look, :root[data-theme=dark] .look { background: var(--fill); border: 0; } .look.on { border: 0; box-shadow: inset 0 0 0 2px var(--mark); }
+.day-pick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; } .day-pick button, :root[data-theme=dark] .day-pick button { min-height: 48px; background: var(--fill); border: 0; border-radius: 10px; color: var(--text); font-size: 14.5px; font-weight: 700; }
+.day-pick button.on, :root[data-theme=dark] .day-pick button.on { background: var(--p); color: var(--pt); }
+/* sheets */
+.sheet-inner, :root[data-theme=dark] .sheet-inner { border-radius: 20px 20px 0 0; padding: 22px 18px calc(22px + env(safe-area-inset-bottom)); will-change: transform; }
+.sheet-inner .gl { background: var(--fill); } .sheet-inner .card { background: var(--fill); }
+#sheet { animation: sheetFade .18s ease-out; } @keyframes sheetFade { from { background: rgba(0, 0, 0, 0); } }
+.numfield { display: flex; align-items: baseline; gap: 10px; padding: 4px 16px; border-radius: 12px; background: var(--fill); }
+:root:root .sheet-inner .numfield input.big:not([type=checkbox]):not([type=range]) { flex: 1; min-width: 0; width: auto; margin: 0; padding: 8px 0; background: none; border: 0; outline: none; font-size: 40px; font-weight: 800; letter-spacing: -.04em; text-align: left; }
+.numfield span { flex: none; font-size: 15px; font-weight: 700; color: var(--muted); }
+.wnlist div { padding: 13px 0; border-top: 1px solid var(--line); } .wnlist div:first-child { border: 0; padding-top: 2px; } .wnlist b { font-size: 12.5px; font-weight: 700; color: var(--muted); } .wnlist p { margin: 4px 0 0; font-size: 14.5px; line-height: 1.45; }
+/* grouped rows: Settings, More, and anywhere a short list of things to tap is shown */
+.gl { background: var(--panel); border-radius: 12px; overflow: hidden; margin: 0 0 8px; }
+.gr { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 10px 14px; background: none; border: 0; border-radius: 0; color: var(--text); font: 600 16px/1.25 var(--display); letter-spacing: -.01em; text-align: left; text-decoration: none; }
+.gr + .gr::before { content: ""; position: absolute; top: 0; left: 14px; right: 0; height: 1px; background: var(--line); }
+.gr > .ico:first-child { flex: none; color: var(--muted); } .gr > .ico:first-child ~ .gr-l { margin-left: 2px; }
+.gr-l { flex: 1; min-width: 0; } .gr-l small { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 500; line-height: 1.35; letter-spacing: 0; color: var(--muted); }
+.gr-v { flex: none; max-width: 58%; display: inline-flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gr > .ico:last-child { flex: none; margin-right: -4px; color: var(--dim); }
+.gr.danger { justify-content: center; color: var(--badtx); } .gr.danger .gr-l { flex: none; font-weight: 700; }
+.gr.accent .gr-l { font-weight: 800; } .gr.accent .gr-v { color: var(--text); }
+.gr.due .gr-v { padding: 4px 10px; border-radius: 999px; background: var(--accent); color: var(--onac); font-size: 12px; font-weight: 800; }
+.gr.opt .ico { color: var(--mark); } .gr.opt.on .gr-l { font-weight: 800; }
+.gr.prof { align-items: flex-start; padding: 14px; } .gr.prof .avatar { flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--fill2); font-size: 20px; font-weight: 800; }
+.gr.prof .gr-l { align-self: center; font-size: 17px; font-weight: 800; letter-spacing: -.02em; overflow-wrap: anywhere; } .gr.prof .fw-seg { margin: 10px 0 0; }
+.gr .mph.thumb { width: 44px; height: 44px; border-radius: 8px; }
+.gl-foot { margin: 8px 14px 0; font-size: 12.5px; line-height: 1.4; color: var(--muted); } .gl-foot a { font-weight: 700; }
+h2:has(+ .gl) { margin: 28px 14px 8px; }
+.lchip.mini { display: inline-flex; width: 24px; height: 24px; padding: 4px; gap: 2px; border-radius: 6px; } .lchip.mini i { height: 7px; border-radius: 2px; }
+input.switch { -webkit-appearance: none; appearance: none; flex: none; position: relative; width: 51px; height: 31px; margin: 0; padding: 0; border: 0; border-radius: 31px; background: var(--fill2); transition: background .2s ease; cursor: pointer; }
+input.switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, .28); transition: transform .2s ease; }
+input.switch:checked { background: var(--accent); } input.switch:checked::after { transform: translateX(20px); background: var(--onac); }
+.gr.tickrow { cursor: pointer; } .gr.tickrow input { -webkit-appearance: none; appearance: none; flex: none; width: 26px; height: 26px; margin: 0; border: 2px solid var(--dim); border-radius: 50%; background: transparent center / 15px no-repeat; }
+.gr.tickrow input:checked { border-color: var(--text); background-color: var(--text); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
+:root[data-p=dark] .onp .gr.tickrow input:checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
+.gr.tickrow .gr-v { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; } .gr.tickrow.done .gr-l { text-decoration: line-through; color: var(--muted); } .gr.tickrow.done .gr-v { color: var(--dim); }
+/* a screen with a Back: the word, then the big title */
+.navbar { display: flex; align-items: center; min-height: 44px; margin: -2px 0 4px -7px; }
+.navback { display: inline-flex; align-items: center; gap: 1px; min-height: 44px; padding: 0 12px 0 0; background: none; border: 0; color: var(--mark); font: 700 16.5px var(--display); letter-spacing: -.01em; }
+.tapr { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin: 0 0 12px; padding: 11px 14px; background: var(--panel); border: 0; border-radius: 12px; color: var(--text); font: inherit; text-align: left; }
+.tapr b { display: block; font-size: 16px; font-weight: 800; letter-spacing: -.02em; } .tapr .grow > span { display: block; margin-top: 1px; font-size: 13.5px; color: var(--muted); } .tapr.gone .grow > span { color: var(--badtx); font-weight: 700; } .tapr > .ico { flex: none; color: var(--muted); }
+/* Cook: the list */
+.ckhead.card.shophead.slim { margin-bottom: 12px; }
+.ckhero { position: relative; margin: 0 0 8px; border-radius: 12px; overflow: hidden; background: var(--panel-2); }
+.ckhero-open { position: relative; display: block; width: 100%; height: 310px; margin: 0; padding: 0; border: 0; background: none; font: inherit; } .ckhero-open .mph { position: absolute; inset: 0; }
+.ckhero .mt-txt { left: 14px; right: 14px; bottom: 76px; gap: 4px; } .ckhero .mt-txt small { font-size: 12.5px; font-weight: 700; color: rgba(255, 255, 255, .86); }
+.ckhero .mt-txt .mt-name { font-size: 28px; letter-spacing: -.045em; line-height: 1.04; } .ckhero .mt-txt span { font-size: 13.5px; }
+.ckhero > .btn { position: absolute; left: 8px; right: 8px; bottom: 8px; width: auto; min-height: 54px; margin: 0; border-radius: 9px; }
+.ck-n { position: absolute; top: 8px; left: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 30px; height: 28px; padding: 0 9px; border-radius: 8px; background: rgba(0, 0, 0, .5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); color: #fff; font-size: 12.5px; font-weight: 800; }
+.ckgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 8px; }
+.cktile { position: relative; height: 200px; margin: 0; padding: 0; border: 0; border-radius: 12px; overflow: hidden; background: var(--panel-2); font: inherit; } .cktile .mph { position: absolute; inset: 0; }
+.cktile.cooked .mph { opacity: .34; } .cktile.cooked .ck-n { background: var(--accent); color: var(--onac); }
+.ckgrid > .cktile:last-child:nth-child(odd) { grid-column: 1 / -1; height: 150px; }
+/* Cook: one recipe */
+#view.bare { padding-top: 0; }
+#view > .rp-hero { position: relative; max-width: none; height: min(48vh, 400px); margin: 0 -18px; overflow: hidden; background: var(--panel-2); } .rp-hero .mph { position: absolute; inset: 0; }
+.rp-hero .mt-scrim { background: linear-gradient(180deg, rgba(var(--pgc), .5) 0%, rgba(var(--pgc), 0) 26%, rgba(var(--pgc), .12) 46%, rgba(var(--pgc), .9) 86%, rgb(var(--pgc)) 100%); }
+.rp-back { position: absolute; top: calc(16px + env(safe-area-inset-top)); left: 14px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: rgba(var(--pgc), .72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--text); }
+.rp-t { position: absolute; left: 18px; right: 18px; bottom: 4px; } .rp-t small { display: block; margin-bottom: 7px; font-size: 12.5px; font-weight: 700; color: var(--mark); } .rp-t h1 { margin: 0; font-size: 40px; line-height: .98; letter-spacing: -.05em; text-wrap: balance; }
+.rp-facts { display: grid; grid-template-columns: repeat(3, 1fr); margin: 16px 0 14px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.rp-facts div { padding: 13px 0 12px; } .rp-facts div + div { padding-left: 14px; border-left: 1px solid var(--line); } .rp-facts b { display: block; font-size: 30px; font-weight: 800; letter-spacing: -.05em; line-height: 1; } .rp-facts span { display: block; margin-top: 5px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.rp-steps { list-style: none; margin: 0; padding: 0; } .rp-steps li { display: grid; grid-template-columns: 32px 1fr; column-gap: 6px; padding: 13px 0; border-top: 1px solid var(--line); } .rp-steps li:first-child { border-top: 0; padding-top: 2px; }
+.rp-steps b { font-size: 22px; font-weight: 800; letter-spacing: -.04em; line-height: 1.1; color: var(--mark); } .rp-steps p { margin: 0; font-size: 16px; line-height: 1.45; }
+.rp-note { margin: 12px 0 0; padding-left: 12px; border-left: 2px solid var(--mark); font-size: 14px; line-height: 1.45; color: var(--muted); }
+.ckdock { position: sticky; bottom: 8px; z-index: 6; margin: 18px 0 7px; } .ckdock::before { content: ""; position: absolute; inset: -22px -18px -8px; z-index: -1; background: linear-gradient(180deg, rgba(var(--pgc), 0), rgb(var(--pgc)) 46%); pointer-events: none; } .ckdock .btn span { font-weight: 600; }
+/* Shop */
+.pair.one { grid-template-columns: 1fr; } .pair.one .pc { min-height: 112px; } div.pc b { font-size: 30px; }
+/* turning a page, and the strip at the top that takes you back up */
+@keyframes pushIn { from { transform: translateX(26px); opacity: 0; } } @keyframes popIn { from { transform: translateX(-26px); opacity: 0; } }
+#view.push { animation: pushIn .2s ease-out; } #view.pop { animation: popIn .2s ease-out; }
+@media (prefers-reduced-motion: reduce) { #view.push, #view.pop, #sheet { animation: none; } }
+#topstrip { position: fixed; top: 0; left: 0; right: 0; height: calc(env(safe-area-inset-top) + 12px); z-index: 7; }
+.tapr > em { flex: none; font-style: normal; font-size: 14px; font-weight: 700; color: var(--mark); }
+/* shop picker inside the prices fold: fills, the chosen shop on the contrast panel */
+.shopbtn, :root[data-theme=dark] .shopbtn { background: var(--fill); border: 0; border-radius: 10px; color: var(--text); } .shopbtn.on, :root[data-theme=dark] .shopbtn.on { background: var(--p); color: var(--pt); border: 0; box-shadow: none; }
+.shopbtn.on em, :root[data-theme=dark] .shopbtn.on em { background: var(--pt); color: var(--p); }
+.fold .fold, :root[data-theme=dark] .fold .fold, .fold .card, :root[data-theme=dark] .fold .card { background: var(--fill); }
+/* tick boxes are round everywhere, like the shopping list */
+.check input[type=checkbox]:not(.switch), .sheet-inner input[type=checkbox]:not(.switch):not([hidden]) { -webkit-appearance: none; appearance: none; flex: none; width: 26px; height: 26px; margin: 0; border: 2px solid var(--dim); border-radius: 50%; background: transparent center / 15px no-repeat; }
+.check input[type=checkbox]:not(.switch):checked, .sheet-inner input[type=checkbox]:not(.switch):checked { border-color: var(--text); background-color: var(--text); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
+:root[data-theme=dark] .check input[type=checkbox]:not(.switch):checked, :root[data-theme=dark] .sheet-inner input[type=checkbox]:not(.switch):checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
+.pantryprice, :root[data-theme=dark] .pantryprice { background: var(--panel); border-radius: 12px; color: var(--text); } .pantryprice b { color: var(--text); }
+.tipcard, :root[data-theme=dark] .tipcard { border: 0; }
