@@ -39,7 +39,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": true
+   "core": true,
+   "photo": "eggs"
   },
   {
    "id": "skyr_bowl",
@@ -81,7 +82,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": true
+   "core": true,
+   "photo": "yoghurt-1"
   },
   {
    "id": "bang_bang_salad",
@@ -158,7 +160,8 @@
     "asian",
     "cold-lunch"
    ],
-   "core": true
+   "core": true,
+   "photo": "salad-2"
   },
   {
    "id": "soy_chicken_box",
@@ -222,7 +225,8 @@
     "asian",
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "ricebowl-1"
   },
   {
    "id": "beef_noodle_salad",
@@ -289,7 +293,8 @@
     "asian",
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "noodles-1"
   },
   {
    "id": "tuna_pasta",
@@ -353,7 +358,8 @@
     "italian",
     "cold-lunch"
    ],
-   "core": true
+   "core": true,
+   "photo": "tuna-pasta"
   },
   {
    "id": "pb_chicken_wrap",
@@ -420,7 +426,8 @@
    "tags": [
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "wrap-2"
   },
   {
    "id": "jacket_sp_tuna",
@@ -471,7 +478,8 @@
    "tags": [
     "british"
    ],
-   "core": true
+   "core": true,
+   "photo": "jacket"
   },
   {
    "id": "egg_fried_rice",
@@ -528,7 +536,8 @@
    "tags": [
     "asian"
    ],
-   "core": true
+   "core": true,
+   "photo": "friedrice-3"
   },
   {
    "id": "chilli",
@@ -611,7 +620,8 @@
    "tags": [
     "mexican"
    ],
-   "core": true
+   "core": true,
+   "photo": "chilli"
   },
   {
    "id": "bolognese",
@@ -682,7 +692,8 @@
     "pasta",
     "italian"
    ],
-   "core": true
+   "core": true,
+   "photo": "bolognese"
   },
   {
    "id": "red_curry",
@@ -760,7 +771,8 @@
     "curry",
     "asian"
    ],
-   "core": true
+   "core": true,
+   "photo": "curry"
   },
   {
    "id": "soy_honey_chicken",
@@ -822,7 +834,8 @@
    "tags": [
     "asian"
    ],
-   "core": true
+   "core": true,
+   "photo": "ricebowl-3"
   },
   {
    "id": "coconut_rice_chicken",
@@ -885,7 +898,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "ricebowl-4"
   },
   {
    "id": "kbbq_chicken",
@@ -957,7 +971,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "ricebowl-2"
   },
   {
    "id": "satay_chicken",
@@ -1032,7 +1047,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "skewers"
   },
   {
    "id": "buffalo_pasta",
@@ -1103,7 +1119,8 @@
    "tags": [
     "pasta"
    ],
-   "core": false
+   "core": false,
+   "photo": "pasta-rose"
   },
   {
    "id": "fajitas",
@@ -1169,7 +1186,8 @@
    "tags": [
     "mexican"
    ],
-   "core": true
+   "core": true,
+   "photo": "fajitas"
   },
   {
    "id": "chicken_sp_broccoli",
@@ -1224,7 +1242,8 @@
    "tags": [
     "british"
    ],
-   "core": true
+   "core": true,
+   "photo": "chicken-veg"
   },
   {
    "id": "beef_sweet_potato",
@@ -1288,7 +1307,8 @@
    "tags": [
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "hash"
   },
   {
    "id": "sambal_satay",
@@ -1376,7 +1396,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "ricebowl-1"
   },
   {
    "id": "green_goddess",
@@ -1444,7 +1465,8 @@
    "tags": [
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "salad-1"
   },
   {
    "id": "pesto_gnocchi",
@@ -1525,7 +1547,8 @@
     "pasta",
     "italian"
    ],
-   "core": false
+   "core": false,
+   "photo": "pesto"
   },
   {
    "id": "beef_enchiladas",
@@ -1614,7 +1637,8 @@
    "tags": [
     "mexican"
    ],
-   "core": false
+   "core": false,
+   "photo": "enchiladas"
   },
   {
    "id": "chicken_curry",
@@ -1710,7 +1734,8 @@
    "tags": [
     "curry"
    ],
-   "core": true
+   "core": true,
+   "photo": "curry-4"
   },
   {
    "id": "chicken_lentil_curry",
@@ -1785,7 +1810,8 @@
    "tags": [
     "curry"
    ],
-   "core": false
+   "core": false,
+   "photo": "curry-2"
   },
   {
    "id": "chicken_meatballs",
@@ -1857,7 +1883,8 @@
     "pasta",
     "italian"
    ],
-   "core": true
+   "core": true,
+   "photo": "meatballs"
   },
   {
    "id": "pork_stirfry",
@@ -1931,7 +1958,8 @@
    "tags": [
     "asian"
    ],
-   "core": true
+   "core": true,
+   "photo": "beefbowl"
   },
   {
    "id": "burrito_bowl",
@@ -2028,7 +2056,8 @@
     "mexican",
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "bowl"
   },
   {
    "id": "beef_bean_burrito",
@@ -2103,7 +2132,8 @@
    "tags": [
     "mexican"
    ],
-   "core": false
+   "core": false,
+   "photo": "burrito"
   },
   {
    "id": "tuna_egg_rice_bowl",
@@ -2164,7 +2194,8 @@
     "asian",
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "eggbowl"
   },
   {
    "id": "tuna_melt",
@@ -2213,7 +2244,8 @@
    "tags": [
     "british"
    ],
-   "core": true
+   "core": true,
+   "photo": "toastie"
   },
   {
    "id": "lemon_chicken_wraps",
@@ -2279,7 +2311,8 @@
    "tags": [
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "wrap-1"
   },
   {
    "id": "egg_cheese_wraps",
@@ -2327,7 +2360,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": true
+   "core": true,
+   "photo": "wrap-2"
   },
   {
    "id": "protein_pancakes",
@@ -2380,7 +2414,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": false
+   "core": false,
+   "photo": "pancakes"
   },
   {
    "id": "pb_banana_skyr",
@@ -2427,7 +2462,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": true
+   "core": true,
+   "photo": "yoghurt-pb"
   },
   {
    "id": "snack_banana_pb",
@@ -2460,7 +2496,8 @@
    "tags": [
     "snack"
    ],
-   "core": true
+   "core": true,
+   "photo": "banana"
   },
   {
    "id": "snack_skyr_pot",
@@ -2493,7 +2530,8 @@
    "tags": [
     "snack"
    ],
-   "core": true
+   "core": true,
+   "photo": "yoghurt-2"
   },
   {
    "id": "snack_cottage_cucumber",
@@ -2530,7 +2568,8 @@
    "tags": [
     "snack"
    ],
-   "core": true
+   "core": true,
+   "photo": "cottage"
   },
   {
    "id": "snack_boiled_eggs",
@@ -2561,7 +2600,8 @@
    "tags": [
     "snack"
    ],
-   "core": true
+   "core": true,
+   "photo": "boiled-eggs"
   },
   {
    "id": "snack_pb_toast",
@@ -2594,7 +2634,8 @@
    "tags": [
     "snack"
    ],
-   "core": true
+   "core": true,
+   "photo": "toast-pb"
   },
   {
    "id": "snack_shake",
@@ -2627,7 +2668,8 @@
    "tags": [
     "snack"
    ],
-   "core": true
+   "core": true,
+   "photo": "shake"
   },
   {
    "id": "snack_cheese_wrap",
@@ -2664,7 +2706,8 @@
    "tags": [
     "snack"
    ],
-   "core": false
+   "core": false,
+   "photo": "wrap-2"
   },
   {
    "id": "garlic_butter_chicken_rice",
@@ -2721,7 +2764,8 @@
    "tags": [
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "chicken-broccoli"
   },
   {
    "id": "chicken_pesto_pasta",
@@ -2783,7 +2827,8 @@
     "pasta",
     "italian"
    ],
-   "core": false
+   "core": false,
+   "photo": "pesto"
   },
   {
    "id": "sweet_chilli_chicken_noodles",
@@ -2844,7 +2889,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "noodles-1"
   },
   {
    "id": "beef_broccoli_rice",
@@ -2905,7 +2951,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "beef-broccoli"
   },
   {
    "id": "chicken_broccoli_bake",
@@ -2968,7 +3015,8 @@
     "pasta",
     "italian"
    ],
-   "core": false
+   "core": false,
+   "photo": "pasta-bake"
   },
   {
    "id": "egg_potato_hash",
@@ -3032,7 +3080,8 @@
     "breakfast",
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "hash"
   },
   {
    "id": "spicy_eggs_tomatoes",
@@ -3102,7 +3151,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": false
+   "core": false,
+   "photo": "shakshuka"
   },
   {
    "id": "chicken_fried_rice",
@@ -3159,7 +3209,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "friedrice-1"
   },
   {
    "id": "coconut_lentil_dhal",
@@ -3230,7 +3281,8 @@
     "curry",
     "veggie"
    ],
-   "core": false
+   "core": false,
+   "photo": "dhal"
   },
   {
    "id": "tikka_chicken_rice",
@@ -3292,7 +3344,8 @@
    "tags": [
     "curry"
    ],
-   "core": false
+   "core": false,
+   "photo": "tikka"
   },
   {
    "id": "bean_cheese_quesadilla",
@@ -3350,7 +3403,8 @@
     "mexican",
     "veggie"
    ],
-   "core": false
+   "core": false,
+   "photo": "quesadilla"
   },
   {
    "id": "protein_porridge",
@@ -3397,7 +3451,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": false
+   "core": false,
+   "photo": "porridge"
   },
   {
    "id": "greek_chicken_bowl",
@@ -3459,7 +3514,8 @@
    "tags": [
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "ricebowl-4"
   },
   {
    "id": "sweet_chilli_pork_meatballs",
@@ -3525,7 +3581,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "ricebowl-1"
   },
   {
    "id": "tuna_pasta_salad",
@@ -3586,7 +3643,8 @@
     "cold-lunch",
     "pasta"
    ],
-   "core": false
+   "core": false,
+   "photo": "pasta-salad"
   },
   {
    "id": "satay_noodles",
@@ -3655,7 +3713,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "noodles-2"
   },
   {
    "id": "egg_veg_muffins",
@@ -3699,7 +3758,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": false
+   "core": false,
+   "photo": "eggbake"
   },
   {
    "id": "banana_egg_pancakes",
@@ -3743,7 +3803,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": false
+   "core": false,
+   "photo": "pancakes"
   },
   {
    "id": "breakfast_burrito",
@@ -3792,7 +3853,8 @@
     "breakfast",
     "mexican"
    ],
-   "core": false
+   "core": false,
+   "photo": "burrito"
   },
   {
    "id": "cottage_tomato_toast",
@@ -3829,7 +3891,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": false
+   "core": false,
+   "photo": "cottage-toast"
   },
   {
    "id": "pb_banana_toast",
@@ -3866,7 +3929,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": false
+   "core": false,
+   "photo": "banana"
   },
   {
    "id": "mushroom_cheese_omelette",
@@ -3914,7 +3978,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": false
+   "core": false,
+   "photo": "omelette"
   },
   {
    "id": "skyr_pb_bowl",
@@ -3951,7 +4016,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": false
+   "core": false,
+   "photo": "yoghurt-pb"
   },
   {
    "id": "chicken_pitta_pockets",
@@ -4012,7 +4078,8 @@
    "tags": [
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "pitta"
   },
   {
    "id": "chicken_sweetcorn_soup",
@@ -4069,7 +4136,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "soup-lentil"
   },
   {
    "id": "chicken_mushroom_pasta",
@@ -4132,7 +4200,8 @@
     "pasta",
     "italian"
    ],
-   "core": false
+   "core": false,
+   "photo": "pasta-cream-1"
   },
   {
    "id": "chicken_pea_rice",
@@ -4193,7 +4262,8 @@
    "tags": [
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "friedrice-3"
   },
   {
    "id": "chicken_chickpea_curry",
@@ -4263,7 +4333,8 @@
    "tags": [
     "curry"
    ],
-   "core": false
+   "core": false,
+   "photo": "curry-3"
   },
   {
    "id": "chicken_black_bean_bowl",
@@ -4329,7 +4400,8 @@
     "mexican",
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "bowl"
   },
   {
    "id": "lemon_chicken_potatoes",
@@ -4383,7 +4455,8 @@
    "tags": [
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "traybake"
   },
   {
    "id": "chicken_veg_noodles",
@@ -4452,7 +4525,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "noodles-1"
   },
   {
    "id": "sticky_thigh_traybake",
@@ -4504,7 +4578,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "traybake-2"
   },
   {
    "id": "chicken_spinach_tomato_pasta",
@@ -4567,7 +4642,8 @@
     "pasta",
     "italian"
    ],
-   "core": false
+   "core": false,
+   "photo": "pasta-red"
   },
   {
    "id": "coconut_chicken_noodle_soup",
@@ -4632,7 +4708,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "soup-noodle"
   },
   {
    "id": "shawarma_chicken_bowl",
@@ -4702,7 +4779,8 @@
    "tags": [
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "ricebowl-3"
   },
   {
    "id": "sweet_chilli_chicken_wraps",
@@ -4761,7 +4839,8 @@
    "tags": [
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "wrap-1"
   },
   {
    "id": "turkey_chilli",
@@ -4835,7 +4914,8 @@
    "tags": [
     "mexican"
    ],
-   "core": false
+   "core": false,
+   "photo": "chilli-2"
   },
   {
    "id": "turkey_burger_pitta",
@@ -4901,7 +4981,8 @@
    "tags": [
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "pitta-2"
   },
   {
    "id": "turkey_veg_rice",
@@ -4971,7 +5052,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "friedrice-1"
   },
   {
    "id": "beef_stuffed_peppers",
@@ -5037,7 +5119,8 @@
    "tags": [
     "mexican"
    ],
-   "core": false
+   "core": false,
+   "photo": "peppers"
   },
   {
    "id": "sweet_potato_shepherds_pie",
@@ -5104,7 +5187,8 @@
    "tags": [
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "pie"
   },
   {
    "id": "chilli_jacket_sweet_potato",
@@ -5180,7 +5264,8 @@
     "mexican",
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "jacket"
   },
   {
    "id": "pork_mushroom_ragu",
@@ -5247,7 +5332,8 @@
     "pasta",
     "italian"
    ],
-   "core": false
+   "core": false,
+   "photo": "ragu"
   },
   {
    "id": "chicken_mince_basil_rice",
@@ -5312,7 +5398,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "beefbowl"
   },
   {
    "id": "chicken_burgers_wedges",
@@ -5369,7 +5456,8 @@
    "tags": [
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "burger"
   },
   {
    "id": "pork_sweetcorn_fried_rice",
@@ -5429,7 +5517,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "friedrice-1"
   },
   {
    "id": "turkey_keema",
@@ -5490,7 +5579,8 @@
    "tags": [
     "curry"
    ],
-   "core": false
+   "core": false,
+   "photo": "tikka"
   },
   {
    "id": "salmon_traybake",
@@ -5542,7 +5632,8 @@
    "tags": [
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "salmon"
   },
   {
    "id": "salmon_pesto_pasta",
@@ -5596,7 +5687,8 @@
     "pasta",
     "italian"
    ],
-   "core": false
+   "core": false,
+   "photo": "pesto"
   },
   {
    "id": "garlic_chilli_prawn_noodles",
@@ -5660,7 +5752,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "noodles-1"
   },
   {
    "id": "prawn_egg_fried_rice",
@@ -5716,7 +5809,8 @@
    "tags": [
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "friedrice-2"
   },
   {
    "id": "tuna_sweetcorn_pasta_bake",
@@ -5774,7 +5868,8 @@
     "pasta",
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "pasta-bake"
   },
   {
    "id": "tuna_chickpea_salad",
@@ -5831,7 +5926,8 @@
    "tags": [
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "salad-1"
   },
   {
    "id": "prawn_coconut_curry",
@@ -5893,7 +5989,8 @@
     "curry",
     "asian"
    ],
-   "core": false
+   "core": false,
+   "photo": "curry"
   },
   {
    "id": "chickpea_spinach_curry",
@@ -5959,7 +6056,8 @@
     "curry",
     "veggie"
    ],
-   "core": false
+   "core": false,
+   "photo": "curry-3"
   },
   {
    "id": "black_bean_burritos",
@@ -6026,7 +6124,8 @@
     "mexican",
     "veggie"
    ],
-   "core": false
+   "core": false,
+   "photo": "burrito"
   },
   {
    "id": "egg_curry",
@@ -6092,7 +6191,8 @@
     "curry",
     "veggie"
    ],
-   "core": false
+   "core": false,
+   "photo": "curry-2"
   },
   {
    "id": "lentil_bolognese",
@@ -6164,7 +6264,8 @@
     "italian",
     "veggie"
    ],
-   "core": false
+   "core": false,
+   "photo": "ragu"
   },
   {
    "id": "loaded_sweet_potato",
@@ -6214,7 +6315,8 @@
     "veggie",
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "jacket"
   },
   {
    "id": "cheesy_bean_pitta",
@@ -6268,7 +6370,8 @@
     "veggie",
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "pitta-2"
   },
   {
    "id": "peanut_noodle_bowl",
@@ -6337,7 +6440,8 @@
     "veggie",
     "cold-lunch"
    ],
-   "core": false
+   "core": false,
+   "photo": "noodles-2"
   },
   {
    "id": "mushroom_spinach_pasta",
@@ -6395,7 +6499,8 @@
     "italian",
     "veggie"
    ],
-   "core": false
+   "core": false,
+   "photo": "pasta-cream-2"
   },
   {
    "id": "three_bean_chilli",
@@ -6473,7 +6578,8 @@
     "mexican",
     "veggie"
    ],
-   "core": false
+   "core": false,
+   "photo": "chilli-2"
   },
   {
    "id": "carrot_lentil_soup",
@@ -6535,7 +6641,8 @@
     "veggie",
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "soup-lentil"
   },
   {
    "id": "chicken_veg_soup",
@@ -6596,7 +6703,8 @@
    "tags": [
     "british"
    ],
-   "core": false
+   "core": false,
+   "photo": "soup-2"
   },
   {
    "id": "snack_hummus_carrots",
@@ -6642,7 +6750,8 @@
     "snack",
     "veggie"
    ],
-   "core": false
+   "core": false,
+   "photo": "hummus"
   },
   {
    "id": "snack_egg_pitta",
@@ -6679,7 +6788,8 @@
    "tags": [
     "snack"
    ],
-   "core": false
+   "core": false,
+   "photo": "pitta-2"
   },
   {
    "id": "snack_tuna_sweetcorn",
@@ -6716,7 +6826,8 @@
    "tags": [
     "snack"
    ],
-   "core": false
+   "core": false,
+   "photo": "salad-2"
   },
   {
    "id": "snack_skyr_pb",
@@ -6749,7 +6860,8 @@
    "tags": [
     "snack"
    ],
-   "core": false
+   "core": false,
+   "photo": "yoghurt-pb"
   },
   {
    "id": "snack_avocado_egg_toast",
@@ -6792,7 +6904,8 @@
    "tags": [
     "snack"
    ],
-   "core": false
+   "core": false,
+   "photo": "eggs"
   },
   {
    "id": "snack_protein_bar",
@@ -6822,7 +6935,8 @@
     "snack",
     "shop-bought"
    ],
-   "core": true
+   "core": true,
+   "photo": "bar"
   },
   {
    "id": "snack_protein_yogurt",
@@ -6852,7 +6966,8 @@
     "snack",
     "shop-bought"
    ],
-   "core": true
+   "core": true,
+   "photo": "yoghurt-2"
   },
   {
    "id": "snack_beef_jerky",
@@ -6882,7 +6997,8 @@
     "snack",
     "shop-bought"
    ],
-   "core": true
+   "core": true,
+   "photo": "jerky"
   },
   {
    "id": "snack_rtd_shake",
@@ -6912,7 +7028,8 @@
     "snack",
     "shop-bought"
    ],
-   "core": true
+   "core": true,
+   "photo": "shake"
   },
   {
    "id": "snack_babybel_apple",
@@ -6946,7 +7063,8 @@
     "snack",
     "shop-bought"
    ],
-   "core": true
+   "core": true,
+   "photo": "apple"
   },
   {
    "id": "snack_nuts",
@@ -6976,7 +7094,8 @@
     "snack",
     "shop-bought"
    ],
-   "core": true
+   "core": true,
+   "photo": "nuts"
   },
   {
    "id": "chipotle_chicken_egg_smash",
@@ -7061,7 +7180,8 @@
     "mexican",
     "cold-lunch"
    ],
-   "core": true
+   "core": true,
+   "photo": "eggsalad"
   },
   {
    "id": "chicken_egg_smash",
@@ -7141,7 +7261,8 @@
    "tags": [
     "cold-lunch"
    ],
-   "core": true
+   "core": true,
+   "photo": "eggsalad"
   },
   {
    "id": "beef_egg_rice_bowl",
@@ -7203,7 +7324,8 @@
    ],
    "notes": "From @slopbowlcentral on Instagram (\"Trying your slop\" part 5, a bowl sent in by @m1ndrevival). The video names the ingredients but no amounts and puts a bowl at 650 kcal and 70 g protein, so these amounts are set to match its protein and carbs. Freezes without the eggs and the chilli mayo: add those on the day. Ours uses 120 g of mince and 3 eggs a portion (eggs are the cheaper protein) rather than the 240 g of mince it takes to match the creator's 70 g: the app sizes every portion to your own targets anyway, and it takes about 80p off a portion.",
    "tags": [],
-   "core": true
+   "core": true,
+   "photo": "beefbowl"
   },
   {
    "id": "apple_crumble_overnight_oats",
@@ -7274,7 +7396,8 @@
    "tags": [
     "breakfast"
    ],
-   "core": true
+   "core": true,
+   "photo": "oats"
   },
   {
    "id": "steak_egg_yumyum_bowl",
@@ -7367,7 +7490,8 @@
    "tags": [
     "mexican"
    ],
-   "core": true
+   "core": true,
+   "photo": "eggbowl"
   },
   {
    "id": "slow_cooker_chicken_burritos",
@@ -7451,7 +7575,8 @@
    "tags": [
     "mexican"
    ],
-   "core": true
+   "core": true,
+   "photo": "burrito"
   },
   {
    "id": "oven_chicken_biryani",
@@ -7546,7 +7671,8 @@
    "tags": [
     "curry"
    ],
-   "core": true
+   "core": true,
+   "photo": "biryani"
   },
   {
    "cold": false,
@@ -7622,7 +7748,8 @@
    "notes": "From @cookingforgains_ on Instagram: 3 lb chicken breast, 2 cups chicken broth, a 28 g ranch seasoning packet, 8 oz light cream cheese, a pack of beef bacon, a 224 g bag of reduced-fat cheddar and 245 g protein pasta make 7 meals (480 kcal, 45 g protein each in the original). Ours uses normal bacon rashers, penne and cheddar, and a ranch mix from the spice rack (garlic granules, onion powder, mixed herbs, salt, pepper), because ranch packets are hard to find here. 25 minutes hands-on plus 3 to 4 hours in the slow cooker. Reheat: microwave 2 to 3 minutes with a splash of water.",
    "tags": [
     "pasta"
-   ]
+   ],
+   "photo": "pasta-cream-2"
   },
   {
    "cold": false,
@@ -7701,7 +7828,8 @@
    "notes": "From @cookingforgains_ on Instagram: 3 lb diced chicken breast, 1½ cups raw rice, 5 oz baby spinach, an 8 oz block of light cream cheese and a bag of sun-dried tomatoes make 6 meals (530 kcal, 59 g protein each in the original). Ours uses frozen spinach (cheaper, always in), mixed herbs for the Italian seasoning and a 15 g share of a jar of sun-dried tomatoes. Chilli flakes are optional, as in the video.",
    "tags": [
     "italian"
-   ]
+   ],
+   "photo": "ricebowl-3"
   },
   {
    "cold": false,
@@ -7788,7 +7916,8 @@
     "Wrap in foil or cling film, then fridge or freeze. Reheat: microwave 1½ minutes from the fridge or 2 minutes from frozen, turning halfway."
    ],
    "notes": "From @cookingforgains_ on Instagram: 4 lb chicken breast, a pack of beef bacon, 300 g rice, 10 low-carb wraps, a bag of fat-free cheddar, 200 g onion and a yoghurt BBQ sauce make 10 wraps (550 kcal, 63 g protein each in the original). Ours uses normal bacon rashers, normal wraps and cheddar, and white wine vinegar for the cider vinegar. The video doesn't say what the chicken is seasoned with, so ours uses the sauce's salt, pepper and paprika. A portion is one wrap.",
-   "tags": []
+   "tags": [],
+   "photo": "wrap-2"
   },
   {
    "id": "cucumber_tuna_salad",
@@ -7870,7 +7999,8 @@
     "cold-lunch",
     "quick"
    ],
-   "core": true
+   "core": true,
+   "photo": "sandwich"
   }
  ]
 }

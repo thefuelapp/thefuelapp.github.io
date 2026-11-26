@@ -1,0 +1,89 @@
+# Meal photo credits
+
+Every photo in this folder is from Unsplash under the Unsplash Licence (free for commercial use, no attribution required). Credit is kept here as good practice. Downloaded 26 to 27 Nov 2026, resized to 640px wide. They show a similar dish, not FU£L's exact recipe; `photo` in app/data/recipes.json says which recipe uses which file.
+
+Rules for adding more: Unsplash or Pexels free-licence photos only (never Unsplash+, never images taken from recipe sites or search results); no visible brands or faces; dark or neutral backgrounds; add a row here.
+
+| File | Photographer | Unsplash page |
+|---|---|---|
+| chilli.jpg | @briewilly | https://unsplash.com/photos/chili-bowl-with-cheese-and-cream-HNVi6m5KCr8 |
+| bolognese.jpg | @emanuelekstrom | https://unsplash.com/photos/pasta-dish-on-white-ceramic-bowl-KJOUnsGXq58 |
+| fajitas.jpg | @ahmdrzarzai | https://unsplash.com/photos/a-pan-filled-with-chicken-and-vegetables-on-a-cutting-board-EdJA7qaLUIU |
+| burrito.jpg | @snappr | https://unsplash.com/photos/a-burrito-cut-in-half-on-a-plate-3b4X4tqij1A |
+| tuna-pasta.jpg | @moein_nrm | https://unsplash.com/photos/brown-ceramic-bowl-on-brown-wooden-table-OX2C3V_boPM |
+| eggs.jpg | @coffeefyworkafe | https://unsplash.com/photos/sunny-side-up-egg-on-black-ceramic-plate-uh0zvg5VjlA |
+| curry.jpg | @brunabranco | https://unsplash.com/photos/black-ceramic-bowl-with-soup-0wn-DdavPa4 |
+| bowl.jpg | @andrew_relf | https://unsplash.com/photos/a-plate-of-food-iku1zhSNRU8 |
+| chilli-2.jpg | @arturkornakov | https://unsplash.com/photos/cooked-food-on-black-bowl-kwJhh14nUcs |
+| pasta-red.jpg | @dino_trexx | https://unsplash.com/photos/a-close-up-of-a-plate-of-food-with-pasta-iXzStLbERMk |
+| ragu.jpg | @ndg_visuals | https://unsplash.com/photos/pasta-dish-on-black-ceramic-bowl-d9jcPTRD9fo |
+| meatballs.jpg | @atinaw | https://unsplash.com/photos/a-plate-of-spaghetti-with-meatballs-and-tomatoes-gsmVrUEPH5c |
+| pasta-cream-1.jpg | @kimick | https://unsplash.com/photos/a-plate-of-pasta-971_E-LvZuc |
+| pasta-cream-2.jpg | @rabbit_in_blue | https://unsplash.com/photos/black-frying-pan-with-pasta-NRDfttoK8qw |
+| pesto.jpg | @nerfee | https://unsplash.com/photos/white-ceramic-bowl-with-green-vegetable-dish-cBrhiz8XHAs |
+| pasta-rose.jpg | @jasbir1612 | https://unsplash.com/photos/pasta-dish-on-white-ceramic-plate-2Djzc4AOqxs |
+| pasta-bake.jpg | @jonathanpielmayer | https://unsplash.com/photos/bake-mac-on-brown-ceramic-bowl-beside-fork-and-knife-RKJElwIyCQw |
+| pasta-salad.jpg | @shootdelicious | https://unsplash.com/photos/vegetable-salad-in-white-ceramic-bowl-mW0LIBBHNdE |
+| curry-2.jpg | @potofgold07 | https://unsplash.com/photos/a-pan-filled-with-meat-and-vegetables-on-top-of-a-stove-jjoyL1hk1Vo |
+| curry-3.jpg | @sheclicks | https://unsplash.com/photos/black-ceramic-bowl-with-vegetable-dish-Xnb826JWdDI |
+| tikka.jpg | @charlesdeluvio | https://unsplash.com/photos/green-vegetable-on-white-ceramic-plate-PqsImnjuElM |
+| curry-4.jpg | @steven__chan | https://unsplash.com/photos/skewed-meat-in-bowl-beside-knife-and-fork-al9eh9QkdPA |
+| dhal.jpg | @zayed_ahmed_zadu | https://unsplash.com/photos/a-bowl-of-vibrant-orange-soup-garnished-with-fresh-herbs-VNYi27uNrxE |
+| biryani.jpg | @potofgold07 | https://unsplash.com/photos/white-ceramic-bowl-with-green-leaf-2hpTXgfy6pg |
+| ricebowl-1.jpg | @zayed_ahmed_zadu | https://unsplash.com/photos/fried-rice-bowl-with-glazed-chicken-ZK8kPP8I4rY |
+| ricebowl-2.jpg | @jon__kelvin | https://unsplash.com/photos/a-delicious-meal-of-grilled-salmon-with-rice-and-vegetables-fahnPDK0GQA |
+| ricebowl-3.jpg | @_3puncte_ | https://unsplash.com/photos/delicious-stir-fried-chicken-and-vegetables-with-rice-HU64ydv7xhA |
+| ricebowl-4.jpg | @huyenbui30 | https://unsplash.com/photos/a-bowl-of-food-on-a-wooden-board-DqnkZIUL3e4 |
+| beefbowl.jpg | @kurisuchanxx | https://unsplash.com/photos/a-person-holding-a-bowl-of-food-with-chopsticks-2q_VZ3JFMdY |
+| beef-broccoli.jpg | @sheri_silver | https://unsplash.com/photos/a-bowl-of-beef-and-broccoli-with-white-rice-BA2UZ6w8JfY |
+| eggbowl.jpg | @vshnv_c | https://unsplash.com/photos/food-photography-of-sandwich-and-cooked-meat-fU5_WBTXa_Y |
+| friedrice-1.jpg | @hanxiaoyaaaaa | https://unsplash.com/photos/a-plate-of-rice-and-peas-on-a-stove-42UmsPkOETM |
+| friedrice-2.jpg | @picoftasty | https://unsplash.com/photos/fry-rice-with-prawn-dish-dTNNDTbZr8I |
+| friedrice-3.jpg | @herryshani | https://unsplash.com/photos/a-bowl-of-rice-with-vegetables-MVMohJBieo4 |
+| noodles-1.jpg | @his_and | https://unsplash.com/photos/pasta-dish-on-black-plate-pbc2wXbQYpI |
+| noodles-2.jpg | @his_and | https://unsplash.com/photos/ramen-bowl-with-egg-and-chili-RwAXb8Hv_sU |
+| soup-noodle.jpg | @diegonacho | https://unsplash.com/photos/a-bowl-of-ramen-with-chopsticks-and-a-glass-of-beer-mE6kjov4rTg |
+| soup-lentil.jpg | @jezebelrose | https://unsplash.com/photos/soup-in-white-ceramic-bowl-KGw62KtHzxA |
+| soup-2.jpg | @stevetsang | https://unsplash.com/photos/soup-in-maroon-ceramic-pot-MP_A0OK_O60 |
+| wrap-1.jpg | @philton88 | https://unsplash.com/photos/a-wooden-plate-topped-with-a-burrito-covered-in-toppings-DgrrHdcPKQ8 |
+| wrap-2.jpg | @bayuajiabiyu | https://unsplash.com/photos/a-burrito-with-meat-and-vegetables-on-a-cutting-board-_JIRNUeDGy8 |
+| quesadilla.jpg | @benjaminguardia | https://unsplash.com/photos/a-plate-topped-with-a-quesadilla-cut-in-half-_BW-YmENFcM |
+| enchiladas.jpg | @le_y0u | https://unsplash.com/photos/crispy-tacos-topped-with-diced-onions-and-cilantro-tlfjDBm-fXc |
+| salad-1.jpg | @ferhadd | https://unsplash.com/photos/vegetable-salad-on-white-ceramic-bowl-LJ49dflDcH8 |
+| salad-2.jpg | @victoriakosmo | https://unsplash.com/photos/bowl-of-vegetable-salad-4acsnIWXm3k |
+| sandwich.jpg | @myerslk88 | https://unsplash.com/photos/a-sandwich-on-a-plate-CDAOrX5Jq9I |
+| eggsalad.jpg | @visualsbyroyalz | https://unsplash.com/photos/breakfast-bowl-with-eggs-avocado-potatoes-and-tomatoes-OuPWHKkN2aU |
+| jacket.jpg | @lazizli | https://unsplash.com/photos/a-couple-of-plates-of-food-on-a-table-kEH-EJNxlOc |
+| traybake.jpg | @mealpro | https://unsplash.com/photos/a-close-up-of-a-plate-of-food-with-broccoli-MJaF6pVNEfk |
+| chicken-broccoli.jpg | @mealpro | https://unsplash.com/photos/a-close-up-of-a-plate-of-food-with-broccoli-KqxOGBFtPOo |
+| traybake-2.jpg | @jamesrkern | https://unsplash.com/photos/carrots-garlic-onions-and-herb-spicing-meat-on-skillet-qufi5Rm9j2U |
+| chicken-veg.jpg | @np1991 | https://unsplash.com/photos/a-plate-of-food-5lFfglgMaao |
+| salmon.jpg | @_carolineattwood | https://unsplash.com/photos/grilled-fish-cooked-vegetables-and-fork-on-plate-bpPTlXWTOvg |
+| skewers.jpg | @zayed_ahmed_zadu | https://unsplash.com/photos/a-blue-plate-topped-with-meat-and-vegetables-2EhrT8L_IWo |
+| burger.jpg | @diegoarenasderodrigo | https://unsplash.com/photos/juicy-burger-with-lettuce-tomato-and-fries-AFX6POIAG-w |
+| peppers.jpg | @diegoarenasderodrigo | https://unsplash.com/photos/baked-apples-stuffed-with-filling-on-a-plate-o_rg4bVXnIk |
+| pie.jpg | @atikahakhtar | https://unsplash.com/photos/brown-soup-in-red-ceramic-bowl-TTHXisQG1UA |
+| pitta.jpg | @myerslk88 | https://unsplash.com/photos/a-plate-of-food-t97ZUtiJ6hc |
+| pitta-2.jpg | @angelopantazis | https://unsplash.com/photos/a-close-up-of-a-sandwich-on-a-plate-TiTp2KE9Bfw |
+| toastie.jpg | @nate_dumlao | https://unsplash.com/photos/person-holding-brown-and-white-bread-_wA_5FSU4NQ |
+| shakshuka.jpg | @bigwigphotography | https://unsplash.com/photos/a-pan-filled-with-food-on-top-of-a-wooden-table-Uv0l0WKBBQI |
+| omelette.jpg | @haleytruong | https://unsplash.com/photos/black-frying-pan-on-stove-d1Z-4emDsAQ |
+| eggbake.jpg | @eaterscollective | https://unsplash.com/photos/omelette-on-black-plate-6rtm6a_aVyE |
+| hash.jpg | @meganmarkham | https://unsplash.com/photos/black-round-plate-with-cooked-food-hzxxLzqaEjU |
+| yoghurt-1.jpg | @itsmaemedia | https://unsplash.com/photos/a-bowl-of-cereal-with-blueberries-and-granola-z71M3cfW40c |
+| yoghurt-2.jpg | @lisa_weinstein | https://unsplash.com/photos/a-bowl-of-cereal-with-milk-and-berries-Xw_oQ3pVBP0 |
+| yoghurt-pb.jpg | @esraafsar | https://unsplash.com/photos/a-healthy-smoothie-bowl-with-fruit-and-granola-fMc7IIC70ig |
+| pancakes.jpg | @calumlewis | https://unsplash.com/photos/blue-and-white-ceramic-plate-with-pancakes-8Nc_oQsc2qQ |
+| porridge.jpg | @wilcrza | https://unsplash.com/photos/a-plate-of-food-VeRTm8WMTNM |
+| oats.jpg | @williamwallace | https://unsplash.com/photos/a-healthy-fruit-and-granola-bowl-with-sliced-bananas-F-wdTiqETDs |
+| toast-pb.jpg | @gladysaguayoa | https://unsplash.com/photos/cooked-sandwich-jTWG3u7MExc |
+| bar.jpg | @sofizz | https://unsplash.com/photos/biscuits-with-chocolate-chips-and-nuts-on-a-plate-DOgKwhAKVxs |
+| boiled-eggs.jpg | @forgohill | https://unsplash.com/photos/hard-boiled-eggs-are-sitting-on-a-tray-3VwmIANzmNQ |
+| shake.jpg | @louishansel | https://unsplash.com/photos/person-putting-sliced-banana-fruit-on-top-of-jar-0BF_Kpcmyig |
+| hummus.jpg | @cowiijay | https://unsplash.com/photos/a-pan-of-food-ArGWd4sK6RM |
+| nuts.jpg | @metinozer | https://unsplash.com/photos/a-white-bowl-filled-with-nuts-on-top-of-a-table-emgaZL0cGqw |
+| banana.jpg | @drunkenchimp | https://unsplash.com/photos/a-piece-of-bread-with-bananas-and-nuts-on-it-iFa7eAcmfs8 |
+| cottage.jpg | @gennady107 | https://unsplash.com/photos/a-cup-of-coffee-and-a-bowl-of-cottage-cheese-KmUj3vChQQc |
+| cottage-toast.jpg | @rafaelmaggion | https://unsplash.com/photos/a-blue-plate-topped-with-a-piece-of-bread-covered-in-cheese-and-veggies-IQfKlQIbcxw |
+| jerky.jpg | @alexbayev | https://unsplash.com/photos/a-wood-cutting-board-with-brown-objects-on-it-nlBelQEqwZQ |
+| apple.jpg | @miguelheezg | https://unsplash.com/photos/a-plate-of-cheese-crackers-and-fruit-on-a-table-1yuNunHHV-A |
