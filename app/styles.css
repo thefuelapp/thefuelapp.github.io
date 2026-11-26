@@ -1488,3 +1488,9 @@ input.switch:checked { background: var(--accent); } input.switch:checked::after 
 :root[data-theme=dark] .check input[type=checkbox]:not(.switch):checked, :root[data-theme=dark] .sheet-inner input[type=checkbox]:not(.switch):checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
 .pantryprice, :root[data-theme=dark] .pantryprice { background: var(--panel); border-radius: 12px; color: var(--text); } .pantryprice b { color: var(--text); }
 .tipcard, :root[data-theme=dark] .tipcard { border: 0; }
+/* v102: sheets sit above everything (the new-password sheet can open over the pay screen) and are lifted clear of the keyboard */
+#sheet { z-index: 50; padding-bottom: var(--kb, 0px); } .sheet-inner { max-height: calc(85vh - var(--kb, 0px)); }
+.gr.warnrow .gr-l { color: var(--badtx); }
+/* typed text reads the right way round whatever language it is in, and a long word never pushes a row off the screen */
+input:not([type=checkbox]):not([type=range]):not([type=number]), textarea { unicode-bidi: plaintext; }
+.gr-l, .rp-steps p, .rp-note, .rp-t h1, .mt-name, .recipe-row, .line .name, .cm-step, .wnlist p { overflow-wrap: anywhere; }

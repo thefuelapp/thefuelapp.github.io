@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Only this site's own scripts (plus the pinned Supabase library) may run, and the app may only talk to its own server. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://htdmdthyrehhvzflajuk.supabase.co wss://htdmdthyrehhvzflajuk.supabase.co https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Fuel</title>
 <meta name="theme-color" content="#0e1b2e">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,29 +18,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body><script>
-/* iPhone home-screen app. The status-bar style is frozen when the icon is added, so two kinds of install exist:
-   - fresh ("default"): the page starts below the status bar and runs to the very bottom of the screen; env(safe-area-inset-bottom) is the home-bar space.
-   - old ("black-translucent", class ios-under): the page runs under the status bar, but iOS lays it out SHORT by the status bar's height and never
-     paints the strip below it: only the html background colour shows there (class ios-short).
-   ios-short is also set if a fresh install ever turns out short. styles.css (v76) does the rest. */
-(function () {
-  var d = document.documentElement, ios = navigator.standalone === true;
-  if (ios || matchMedia('(display-mode: standalone)').matches) d.classList.add('is-standalone');
-  if (!ios) return;
-  d.classList.add('is-ios-app');
-  function fit() {
-    var probe = document.createElement('div'); probe.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top);visibility:hidden;pointer-events:none'; d.appendChild(probe);
-    var under = probe.offsetHeight > 0; d.removeChild(probe);
-    var portrait = matchMedia('(orientation: portrait)').matches;
-    var full = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width);
-    var gap = full - window.innerHeight; /* a healthy fresh install is short by the status bar only (20 to 62pt); a short one by about 34 more */
-    d.classList.toggle('ios-under', under);
-    d.classList.toggle('ios-short', under ? gap > 20 : gap > 75);
-  }
-  fit(); addEventListener('resize', fit); addEventListener('orientationchange', function () { setTimeout(fit, 350); }); addEventListener('pageshow', fit);
-})();
-</script><div id="statusband" aria-hidden="true"></div>
+<body><script src="ios-fit.js"></script><div id="statusband" aria-hidden="true"></div>
 <main id="view"></main>
 <nav id="tabs">
   <button data-tab="home"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></svg></span>Home</button>

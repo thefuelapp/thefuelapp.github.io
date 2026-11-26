@@ -1,14 +1,15 @@
 import * as P from './planner.js';
 import { CONFIG } from './config.js';
-import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, refreshAccess, pullState, pushStateSoon, setReferral, claimMates } from './cloud.js';
+import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, updatePassword, redeemCode, signOut, deleteAccount, hasAccess, refreshAccess, pullState, pushState, pushStateSoon, setReferral, claimMates } from './cloud.js';
 import { anonId, captureAttribution, carryCodeToHomeScreen, attribution, track, setOptOut, mateCode, savedMateCode, mateStatus, growthReady, codeKind } from './growth.js';
 import { planWeek } from './autoplan.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v101';
+const APP_VERSION = 'v102';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
+  ['v102', '26 Nov 2026', 'A safety pass. A paid plan now opens with no signal. Forgot password lets you set a new one. Signing in as someone else on the same phone never shows or mixes the last person\'s plan, and Sign out can clear the phone. Two phones on one account pick up each other\'s changes. You can delete your account in Settings. Fields have sensible limits and the keyboard no longer covers a sheet.'],
   ['v101', '26 Nov 2026', 'Cook is rebuilt: how long is left, the next recipe as one big photo with Start cooking on it, and a page for each recipe where you tick ingredients off as you get them out. Finish a recipe and it is marked cooked. Settings now looks like your phone settings: tap a row and it opens from the bottom. Shop is tidier underneath the list. And it feels more like an app: swipe right to go back, flick a sheet down to close it, a small tap you can feel on buttons, the right keyboard for numbers and email, and tap the tab you are on to jump to the top.'],
   ['v100', '26 Nov 2026', 'A whole new look. Home shows your week at a glance, with photos of the meals you are eating: tap one and it opens on Cook. Choosing meals is now a wall of photos. Every recipe has a Start cooking button that shows one step at a time, with a timer and what that step needs, and keeps the screen awake. Fourteen colour themes under Settings, Look. Everything else works the way it did.'],
   ['v99', '23 Nov 2026', 'A faster shopping list. It now starts at the top of Shop, each item is one short line, and a ticked item drops into In the trolley at the bottom so the list gets shorter as you go. Ticked something by mistake? Tap Undo, or open In the trolley and tap it to put it back. Shop prices and savings are under one button at the top.'],
@@ -61,9 +62,29 @@ function applyTheme() {
 }
 applyTheme();
 
+function baseState() { return { tab: 'plan', activeWeek: null, weeks: {}, tubs: {}, customRecipes: [], customIngredients: [], inbox: [], settings: { portion: 1, weight: 85, goal: 'build', proteinTarget: 180, snackProtein: 24, budget: 50, avoid: [] } }; }
 function load() {
-  const base = { tab: 'plan', activeWeek: null, weeks: {}, tubs: {}, customRecipes: [], customIngredients: [], inbox: [], settings: { portion: 1, weight: 85, goal: 'build', proteinTarget: 180, snackProtein: 24, budget: 50, avoid: [] } };
-  try { return { ...base, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return base; }
+  const base = baseState();
+  try { return { ...base, ...cleanState(JSON.parse(localStorage.getItem(KEY) || '{}')) }; } catch { return base; }
+}
+// v102: anything that comes from outside the app's own forms (a pasted backup, the copy saved to an account, a hand-edited save) is cut
+// down to safe shapes before it is used: ids are plain letters and numbers, text has a length limit, lists have a size limit.
+// Text is always shown through esc(), so this is the second lock on the door, not the only one.
+function cleanState(o) {
+  if (!o || typeof o !== 'object' || Array.isArray(o)) return {};
+  const out = {}; for (const k of Object.keys(o)) if (!['__proto__', 'constructor', 'prototype'].includes(k)) out[k] = o[k];
+  const str = (v, n) => String(v ?? '').slice(0, n); const arr = (v, n) => (Array.isArray(v) ? v : []).slice(0, n);
+  const idOk = (id) => typeof id === 'string' && /^[A-Za-z0-9_-]{1,90}$/.test(id); const word = (v, d) => (typeof v === 'string' && /^[A-Za-z0-9 _&-]{1,30}$/.test(v) ? v : d);
+  if ('customRecipes' in out) out.customRecipes = arr(out.customRecipes, 300).filter((r) => r && typeof r === 'object' && idOk(r.id) && arr(r.slots, 6).some((x) => typeof x === 'string')).map((r) => ({ ...r, name: str(r.name, 120) || 'Recipe', source: str(r.source, 120), notes: str(r.notes, 2000), ...(r.short ? { short: str(r.short, 40) } : {}), reheat: word(r.reheat, 'microwave'),
+    slots: arr(r.slots, 6).filter((x) => typeof x === 'string' && /^[a-z]{1,12}$/.test(x)), method: arr(r.method, 60).map((m) => str(m, 1500)), equipment: arr(r.equipment, 10).map((x) => str(x, 40)), ingredients: arr(r.ingredients, 80).filter((x) => x && idOk(x.id)).map((x) => ({ ...x, qty: +x.qty || 0 })) })).filter((r) => r.slots.length);
+  if ('customIngredients' in out) out.customIngredients = arr(out.customIngredients, 500).filter((i) => i && typeof i === 'object' && idOk(i.id)).map((i) => ({ ...i, name: str(i.name, 120) || 'Ingredient', unit: word(i.unit, 'g'), category: word(i.category, 'other'), store: word(i.store, 'cupboard'), protein: +i.protein || 0, packs: arr(i.packs, 30) }));
+  if ('inbox' in out) out.inbox = arr(out.inbox, 200).filter((x) => x && typeof x === 'object' && /^https?:\/\//i.test(String(x.url || ''))).map((x) => ({ url: str(x.url, 600), note: str(x.note, 400), added: str(x.added, 10) }));
+  if ('weeks' in out) { const w = {}; if (out.weeks && typeof out.weeks === 'object' && !Array.isArray(out.weeks)) for (const k of Object.keys(out.weeks)) if (/^\d{4}-\d{2}-\d{2}$/.test(k) && out.weeks[k] && typeof out.weeks[k] === 'object') w[k] = out.weeks[k]; out.weeks = w; }
+  if ('settings' in out) { const st = out.settings && typeof out.settings === 'object' && !Array.isArray(out.settings) ? { ...out.settings } : {}; delete st.__proto__; st.avoid = arr(st.avoid, 40).filter((x) => typeof x === 'string' && x.length <= 30); if ('avoidText' in st) st.avoidText = arr(st.avoidText, 40).map((x) => str(x, 40).toLowerCase()).filter(Boolean); out.settings = { ...baseState().settings, ...st }; }
+  if ('look' in out && typeof out.look !== 'string') delete out.look;
+  if ('tab' in out && !['home', 'plan', 'shop', 'cook', 'more', 'recipes', 'pantry', 'settings'].includes(out.tab)) out.tab = 'home';
+  if ('library' in out) out.library = arr(out.library, 2000).filter(idOk);
+  return out;
 }
 function syncable() { const { tab, search, planSearch, planFilter, pantrySearch, pantryRestOpen, ideasOpen, ideaTag, ...rest } = S; return rest; }
 function save() {
@@ -390,7 +411,9 @@ async function boot() {
   onCloudChange(async () => {
     const gated = gateScreen();
     if (cloud.user && document.querySelector('#sheet-inner #signin-form') && !document.getElementById('sheet').hidden) closeSheet(); // signed in from a sheet
-    if (cloud.user && cloud.user.id !== syncedFor) { syncedFor = cloud.user.id; await syncOnSignIn(); afterSignIn(); }
+    if (cloud.user && cloud.user.id !== syncedFor) { syncedFor = cloud.user.id; lastPull = Date.now(); await syncOnSignIn(); afterSignIn(); hardeningReady().then((ok) => { HARD_OK = ok; if (ok && S.tab === 'settings') render(); }); }
+    if (!cloud.user) syncedFor = null; // signing out and back in (or in as someone else) runs the sync again
+    if (cloud.recovery && cloud.user) { cloud.recovery = false; newPassSheet(); } // arrived from a "reset my password" email
     if (cloud.user && !gated) noteOpen();
     if (!gated) ensureIntro();
     if (S.tab === 'pantry' || S.tab === 'settings') render(); else refreshTrialPill();
@@ -400,7 +423,7 @@ async function boot() {
   initCloud();
   growthReady().then((ok) => { GROWTH_OK = ok; if (!ok) return; if (S.tab === 'settings') render(); const g = document.getElementById('gate'); if (!g.hidden) { g.dataset.key = ''; gateScreen(); } if (S.mate?.code && !hasAccess()) refreshMates(); }); // a mate may have planned their week since last time
   // Coming back from Stripe: re-check access without a manual refresh, and keep checking for a minute after a Buy tap.
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { recheckAccess(false); rollWeeks(); } });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { recheckAccess(false); rollWeeks(); syncOnFocus(); } });
   window.addEventListener('focus', () => recheckAccess(false));
   setInterval(() => { if (S.buyStarted && Date.now() - S.buyStarted < 90000 && !hasAccess()) recheckAccess(false); }, 4000);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
@@ -418,8 +441,24 @@ async function recheckAccess(manual) {
 
 // On any sign-in (at boot or from the gate): take the account's saved copy if it's newer, otherwise send this phone's copy up.
 let syncedFor = null;
+// Put the account's copy on this phone. What belongs to the phone (which tab, the free-week clock, the mate code) stays.
+function applyRemote(data, msg) {
+  const rd = cleanState(data);
+  const keep = { tab: S.tab, trial: S.trial, mate: S.mate || rd.mate, refSent: { ...(rd.refSent || {}), ...(S.refSent || {}) }, stepPlanned: S.stepPlanned || rd.stepPlanned, owner: cloud.user?.id || S.owner };
+  if (rd.trial?.start && S.trial?.start && rd.trial.start < S.trial.start) keep.trial = rd.trial; // the earlier free-week start wins
+  Object.assign(S, rd, keep); bustCaches(); setupWeeks(); planAdd = null; applyTheme(); save(); render(); if (msg) toast(msg);
+  if (S.settings.onboarded && introOpen()) closeIntro();
+}
 async function syncOnSignIn() {
-  const remote = await pullState();
+  const remote = await pullState(); const uid = cloud.user?.id; if (!uid) return;
+  // v102: a different person's plan is on this phone (they signed out, someone else signed in). It is never shown to the new
+  // account and never saved into it: the phone starts from that account's own copy, or from blank.
+  if (S.owner && S.owner !== uid) {
+    const mate = S.mate; for (const k of Object.keys(S)) delete S[k];
+    Object.assign(S, baseState(), cleanState(remote?.data || {}), { owner: uid, tab: 'home', mate, signedOutEdits: false });
+    bustCaches(); setupWeeks(); planAdd = null; cookView = null; cookGot.clear(); applyTheme(); save(); render({ top: true }); ensureIntro(); return;
+  }
+  S.owner = uid;
   const planned = (st) => Object.values(st?.weeks || {}).some((w) => Object.keys(w.portions || {}).length);
   let useRemote = !!(remote && remote.updated_at && (!S.updatedAt || remote.updated_at > S.updatedAt));
   // The free week means people now plan BEFORE signing in. If this phone and the account both have a plan, ask which to keep
@@ -431,12 +470,19 @@ async function syncOnSignIn() {
     useRemote = pick !== 'phone';
   } else if (remote?.data && planned(remote.data) && !planned(S)) useRemote = true;
   S.signedOutEdits = false;
-  if (useRemote && remote?.data) {
-    const keep = { tab: S.tab, trial: S.trial, mate: S.mate || remote.data.mate, refSent: { ...(remote.data.refSent || {}), ...(S.refSent || {}) }, stepPlanned: S.stepPlanned || remote.data.stepPlanned };
-    if (remote.data.trial?.start && S.trial?.start && remote.data.trial.start < S.trial.start) keep.trial = remote.data.trial; // the earlier free-week start wins
-    Object.assign(S, remote.data, keep); bustCaches(); setupWeeks(); planAdd = null; save(); render(); toast('Synced from your account');
-    if (S.settings.onboarded && introOpen()) closeIntro();
-  } else pushStateSoon(syncable);
+  if (useRemote && remote?.data) applyRemote(remote.data, 'Synced from your account');
+  else pushStateSoon(syncable);
+}
+// Two phones on one account: when the app comes back to the front, take the other phone's changes if they are newer (at most twice a minute,
+// and never while a sheet, the set-up or the cooking steps are open).
+let lastPull = 0;
+async function syncOnFocus() {
+  if (!cloud.user || Date.now() - lastPull < 30000 || !document.getElementById('sheet').hidden || introOpen() || CM.id) return;
+  lastPull = Date.now(); const uid = cloud.user.id;
+  const remote = await pullState(); if (!remote?.data || !cloud.user || cloud.user.id !== uid || S.owner !== uid) return;
+  const theirs = Date.parse(remote.data.updatedAt || ''), mine = Date.parse(S.updatedAt || '');
+  if (!(theirs > mine) || !document.getElementById('sheet').hidden) return;
+  applyRemote(remote.data, 'Updated from your other device');
 }
 
 // The 1 and 2 on the tab bar turn into ticks: Plan once a meal is picked, Shop once the list is all ticked off. Cook never does (the app can't know you cooked).
@@ -572,7 +618,7 @@ function isAvoided(r) {
   return terms.some((t) => names.includes(t));
 }
 function avoidTextChips(action) { return `<div class="chip-row" style="margin-top:8px">${(S.settings.avoidText || []).map((t) => `<button class="chip on" data-action="${action}" data-term="${esc(t)}">${esc(t)} ×</button>`).join('')}</div>`; }
-function addAvoidText(inputId) { const inp = document.getElementById(inputId); const v = (inp?.value || '').trim().toLowerCase(); if (!v) return false; S.settings.avoidText ||= []; if (!S.settings.avoidText.includes(v)) S.settings.avoidText.push(v); save(); return true; }
+function addAvoidText(inputId) { const inp = document.getElementById(inputId); const v = (inp?.value || '').trim().toLowerCase().slice(0, 40); if (!v) return false; S.settings.avoidText ||= []; if (S.settings.avoidText.length >= 40) return false; if (!S.settings.avoidText.includes(v)) S.settings.avoidText.push(v); save(); return true; }
 function removeAvoidText(term) { S.settings.avoidText = (S.settings.avoidText || []).filter((t) => t !== term); save(); }
 function suggestions(n = 6) { const list = REC(), ing = ING(), raw = (RAW_C.byId ||= Object.fromEntries(RAW().map((r) => [r.id, r]))); // ranked on the recipe as written: protein per £ is the same at any portion size, but the rounded resized numbers are not, and the first Quick pick used to swap the chips under your thumb
   return list.filter((r) => inLibrary(r.id) && !r.slots.includes('snack') && !isAvoided(r) && r.cookMinutes > 0).map((r) => { const o = raw[r.id] || r, c = P.costPerPortion(o, ing).cost; return { r, score: c ? P.proteinPerPortion(o, ing) / c : 0 }; }).sort((a, b) => b.score - a.score).slice(0, n).map((x) => x.r); }
@@ -939,7 +985,7 @@ function extrasSheet(q = '') {
   const have = new Set(extras().map((e) => e.id)); const s = q.trim().toLowerCase();
   const hits = s ? ING().filter((it) => !it.hidden && !(it.choices || []).length && !have.has(it.id) && (it.name.toLowerCase().includes(s) || String(it.aka || '').toLowerCase().includes(s))).slice(0, 12) : [];
   return `<h3>Add something to the shop</h3><p class="small muted">Type what you want. Anything from the 290 priced ingredients is priced in with the rest of the list.</p>
-  <label class="field" style="margin:8px 0 0">What do you want to add?<input class="search" style="width:100%;font-size:18px;margin:6px 0 0" placeholder="e.g. milk, avocado, crisps" value="${esc(q)}" data-extra-search autofocus inputmode="search" enterkeyhint="search" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+  <label class="field" style="margin:8px 0 0">What do you want to add?<input class="search" style="width:100%;font-size:18px;margin:6px 0 0" placeholder="e.g. milk, avocado, crisps" value="${esc(q)}" data-extra-search autofocus maxlength="60" inputmode="search" enterkeyhint="search" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
   <div id="extra-list" style="margin-top:8px">${hits.map((it) => `<button class="line" style="width:100%;text-align:left;background:none;border:0;border-bottom:1px solid #f3ecdc" data-action="extra-pick" data-id="${it.id}"><span class="grow"><span class="name">${esc(it.name)}</span><span class="sub">${(it.packs || []).length ? 'priced' : 'no price on file'} · sold by ${it.unit === 'each' ? 'the piece' : it.unit}</span></span></button>`).join('')}${s.length >= 2 ? `<button class="btn ghost block" style="margin-top:10px" data-action="extra-custom" data-name="${esc(q.trim())}">${hits.length ? 'Not there? ' : 'Not in the list. '}Add “${esc(q.trim())}” as my own item</button>` : ''}</div>
   <button class="btn ghost block" data-action="close-sheet" style="margin-top:10px">Done</button>`;
 }
@@ -1394,14 +1440,14 @@ function renderRecipes() {
   <button class="btn block ${S.ideasOpen ? 'ghost' : ''}" data-action="ideas-toggle" style="margin-bottom:10px">${S.ideasOpen ? 'Hide meal ideas' : `✨ Find more meal ideas (${ideasCount})`}</button>
   ${ideasHtml}
   <div class="row" style="margin-bottom:12px"><button class="btn ghost grow" data-action="add-recipe">+ Type a recipe in</button></div>
-  <input class="search" placeholder="Search ${mine.length} of your recipes" value="${esc(S.search || '')}" data-search inputmode="search" enterkeyhint="search" autocapitalize="none" autocorrect="off" spellcheck="false">
+  <input class="search" placeholder="Search ${mine.length} of your recipes" value="${esc(S.search || '')}" data-search maxlength="60" inputmode="search" enterkeyhint="search" autocapitalize="none" autocorrect="off" spellcheck="false">
   <h2>My recipes</h2><div class="card">${list || '<p class="muted">Nothing here yet. Add some from the ideas above.</p>'}</div>
   <div class="card nextcard"><b>Found something you fancy?</b><p class="small muted">Every meal here is on the Plan page, ready to tick.</p><button class="btn block" data-action="go-tab" data-to="plan">Back to Plan</button></div>`;
 }
 function linkForm() {
   return `<h3>Add from a link</h3><p class="small muted">Instagram only opens for a logged-in browser, so the app can't read the reel itself. Paste the link here; Claude turns it into a priced recipe and pushes it to the app.</p>
-  <form id="link-form"><label class="field">Reel or recipe link<input name="url" type="url" inputmode="url" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required placeholder="https://www.instagram.com/reel/…"></label>
-  <label class="field">Anything to change? (optional)<input name="note" placeholder="e.g. swap thighs for breast, no coriander"></label>
+  <form id="link-form"><label class="field">Reel or recipe link<input name="url" type="url" inputmode="url" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required maxlength="600" placeholder="https://www.instagram.com/reel/…"></label>
+  <label class="field">Anything to change? (optional)<input name="note" maxlength="300" placeholder="e.g. swap thighs for breast, no coriander"></label>
   <button class="btn block" type="submit">Save to the list</button></form>`;
 }
 function recipeDetail(r) {
@@ -1436,7 +1482,7 @@ function setTweak(id, fn) { S.tweaks ||= {}; const t = S.tweaks[id] || { drop: [
 function recipeForm() {
   const opts = ING().map((i) => `<option value="${i.id}">${esc(i.name)} (${i.unit})</option>`).join('');
   return `<h3>Add a recipe</h3><form id="recipe-form">
-  <label class="field">Name<input name="name" required></label>
+  <label class="field">Name<input name="name" required maxlength="80" enterkeyhint="next"></label>
   <div class="small muted">Slots</div><div class="chip-row">${P.SLOTS.map((s) => `<label class="chip"><input type="checkbox" name="slot" value="${s}" hidden>${s}</label>`).join('')}</div>
   <div class="row"><label class="field grow">Fridge days<input name="fridgeDays" type="number" inputmode="numeric" min="0" max="7" value="3"></label><label class="field grow">Batch cook minutes<input name="cookMinutes" type="number" inputmode="numeric" min="0" value="30"></label></div>
   <div class="chip-row"><label class="chip"><input type="checkbox" name="cold" hidden>ok cold</label><label class="chip on"><input type="checkbox" name="freezer" hidden checked>freezes</label></div>
@@ -1444,14 +1490,14 @@ function recipeForm() {
   <div class="small muted" style="margin-top:8px">Ingredients per portion</div><div id="ing-rows"></div>
   <button type="button" class="btn ghost small" data-action="add-ing-row">+ ingredient</button>
   <button type="button" class="btn ghost small" data-action="new-ingredient">+ new ingredient (no price yet)</button>
-  <label class="field">Method, one step per line<textarea name="method"></textarea></label>
-  <label class="field">Source link (optional)<input name="source"></label>
+  <label class="field">Method, one step per line<textarea name="method" maxlength="8000"></textarea></label>
+  <label class="field">Source link (optional)<input name="source" maxlength="80"></label>
   <button class="btn block" type="submit" style="margin-top:8px">Save recipe</button></form>
   <template id="ing-row-t"><div class="ing-row"><select name="ing">${opts}</select><input name="qty" type="number" inputmode="decimal" step="any" placeholder="qty" required><button type="button" data-action="rm-row">×</button></div></template>`;
 }
 function newIngredientForm() {
   return `<h3>New ingredient</h3><form id="ing-form">
-  <label class="field">Name<input name="name" required></label>
+  <label class="field">Name<input name="name" required maxlength="80" enterkeyhint="next"></label>
   <label class="field">Unit<select name="unit"><option value="g">grams</option><option value="ml">ml</option><option value="each">each</option></select></label>
   <label class="field">Protein per 100g/ml (or per each)<input name="protein" type="number" inputmode="decimal" step="any" value="0"></label>
   <label class="field">Category<select name="category"><option>protein</option><option>carb</option><option>veg</option><option>fruit</option><option>dairy</option><option>tin</option><option>sauce</option><option>spice</option><option>cupboard</option></select></label>
@@ -1499,9 +1545,16 @@ function accountCard() {
 function checkoutUrl() { return CONFIG.CHECKOUT_URL && cloud.user ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}client_reference_id=${encodeURIComponent(cloud.user.id)}&prefilled_email=${encodeURIComponent(cloud.user.email)}` : ''; }
 function authFormHtml(mode, dark) {
   const link = '';
-  return `<form id="signin-form" data-mode="${mode}"><input class="big ${dark ? '' : 'field'}" name="email" type="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:18px;text-align:left"><input class="big ${dark ? '' : 'field'}" name="password" type="password" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required minlength="8" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:18px;text-align:left;margin-top:10px"><button class="${dark ? 'go' : 'btn block'}" type="submit" style="margin-top:10px">${mode === 'signup' ? 'Make my account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
+  return `<form id="signin-form" data-mode="${mode}"><input class="big ${dark ? '' : 'field'}" name="email" type="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" required maxlength="254" placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:18px;text-align:left"><input class="big ${dark ? '' : 'field'}" name="password" type="password" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required minlength="8" maxlength="72" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:18px;text-align:left;margin-top:10px"><button class="${dark ? 'go' : 'btn block'}" type="submit" style="margin-top:10px">${mode === 'signup' ? 'Make my account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
     <p class="small" style="margin-top:12px">${mode === 'signup' ? `Already have an account? <a href="#" data-action="auth-mode" data-mode="signin" ${link}>Sign in</a>` : `New here? <a href="#" data-action="auth-mode" data-mode="signup" ${link}>Make an account</a> · <a href="#" data-action="auth-forgot" ${link}>Forgot password?</a>`}</p>`;
 }
+let HARD_OK = false; // "Delete my account" only shows once the server can do it (supabase/hardening.sql)
+let hardAsk = null;
+function hardeningReady() { hardAsk ||= cloud.client.rpc('fuel_hardening').then(({ data, error }) => !error && !!data?.ok, () => false); return hardAsk; }
+function newPassSheet() {
+  openSheet(`<h3>Choose a new password</h3><p class="small muted" style="margin:0 0 12px">For ${esc(cloud.user?.email || 'your account')}.</p><form id="newpass-form"><input class="big field" name="password" type="password" required minlength="8" maxlength="72" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="New password (8+ characters)" style="width:100%;font-size:18px;text-align:left"><button class="btn block" type="submit" style="margin-top:10px">Save password</button><div id="newpass-msg" class="signin-msg" hidden></div></form>`);
+}
+const badPassword = (p) => (!p.trim() ? 'A password cannot be only spaces.' : p !== p.trim() ? 'A password cannot start or end with a space.' : p.length < 8 ? 'Password needs to be at least 8 characters.' : '');
 let GROWTH_OK = false; // the mates card only shows once the backend for it answers (supabase/growth.sql)
 function matesHtml(dark) {
   if (!GROWTH_OK) return '';
@@ -1528,7 +1581,7 @@ function gateScreen() {
        <p class="gfoot"><button class="back" data-action="gate-refresh">I've paid, refresh</button><span>·</span><button class="back" data-action="signout">Sign out</button></p>`
     : (S.authMode || 'signup') === 'signup' ? `<div class="gcard"><b>Make an account to keep it</b><small>Then pay ${price} once. Your plan comes with you.</small>${authFormHtml('signup', true)}</div>`
     : `<div class="gcard"><b>Sign in to keep it</b><small>Already bought FU£L or used a code? Sign in and it opens.</small>${authFormHtml('signin', true)}</div>`;
-  const code = cloud.user ? `<form id="code-form" class="gcard codecard"><label for="gate-code"><b>Have a code?</b><small>From a friend, a club, or the founder.</small></label><div class="row"><input id="gate-code" class="big grow" name="code" required placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go"><button class="go" type="submit">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>` : '';
+  const code = cloud.user ? `<form id="code-form" class="gcard codecard"><label for="gate-code"><b>Have a code?</b><small>From a friend, a club, or the founder.</small></label><div class="row"><input id="gate-code" class="big grow" name="code" required maxlength="40" placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go"><button class="go" type="submit">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>` : '';
   el.innerHTML = `<div class="wrap gate-access"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>Your free week's up.</h1>
     <p>${weeks ? `Your ${weeks > 1 ? `${weeks} weeks` : 'week'}, your recipes and your shop lists are all still here.` : 'Everything you set up is still here.'} Keep them for ${price}, once.</p>
     ${buy}${matesHtml(true)}${code}
@@ -1656,7 +1709,7 @@ function renderPantry() {
   const restHtml = rest.length && (!q || groupsHtml) ? `<details class="pantry-rest" ${q || S.pantryRestOpen ? 'open' : ''}><summary><span><b>The rest of your cupboard</b><small>Things your other recipes use. None of it is needed ${label}, so none of it is on the shop list.</small><small class="cnt">${rest.length} things${restTicked ? ` · ${restTicked} ticked` : ''}</small></span></summary>${groupsHtml}</details>` : '';
   const none = q && !wkHit.length && !groupsHtml ? `<p class="muted">Nothing called "${esc(S.pantrySearch)}" in your cupboard.</p>` : '';
   return `<div class="navbar"><button class="navback" data-action="screen-back">${ic('left', 18)}Back</button></div><h1>Pantry</h1>${stepLine(0, `<strong>Your cupboard.</strong> Tick what you have; it comes off the shop list.`)}${weekSwitch()}${tipCard('pantry')}<div id="useby-banner">${useByInner('pantry')}</div><div class="pantryprice" id="pantryprice">${pantryPriceHtml(w)}</div>
-  <div class="row" style="margin-bottom:12px"><input class="search grow" placeholder="Search the cupboard" value="${esc(S.pantrySearch || '')}" data-pantry-search inputmode="search" enterkeyhint="search" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>
+  <div class="row" style="margin-bottom:12px"><input class="search grow" placeholder="Search the cupboard" value="${esc(S.pantrySearch || '')}" data-pantry-search maxlength="60" inputmode="search" enterkeyhint="search" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>
   <h2 class="pweekhead">On ${whose} shopping list${wk.length ? ` <span class="muted" id="pantry-week-count">${wkTicked} of ${wk.length} ticked</span>` : ''}</h2>${wk.length ? `<p class="small muted" style="margin:-4px 0 8px">Only what your planned meals need. Got it already? Tick it.</p>` : ''}${weekHtml}${restHtml}${none}
   <div class="card nextcard"><b>Ticked what you have?</b><p class="small muted">Your shop list and its price are already up to date.</p><button class="btn block" data-action="go-tab" data-to="shop">Back to Shop</button></div>`;
 }
@@ -1687,7 +1740,7 @@ function renderSettings() {
   const account = !cloud.enabled ? prof(ic('user', 22), 'This phone only', 'Everything is saved here.')
     : (cloud.status === 'error' ? `<div class="bad-box" style="margin:10px 14px">Cloud problem: ${esc(cloud.error || 'unknown')}. The app keeps working on this phone.</div>` : '')
       + (!cloud.user ? prof(ic('user', 22), 'Your plan lives on this phone', access) + gr('Save to an account', '', 'data-action="account" data-mode="signup"') + gr('Sign in', '', 'data-action="account" data-mode="signin"')
-        : prof(esc((cloud.user.email || '?')[0].toUpperCase()), esc(cloud.user.email), `${access}${cloud.lastSync ? ` · synced ${new Date(cloud.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}`) + (paidUp() ? '' : gr('Have a code?', '', 'data-action="code-sheet"')) + gr('Sign out', '', 'data-action="signout"', { plain: true }))
+        : prof(esc((cloud.user.email || '?')[0].toUpperCase()), esc(cloud.user.email), `${access}${cloud.lastSync ? ` · synced ${new Date(cloud.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}`) + (paidUp() ? '' : gr('Have a code?', '', 'data-action="code-sheet"')) + gr('Sign out', '', 'data-action="signout"', { plain: true }) + (HARD_OK ? gr('Delete my account', '', 'data-action="delete-account"', { plain: true, cls: 'warnrow' }) : ''))
       + (canBuy && CONFIG.CHECKOUT_URL ? gr('Upgrade', `${esc(CONFIG.PRICE_LABEL || '£4.99')} once, for life`, 'data-action="buy-open"', { cls: 'accent' }) : '')
       + (canBuy && GROWTH_OK ? gr('Or free for life: bring 3 mates', `${Math.min(3, S.mate?.planned || 0)} of 3`, open('mates')) : '');
   const L = LOOKS[lookKey()]; const avoidN = st.avoid.length + (st.avoidText || []).length;
@@ -1722,7 +1775,7 @@ function settingsSheet(kind) {
     <button class="btn ghost block" data-action="suggest-targets" style="margin-top:12px">Reset to match my weight and goal</button>${done}`;
   if (kind === 'look') return `<h3>Colours</h3><p class="small muted" style="margin:0 0 12px">Tap one. It changes straight away.</p><div class="looks">${Object.entries(LOOKS).map(([k, L]) => `<button class="look ${lookKey() === k ? 'on' : ''}" data-action="look" data-look="${k}" aria-pressed="${lookKey() === k}"><span class="lchip" style="background:rgb(${L.pg})"><i style="background:${L.p}"></i><i style="background:${L.ac}"></i></span><b>${L.name}</b>${lookKey() === k ? ic('check', 16) : ''}</button>`).join('')}</div>${done}`;
   if (kind === 'avoid') return `<h3>Things you do not eat</h3><p class="small muted" style="margin:0 0 12px">Hidden from every list.</p><div class="chip-row">${Object.entries(AVOID).map(([k, v]) => `<button class="chip ${st.avoid.includes(k) ? 'on' : ''}" data-action="avoid" data-id="${k}">${v.label}</button>`).join('')}</div>
-    <div class="row" style="margin-top:12px;gap:8px"><input class="grow" id="settings-avoid-text" placeholder="Anything else, e.g. mushrooms" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done"><button class="btn small" data-action="settings-avoid-add">Add</button></div>${avoidTextChips('settings-avoid-rm')}${done}`;
+    <div class="row" style="margin-top:12px;gap:8px"><input class="grow" id="settings-avoid-text" maxlength="40" placeholder="Anything else, e.g. mushrooms" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done"><button class="btn small" data-action="settings-avoid-add">Add</button></div>${avoidTextChips('settings-avoid-rm')}${done}`;
   if (kind === 'money') return `<h3>Spending by week</h3>${moneyCard()}${done}`;
   if (kind === 'install') return `${installCard(true)}${done}`;
   if (kind === 'mates') return `${matesHtml(false)}${done}`;
@@ -1821,7 +1874,7 @@ function introStep(n) {
     1: `${gateInstallHint()}<h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${picked === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
     2: `<h1>How much do you weigh?</h1><p>Kilos, roughly. Your daily protein and calorie targets come from this and your goal. Meals are sized to them, never more than 1.5× the recipe.</p><input class="big" type="number" id="intro-weight" inputmode="decimal" placeholder="kg" value="${S.settings.onboarded ? wt : ''}" min="30" max="200"><div class="stat-row"><div><b id="iw-p">${S.settings.onboarded ? `${P.proteinTargetFor(wt, g)}g` : '—'}</b><span>protein a day</span></div><div><b id="iw-f">${S.settings.onboarded ? P.kcalTargetFor(wt, g).toLocaleString() : '—'}</b><span>kcal a day</span></div></div><button class="go" data-action="intro-weight">Next</button><button class="back" data-action="intro-back">Back</button>`,
     3: `<h1>Weekly food budget?</h1><p>The shop list always shows what's left against it.</p><div class="chips">${budgets.map((b) => `<button class="opt ${S.settings.budget === b ? 'on' : ''}" data-action="intro-budget" data-budget="${b}">£${b}</button>`).join('')}</div><p style="margin-bottom:6px">Or type your own</p><input class="big" type="number" id="intro-budget" inputmode="numeric" placeholder="£" min="10" max="300"><p style="margin:14px 0 6px">Or work it out from what's left</p><div class="row" style="gap:8px"><input class="big grow" type="number" id="intro-loan-left" inputmode="numeric" placeholder="£ left" value="${S.loan?.left || ''}" style="margin:0"><input class="big grow" type="date" id="intro-loan-until" value="${S.loan?.until || ''}" style="margin:0;font-size:16px"></div><p class="small" id="intro-loan-out" style="margin:8px 0 0;min-height:1.4em"></p><button class="go" data-action="intro-budget-custom">Next</button><button class="back" data-action="intro-back">Back</button>`,
-    4: `<h1>Anything you don't eat?</h1><p>Recipes with these are hidden. Tap all that apply.</p><div class="chips">${Object.entries(AVOID).map(([k, v]) => `<button class="opt ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><p style="margin:16px 0 6px">Anything else? Allergies, or things you just don't like.</p><div class="row"><input class="big grow" id="intro-avoid-text" data-enter="intro-avoid-add" placeholder="e.g. mushrooms" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" style="font-size:18px;text-align:left;margin:0"><button class="go" style="width:auto;margin:0;padding:14px 18px;font-size:16px" data-action="intro-avoid-add">Add</button></div>${avoidTextChips('intro-avoid-rm')}<p style="margin:16px 0 6px">Which milk?</p><div class="chips">${[['milk', 'Dairy'], ['oat_milk', 'Oat'], ['almond_milk', 'Almond'], ['soya_milk', 'Soya']].map(([k, l]) => `<button class="opt ${(S.settings.milk || 'milk') === k ? 'on' : ''}" data-action="intro-milk" data-id="${k}">${l}</button>`).join('')}</div><button class="go" data-action="intro-next">Next</button><button class="back" data-action="intro-back">Back</button>`,
+    4: `<h1>Anything you don't eat?</h1><p>Recipes with these are hidden. Tap all that apply.</p><div class="chips">${Object.entries(AVOID).map(([k, v]) => `<button class="opt ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><p style="margin:16px 0 6px">Anything else? Allergies, or things you just don't like.</p><div class="row"><input class="big grow" id="intro-avoid-text" data-enter="intro-avoid-add" maxlength="40" placeholder="e.g. mushrooms" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" style="font-size:18px;text-align:left;margin:0"><button class="go" style="width:auto;margin:0;padding:14px 18px;font-size:16px" data-action="intro-avoid-add">Add</button></div>${avoidTextChips('intro-avoid-rm')}<p style="margin:16px 0 6px">Which milk?</p><div class="chips">${[['milk', 'Dairy'], ['oat_milk', 'Oat'], ['almond_milk', 'Almond'], ['soya_milk', 'Soya']].map(([k, l]) => `<button class="opt ${(S.settings.milk || 'milk') === k ? 'on' : ''}" data-action="intro-milk" data-id="${k}">${l}</button>`).join('')}</div><button class="go" data-action="intro-next">Next</button><button class="back" data-action="intro-back">Back</button>`,
     5: `<h1>You're set.</h1><p class="lit"><b>${S.settings.proteinTarget}g</b> of protein and <b>${(S.settings.kcalTarget || 0).toLocaleString()}</b> kcal a day, on <b>£${S.settings.budget}</b> a week. Plan, shop, cook.</p>${onTrial() ? `<div class="freebox"><b>${trialEnd() ? `Free until ${dayName(trialEnd())}.` : `Your first ${S.trial?.days === 14 ? '14 days are' : 'week is'} free, from the day you plan it.`}</b> Every feature. No card, nothing to cancel.</div>` : ''}<span class="ring"><button class="go" data-action="intro-auto">Plan my week for me</button></span><button class="go ghostgo" data-action="intro-done">I'll pick my own meals</button><button class="back" data-action="intro-back">Back</button>`,
   }[n];
   el.innerHTML = `<div class="wrap ${n ? '' : 'welcome'}">${dots}${step}</div>`; el.hidden = false;
@@ -1892,6 +1945,8 @@ function screenBack() { S.tab = S.prevTab && !SUB_SCREENS.includes(S.prevTab) ? 
   };
   document.addEventListener('touchend', end); document.addEventListener('touchcancel', end);
 })();
+// The keyboard: a sheet is lifted to sit on top of it, so the field you are typing in and its button are never underneath.
+if (window.visualViewport) { const kb = () => { const vv = window.visualViewport, h = Math.round(window.innerHeight - vv.height - vv.offsetTop); document.documentElement.style.setProperty('--kb', h > 80 ? `${h}px` : '0px'); }; window.visualViewport.addEventListener('resize', kb); window.visualViewport.addEventListener('scroll', kb); }
 // Tap the very top of the screen (or the tab you are already on) and the page runs back to the top. A web app cannot hear a tap on the status bar itself, so a thin strip under it listens instead.
 function scrollTopNow() { const v = document.getElementById('view'); if (v.scrollTop > 0) { v.scrollTo({ top: 0, behavior: 'smooth' }); haptic('tick'); } }
 (() => { const s = document.createElement('div'); s.id = 'topstrip'; s.setAttribute('aria-hidden', 'true'); document.body.appendChild(s); s.addEventListener('click', scrollTopNow); document.getElementById('statusband').addEventListener('click', scrollTopNow); })();
@@ -2119,9 +2174,22 @@ function onAction(e) {
   else if (a === 'suggest-targets') { const resized = setTargets(P.kcalTargetFor(S.settings.weight, S.settings.goal), P.proteinTargetFor(S.settings.weight, S.settings.goal)); refreshSet(); haptic('save'); toast(`${S.settings.kcalTarget.toLocaleString()} kcal and ${S.settings.proteinTarget}g protein a day.${resized ? ' Portions resized to match.' : ''}`, 3500); }
   else if (a === 'sinc' || a === 'sdec') { w.snacks[id] = Math.max(0, (w.snacks[id] || 0) + (a === 'sinc' ? 1 : -1)); if (!w.snacks[id]) delete w.snacks[id]; save(); refreshPlan(rowSel(id)); }
   else if (a === 'fresh-default') { if (el.dataset.on === '1') S.freshDefault[id] = true; else delete S.freshDefault[id]; save(); render(); toast(el.dataset.on === '1' ? 'Made fresh each time, not batched' : 'Back on the batch list'); }
-  else if (a === 'signout') { signOut().then(() => { gateScreen(); render(); }); }
+  else if (a === 'signout') {
+    askChoice('Sign out of this phone?', [{ value: 'keep', label: 'Sign out', sub: 'Your plan stays on this phone' }, { value: 'clear', label: 'Sign out and clear this phone', sub: 'For a shared or borrowed phone. Your plan stays in your account.', ghost: true }]).then(async (v) => {
+      if (!v) return; try { await pushState(syncable()); } catch {} await signOut();
+      if (v === 'clear') { try { localStorage.removeItem(KEY); } catch {} location.reload(); return; }
+      gateScreen(); render();
+    });
+  }
+  else if (a === 'delete-account') {
+    ask('Delete your account? Your saved plan and your access are removed for good. This cannot be undone.', 'Delete my account', true).then(async (ok) => {
+      if (!ok) return; toast('Deleting…', 8000);
+      try { await deleteAccount(); try { localStorage.removeItem(KEY); localStorage.removeItem('fuel:mate'); } catch {} location.reload(); }
+      catch (err) { toast('Could not delete the account just now. Check your signal and try again.', 4500); }
+    });
+  }
   else if (a === 'gate-refresh') { recheckAccess(true); }
-  else if (a === 'buy') { S.buyStarted = Date.now(); save(); }
+  else if (a === 'buy') { S.buyStarted = Date.now(); save(); el.style.pointerEvents = 'none'; el.style.opacity = '.6'; setTimeout(() => { el.style.pointerEvents = ''; el.style.opacity = ''; }, 4000); } // one checkout page per tap, however fast you tap
   else if (a === 'auth-mode') { e.preventDefault(); S.authMode = el.dataset.mode; if (el.closest('#sheet')) accountSheet(el.dataset.mode); else gateScreen(); }
   else if (a === 'auth-forgot') {
     e.preventDefault(); const f = document.getElementById('signin-form'); const email = f?.email?.value?.trim(); const msg = f?.querySelector('#signin-msg');
@@ -2137,7 +2205,7 @@ function onAction(e) {
   else if (a === 'autoplan') { autoPlan(+(el.dataset.seed || 1)); }
   else if (a === 'autoplan-keep') { closeSheet(); }
   else if (a === 'share-week') { shareWeek(); }
-  else if (a === 'code-sheet') { openSheet(`<h3>Have a code?</h3><p class="small muted" style="margin:0 0 10px">From a friend, a club, a creator or the founder.</p><form id="code-form"><input class="field" id="gate-code" name="code" required placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go" style="width:100%;font-size:18px;letter-spacing:.06em"><button class="btn block" type="submit" style="margin-top:10px">Use it</button><div id="code-msg" class="signin-msg" hidden></div></form><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Close</button>`); }
+  else if (a === 'code-sheet') { openSheet(`<h3>Have a code?</h3><p class="small muted" style="margin:0 0 10px">From a friend, a club, a creator or the founder.</p><form id="code-form"><input class="field" id="gate-code" name="code" required maxlength="40" placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go" style="width:100%;font-size:18px;letter-spacing:.06em"><button class="btn block" type="submit" style="margin-top:10px">Use it</button><div id="code-msg" class="signin-msg" hidden></div></form><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Close</button>`); }
   else if (a === 'copy-link') { navigator.clipboard?.writeText(el.dataset.url).then(() => toast('Link copied'), () => showText('Your link', el.dataset.url)); }
   else if (a === 'plan-more') { planMore = !planMore; justAdded.clear(); render(); if (planMore) document.getElementById('more-meals')?.scrollIntoView({ block: 'start' }); }
   else if (a === 'plan-filter') { S.planFilter = el.dataset.filter; S.ideaTag = ''; planMore = false; justAdded.clear(); save(); const t = document.getElementById('pick-tabs'); const was = t && t.getBoundingClientRect().top <= 1; render(); if (was) document.getElementById('pick-tabs')?.scrollIntoView({ block: 'start' }); }
@@ -2216,7 +2284,7 @@ function onAction(e) {
     const txt = JSON.stringify({ weeks: S.weeks, activeWeek: S.activeWeek, customRecipes: S.customRecipes, customIngredients: S.customIngredients, settings: S.settings, inbox: S.inbox });
     (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => toast('Backup copied. Paste it somewhere safe.'), () => showText('Copy this backup', txt));
   } else if (a === 'import') {
-    askText('Paste your backup', 'Paste the backup text here').then((txt) => { if (!txt) return; try { Object.assign(S, JSON.parse(txt)); bustCaches(); setupWeeks(); planAdd = null; render(); toast('Backup restored'); } catch { toast('That did not look like a backup.'); } });
+    askText('Paste your backup', 'Paste the backup text here').then((txt) => { if (!txt) return; try { const raw = JSON.parse(txt); if (!raw || typeof raw !== 'object' || !raw.weeks || !raw.settings) throw new Error('not a backup'); const pick = {}; for (const k of ['weeks', 'activeWeek', 'customRecipes', 'customIngredients', 'settings', 'inbox']) if (k in raw) pick[k] = raw[k]; Object.assign(S, cleanState(pick)); if (typeof S.activeWeek !== 'string') S.activeWeek = null; bustCaches(); setupWeeks(); planAdd = null; save(); render(); toast('Backup restored'); } catch { toast('That did not look like a backup.'); } });
   } else if (a === 'reset') { ask('Wipe plans, pantry and your own recipes on this phone?', 'Wipe', true).then((ok) => { if (ok) { localStorage.removeItem(KEY); location.reload(); } }); }
 }
 function addIngRow() { const t = document.getElementById('ing-row-t'); document.getElementById('ing-rows').appendChild(t.content.cloneNode(true)); }
@@ -2290,10 +2358,14 @@ function onSubmit(e) {
     return;
   }
   if (f.id === 'signin-form') {
-    const email = String(fd.get('email')).trim(); const password = String(fd.get('password') || '');
+    const email = String(fd.get('email') || '').trim().toLowerCase().slice(0, 254); const password = String(fd.get('password') || '');
     const mode = f.dataset.mode || 'signin';
     const msg = f.querySelector('#signin-msg'); const b = f.querySelector('button[type=submit]'); const label = b.textContent;
     const show = (cls, text) => { if (msg) { msg.hidden = false; msg.className = `signin-msg ${cls}`; msg.textContent = text; } else toast(text); };
+    if (b.disabled) return; // a second tap while the first is still going
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { show('bad', 'That email address does not look right.'); return; }
+    if (mode === 'signup' && badPassword(password)) { show('bad', badPassword(password)); return; }
+    if (!password || password.length > 72) { show('bad', password ? 'That password is too long (72 characters at most).' : 'Type your password.'); return; }
     b.disabled = true; b.textContent = mode === 'signup' ? 'Creating…' : 'Signing in…';
     (mode === 'signup' ? signUp(email, password) : signIn(email, password))
       .then(() => { show('ok', mode === 'signup' ? 'Account created. Loading…' : 'Signed in. Loading…'); })
@@ -2308,30 +2380,40 @@ function onSubmit(e) {
       });
     return;
   }
-  if (f.id === 'code-form') {
-    const code = String(fd.get('code') || '').trim(); const msg = f.querySelector('#code-msg'); const b = f.querySelector('button[type=submit]');
+  if (f.id === 'newpass-form') {
+    const password = String(fd.get('password') || ''); const msg = f.querySelector('#newpass-msg'); const b = f.querySelector('button[type=submit]');
     const show = (cls, text) => { msg.hidden = false; msg.className = `signin-msg ${cls}`; msg.textContent = text; };
+    if (b.disabled) return; if (badPassword(password) || password.length > 72) { show('bad', badPassword(password) || 'That password is too long.'); return; }
+    b.disabled = true;
+    updatePassword(password).then(() => { show('ok', 'Password saved.'); haptic('save'); setTimeout(closeSheet, 900); }).catch((err) => { b.disabled = false; show('bad', /same|different/i.test(err.message || '') ? 'Pick a password you have not used here before.' : 'Could not save that. Open the link in the email again and retry.'); });
+    return;
+  }
+  if (f.id === 'code-form') {
+    const code = String(fd.get('code') || '').trim().slice(0, 40); const msg = f.querySelector('#code-msg'); const b = f.querySelector('button[type=submit]');
+    const show = (cls, text) => { msg.hidden = false; msg.className = `signin-msg ${cls}`; msg.textContent = text; };
+    if (b.disabled) return; if (!code) { show('bad', 'Type your code.'); return; }
     b.disabled = true;
     redeemCode(code).then((d) => { show('ok', `Code accepted. You have ${d.plan === 'founder' ? 'founder access' : 'full access'}${d.expires_at ? ` until ${fmtDate(String(d.expires_at).slice(0, 10))}` : ''}.`); setTimeout(() => { closeSheet(); gateScreen(); render(); }, 900); })
       .catch((err) => { b.disabled = false; show('bad', err.message || 'Code not accepted'); });
     return;
   }
   if (f.id === 'link-form') {
-    S.inbox = (S.inbox || []).concat([{ url: String(fd.get('url')).trim(), note: String(fd.get('note') || '').trim(), added: new Date().toISOString().slice(0, 10) }]);
+    const url = String(fd.get('url') || '').trim().slice(0, 600); if (!/^https?:\/\/\S+$/i.test(url)) { toast('Paste a link that starts with https://'); return; }
+    S.inbox = (S.inbox || []).slice(-199).concat([{ url, note: String(fd.get('note') || '').trim().slice(0, 300), added: new Date().toISOString().slice(0, 10) }]);
     save(); closeSheet(); render(); return;
   }
   if (f.id === 'ing-form') {
-    const name = fd.get('name').trim(); const id = 'c_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const name = String(fd.get('name') || '').trim().slice(0, 80); if (!name) { toast('Give it a name.'); return; } const id = ('c_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_')).slice(0, 80);
     S.customIngredients = S.customIngredients.filter((i) => i.id !== id).concat([{ id, name, unit: fd.get('unit'), protein: +fd.get('protein') || 0, category: fd.get('category'), store: fd.get('store'), packs: [] }]);
     bustCaches(); save(); openSheet(recipeForm()); addIngRow(); return;
   }
   if (f.id === 'recipe-form') {
-    const name = fd.get('name').trim(); const id = 'c_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const name = String(fd.get('name') || '').trim().slice(0, 80); if (!name) { toast('Give it a name.'); return; } const id = ('c_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_')).slice(0, 80);
     const slots = fd.getAll('slot'); if (!slots.length) { toast('Pick at least one slot.'); return; }
     const ings = [...f.querySelectorAll('.ing-row')].map((r) => ({ id: r.querySelector('[name=ing]').value, qty: +r.querySelector('[name=qty]').value })).filter((x) => x.qty > 0);
     if (!ings.length) { toast('Add at least one ingredient.'); return; }
-    const method = String(fd.get('method')).split('\n').map((s) => s.trim()).filter(Boolean);
-    const r = { id, name, slots, cold: !!fd.get('cold'), reheat: fd.get('reheat'), fridgeDays: +fd.get('fridgeDays') || 0, freezer: !!fd.get('freezer'), cookMinutes: +fd.get('cookMinutes') || 0, equipment: [], source: fd.get('source') || 'yours', ingredients: ings, method, notes: '' };
+    const method = String(fd.get('method') || '').slice(0, 8000).split('\n').map((s) => s.trim().slice(0, 1500)).filter(Boolean).slice(0, 60);
+    const r = { id, name, slots, cold: !!fd.get('cold'), reheat: fd.get('reheat'), fridgeDays: +fd.get('fridgeDays') || 0, freezer: !!fd.get('freezer'), cookMinutes: +fd.get('cookMinutes') || 0, equipment: [], source: String(fd.get('source') || '').trim().slice(0, 80) || 'yours', ingredients: ings, method, notes: '' };
     S.customRecipes = S.customRecipes.filter((x) => x.id !== id).concat([r]); if (S.library && !S.library.includes(id)) S.library.push(id); bustCaches(); save(); closeSheet(); render(); toast('Saved to your recipes');
   }
 }
