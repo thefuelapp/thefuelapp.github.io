@@ -1,5 +1,6 @@
 // Accounts, sync and entitlements on Supabase. Everything here is optional: if CONFIG is empty, cloud.enabled is false.
 import { CONFIG } from './config.js';
+import { isNative, WEB_APP_URL } from './native.js';
 
 export const cloud = { enabled: !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY), client: null, user: null, plan: null, planExpires: null, status: 'off', lastSync: null, error: null, recovery: false };
 
@@ -44,7 +45,7 @@ export async function signUp(email, password) {
   if (!data.session) throw new Error('Account created but not signed in. Try signing in.');
 }
 export async function resetPassword(email) {
-  const { error } = await cloud.client.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('#')[0] });
+  const { error } = await cloud.client.auth.resetPasswordForEmail(email, { redirectTo: isNative() ? WEB_APP_URL : location.href.split('#')[0] });
   if (error) throw error;
 }
 export async function redeemCode(code) {
@@ -58,11 +59,11 @@ export async function updatePassword(password) {
   const { error } = await cloud.client.auth.updateUser({ password });
   if (error) throw error;
 }
-export async function signOut() { try { await cloud.client.auth.signOut(); } catch {} cachePlan(null); cloud.user = null; cloud.plan = null; cloud.planExpires = null; cloud.recovery = false; set({ status: 'signed-out' }); }
+export async function signOut() { try { await cloud.client.auth.signOut(); } catch {} cachePlan(null); try { localStorage.removeItem(STORE_KEY); } catch {} cloud.user = null; cloud.plan = null; cloud.planExpires = null; cloud.recovery = false; set({ status: 'signed-out' }); }
 // Deletes the account and everything saved to it on the server (supabase/hardening.sql: delete_my_account). The phone's own copy is cleared by the app.
 export async function deleteAccount() {
   const { data, error } = await cloud.client.rpc('delete_my_account');
-  if (error) throw error;
+  if (error) { if (error.code === 'PGRST202' || /could not find the function/i.test(error.message || '')) error.notInstalled = true; throw error; } // hardening.sql has not been run on the server
   if (!data?.ok) throw new Error(data?.error || 'Could not delete the account');
   await signOut();
 }
@@ -73,7 +74,21 @@ async function loadEntitlement() {
   if (error) { const c = cachedPlan(uid); cloud.plan = c ? c.plan : null; cloud.planExpires = c ? c.expires || null : null; return; } // no signal, or the server is down: keep what this phone last knew
   cloud.plan = data && (!data.expires_at || new Date(data.expires_at) > new Date()) ? data.plan : null;
   cloud.planExpires = data?.expires_at || null;
+  if (!cloud.plan && storeBought(uid)) { cloud.plan = 'lifetime'; cloud.planExpires = null; } // bought in the iPhone app; the server row is on its way (see noteStorePurchase)
   cachePlan(cloud.plan ? { uid, plan: cloud.plan, expires: cloud.planExpires } : null);
+}
+
+// The iPhone app: Apple has confirmed (through RevenueCat) that this account owns the lifetime purchase. The row in `entitlements` is
+// written by the server when RevenueCat's webhook arrives (supabase/functions/revenuecat-webhook), which can be seconds behind the
+// payment sheet. Until then this note keeps the app open; iap.js clears it if Apple later says the purchase is gone (a refund).
+const STORE_KEY = 'fuel:iap';
+function storeBought(uid) { try { return !!uid && localStorage.getItem(STORE_KEY) === uid; } catch { return false; } }
+export function noteStorePurchase(active) {
+  if (!cloud.user) return;
+  const uid = cloud.user.id, had = storeBought(uid);
+  try { if (active) localStorage.setItem(STORE_KEY, uid); else localStorage.removeItem(STORE_KEY); } catch {}
+  if (active && !cloud.plan) { cloud.plan = 'lifetime'; cloud.planExpires = null; cachePlan({ uid, plan: 'lifetime', expires: null }); set({ status: 'signed-in' }); }
+  else if (!active && had) refreshAccess(); // ask the server again: a code or a web purchase may still open it
 }
 
 // Which code and source this account came with (first one wins; supabase/growth.sql). Quietly does nothing if growth.sql isn't in yet.

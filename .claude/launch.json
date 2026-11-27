@@ -1,0 +1,22 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "fuel-app",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "serve.mjs"
+      ],
+      "port": 8765
+    },
+    {
+      "name": "fuel-prices",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "PORT=8766 FUEL_DUMP_DIR=\"$PWD/tools/prices/dumps\" node serve.mjs"
+      ],
+      "port": 8766
+    }
+  ]
+}

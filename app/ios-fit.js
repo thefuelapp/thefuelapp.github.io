@@ -8,7 +8,9 @@ if (window.top !== window.self) { try { window.top.location = window.self.locati
    ios-short is also set if a fresh install ever turns out short. styles.css (v76) does the rest. */
 (function () {
   var d = document.documentElement, ios = navigator.standalone === true;
-  if (ios || matchMedia('(display-mode: standalone)').matches) d.classList.add('is-standalone');
+  var app = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); /* the App Store app (Capacitor) */
+  if (app) d.classList.add('is-native');
+  if (ios || app || matchMedia('(display-mode: standalone)').matches) d.classList.add('is-standalone');
   if (!ios) return;
   d.classList.add('is-ios-app');
   function fit() {

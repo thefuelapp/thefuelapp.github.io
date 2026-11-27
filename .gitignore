@@ -1,0 +1,19 @@
+node_modules/
+ios-web/
+.DS_Store
+.env
+.env.*
+__pycache__/
+.claude/settings.local.json
+
+# supermarket price scrapes: big raw dumps stay on the Mac that ran them; only the hand-made decisions are kept
+tools/prices/dumps/*
+!tools/prices/dumps/terms.json
+!tools/prices/dumps/overrides.json
+!tools/prices/dumps/refresh_report.txt
+
+# output of tools/shots/
+shots-out/
+
+# never part of this repo: the retired deploy clone
+.deploy/
