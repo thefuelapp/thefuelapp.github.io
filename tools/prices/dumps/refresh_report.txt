@@ -1,0 +1,32 @@
+AMBIG    beef_mince_5           asda       ASDA Beef Mince <5% Fat 1kg £9.53 ~ £9.53 ASDA Beef Mince <5% Fat 1kg [1000.0g] | £9.53 ASDA 5% Fat Beef Mince 1kg [1000.0g]
+AMBIG    rtd_protein_shake      sainsburys FUEL10K 330ml On the Go Ready to Drink Breakfast H £1.15 ~ £1.15 FUEL10K 330ml On the Go Ready to Drink Breakfast High P [1each] | £1.15 FUEL10K 330ml On the Go Ready to Drink Breakfast High P [1each] | £1.15 FUEL10K 330ml On the Go Ready to Drink Breakfast High P [1each] | £1.15 FUEL10K 330ml On the Go Ready to Drink Breakfast High P [1each]
+OVERRIDE baked_beans            asda       ASDA Baked Beans Reduced Salt & No Added Sugar 410g £0.42
+OVERRIDE beef_jerky             aldi       Snackrite Beef Jerky 35g £1.35
+OVERRIDE blueberries            aldi       Nature's Pick Blueberries 500g £3.99
+OVERRIDE bread                  asda       The Bakery at ASDA Wholemeal Medium Sliced 800g (~20 slices) £0.75
+OVERRIDE brown_rice             asda       ASDA Easy Cook Long Grain Brown Rice 1kg £2.64
+OVERRIDE cherry_tomatoes        asda       ASDA Crunchy & Juicy Cherry Tomatoes 300g £0.97
+OVERRIDE chickpeas              aldi       Four Seasons Chickpeas 400g (270g drained) £0.41
+OVERRIDE chilli                 asda       fill ASDA Red Chillies (each) £0.15
+OVERRIDE corn_tortilla          sainsburys Sainsbury's Wheat & Corn Tortilla Wraps x8 320g £1.45
+OVERRIDE crackers               asda       ASDA Classic Cream Crackers 300g £0.49
+OVERRIDE crumpets               asda       The BAKERY at ASDA The Bakery 9 Crumpets 9 Pack £0.69
+OVERRIDE fish_fingers           sainsburys Sainsbury's 10 Breaded Omega 3 Pollock Fillet Fish Fingers 3 £1.25
+OVERRIDE five_spice             sainsburys Sainsbury's Chinese 5 Spice 33g £1.15
+OVERRIDE ginger                 asda       ASDA Ginger 85g £0.97
+OVERRIDE hummus                 aldi       The Deli Houmous 200g £0.95
+OVERRIDE mozzarella             sainsburys Sainsbury's Mozzarella Cheese 150g £1.55
+OVERRIDE peanuts                asda       ASDA Dry Roasted Peanuts 500g £2.28
+OVERRIDE penne                  aldi       Everyday Essentials Penne Pasta 500g £0.41
+OVERRIDE protein_bar            sainsburys Nature Valley Protein Peanut & Chocolate Cereal Biscuit Snac £2.50
+OVERRIDE pumpkin_seeds          asda       ASDA Pumpkin Seeds 150g £1.10
+OVERRIDE quark                  asda       Lindahls Kvarg Natural 500g £2.90
+OVERRIDE skyr                   aldi       Brooklea Fat Free Greek Style Yogurt 1kg (Aldi has no natura £1.49
+OVERRIDE stock_cube             sainsburys Sainsbury's Stock Cubes, Chicken 10x10g £1.10
+OVERRIDE stock_pots             aldi       Bramwells Chicken Stock Pots 4 Pack £0.99
+OVERRIDE tomato_puree           aldi       Cucina Tomato Puree Double Concentrate 200g £0.59
+OVERRIDE tomato_puree           asda       ASDA Double Concentrate Tomato Purée 200g £0.70
+REFILL   rtd_protein_shake      sainsburys FUEL10K 330ml On the Go Ready to Drink Breakfast High Prot 1each £1.15
+STALE    chilli                 asda       ASDA Red Chillies (each, about 20g)                        £0.15  (18 results)
+
+{"same": 824, "changed": 0, "renamed": 0, "ambiguous": 2, "stale": 1, "filled": 1, "nofill": 0, "overridden": 85}

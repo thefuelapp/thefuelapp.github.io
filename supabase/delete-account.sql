@@ -1,7 +1,7 @@
 -- In-app account deletion (App Review guideline 5.1.1(v)). The app calls this as the signed-in user: cloud.js → rpc('delete_my_account').
 --
--- This is a COPY, for reference, of section 1 of supabase/hardening.sql in the private source repo (the one with deploy.sh).
--- Do not run this file on its own: run the whole of hardening.sql there (tools/hardening-setup.sh), because the app also asks
+-- This is a COPY, for reference, of section 1 of supabase/hardening.sql (in this repo since 27 Nov 2026).
+-- Do not run this file on its own: run the whole of hardening.sql (tools/hardening-setup.sh), because the app also asks
 -- fuel_hardening() before it shows "Delete my account" on the website, and this function uses tables made by growth.sql.
 --
 -- STATUS, checked 27 Nov 2026 with the public key: neither delete_my_account nor fuel_hardening exists on the live project yet

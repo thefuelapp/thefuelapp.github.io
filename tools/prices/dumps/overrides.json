@@ -1,0 +1,753 @@
+{
+ "_comment": "Reviewer decisions for refresh.py (14 Sep 2026). Key = id|shop|old pack name -> {drop:true} or replacement {name,size,price}; id|shop|fill -> pack for a gap (or drop:true = not stocked).",
+ "bread|asda|Just Essentials by ASDA Wholemeal Bread 800g (~20 slices)": {
+  "name": "The Bakery at ASDA Wholemeal Medium Sliced 800g (~20 slices)",
+  "size": 20,
+  "price": 0.75
+ },
+ "cheddar|sainsburys|Stamford Street Co. Mature White Cheddar 400g": {
+  "name": "Stamford Street Co. Mature Cheddar Cheese 600g",
+  "size": 600,
+  "price": 3.67
+ },
+ "cherry_tomatoes|aldi|Everyday Essentials Cherry Tomatoes 250g": {
+  "name": "Nature's Pick Cherry Tomatoes 330g",
+  "size": 330,
+  "price": 0.89
+ },
+ "chicken_wings|asda|JUST ESSENTIALS by ASDA Chicken Wings 1.1kg": {
+  "drop": true
+ },
+ "chicken_wings|asda|fill": {
+  "drop": true
+ },
+ "chopped_tomatoes|asda|Just Essentials by ASDA Chopped Tomatoes 400g": {
+  "name": "KTC Chopped Tomatoes in Tomato Juice 400g",
+  "size": 400,
+  "price": 0.65
+ },
+ "coconut_milk|aldi|Asia Green Garden Coconut Milk 400ml": {
+  "name": "Asia Green Garden Coconut Milk 400ml Full Fat",
+  "size": 400,
+  "price": 0.75
+ },
+ "corn_tortilla|asda|ASDA 8 Corn Tortillas 320g": {
+  "name": "ASDA Classico Enchilada Kit 550g (8 tortillas)",
+  "size": 8,
+  "price": 1.74
+ },
+ "curry_powder|asda|COOK by ASDA Mild Curry Powder 80g": {
+  "name": "Rajah Mild Madras Curry Powder Spice Blend 100g",
+  "size": 100,
+  "price": 1.0
+ },
+ "gammon|asda|ASDA Delicious 2 Unsmoked Mini Gammon Steaks 250g": {
+  "name": "Cookstown 2 Unsmoked Prime Gammon Steaks 400g",
+  "size": 400,
+  "price": 3.99
+ },
+ "honey|asda|Just Essentials by ASDA Clear Honey 340g": {
+  "name": "ASDA Runny Honey 340g",
+  "size": 340,
+  "price": 1.19
+ },
+ "kidney_beans|aldi|Everyday Essentials Red Kidney Beans 400g (240g drained)": {
+  "name": "Everyday Essentials Red Kidney Beans 400g (260g drained)",
+  "size": 260,
+  "price": 0.35
+ },
+ "mushrooms|sainsburys|Sainsbury's Sliced Mushrooms 500g (frozen)": {
+  "name": "Sainsbury's Closed Cup Mushrooms Vitamin D 400g",
+  "size": 400,
+  "price": 1.29
+ },
+ "oats|asda|Scott's Porage Original Porridge Oats 1kg": {
+  "drop": true
+ },
+ "oats|asda|Just Essentials by ASDA Porridge Oats 1kg": {
+  "name": "ASDA Scottish Porridge Oats 1kg",
+  "size": 1000,
+  "price": 1.25
+ },
+ "oats|sainsburys|Stamford Street Co. Porridge Oats 1kg": {
+  "name": "Stamford Street Co. 1kg Wholegrain Rolled Oats",
+  "size": 1000,
+  "price": 0.85
+ },
+ "peanut_butter|asda|Just Essentials by ASDA Crunchy Peanut Butter 340g": {
+  "name": "ASDA Classic Crunchy Peanut Butter 700g",
+  "size": 700,
+  "price": 1.97
+ },
+ "red_lentils|asda|ASDA Red Lentils 500g": {
+  "name": "Great Scot Red Split Lentils 500g",
+  "size": 500,
+  "price": 1.8
+ },
+ "stock_pots|aldi|Chicken Stock Pots": {
+  "name": "Bramwells Chicken Stock Pots 4 Pack",
+  "size": 4,
+  "price": 0.99
+ },
+ "tuna|aldi|The Fishmonger Tuna Chunks In Water 4 Pack": {
+  "drop": true
+ },
+ "avocado|aldi|Nature's Pick Avocado Medium": {
+  "name": "Nature's Pick Ripe & Ready Hass Avocados 2 Pack",
+  "size": 2,
+  "price": 1.39
+ },
+ "protein_powder|asda|MyProtein Essential Whey Protein 600g": {
+  "name": "MyProtein Essential Whey Protein Vanilla 600g",
+  "size": 600,
+  "price": 15.97
+ },
+ "avocado|sainsburys|fill": {
+  "name": "Sainsbury's Medium Avocado",
+  "size": 1,
+  "price": 0.69
+ },
+ "cabbage|sainsburys|fill": {
+  "name": "Sainsbury's Sweetheart Cabbage",
+  "size": 1,
+  "price": 0.75
+ },
+ "cheese_slices|sainsburys|fill": {
+  "name": "Stamford Street Co. Mild Cheddar Slices x10 200g",
+  "size": 10,
+  "price": 1.29
+ },
+ "corn_tortilla|sainsburys|fill": {
+  "name": "Sainsbury's Wheat & Corn Tortilla Wraps x8 320g",
+  "size": 8,
+  "price": 1.45
+ },
+ "frozen_strawberries|sainsburys|fill": {
+  "name": "Sainsbury's Frozen Whole Strawberries 350g",
+  "size": 350,
+  "price": 3.5
+ },
+ "ginger|sainsburys|fill": {
+  "name": "Sainsbury's Ginger 100g",
+  "size": 100,
+  "price": 1.25
+ },
+ "natural_yoghurt|sainsburys|fill": {
+  "name": "Sainsbury's Natural Yogurt 500g",
+  "size": 500,
+  "price": 1.15
+ },
+ "oranges|sainsburys|fill": {
+  "name": "Sainsbury's Oranges",
+  "size": 1,
+  "price": 0.3
+ },
+ "popcorn|sainsburys|fill": {
+  "name": "Sainsbury's Popping Corn 500g",
+  "size": 500,
+  "price": 2.2
+ },
+ "sesame_seeds|sainsburys|fill": {
+  "name": "Sainsbury's Sesame Seeds 100g",
+  "size": 100,
+  "price": 1.2
+ },
+ "stock_cube|sainsburys|fill": {
+  "name": "Knorr 8 x 10g Chicken Stock Cubes",
+  "size": 8,
+  "price": 2.0
+ },
+ "basil|asda|fill": {
+  "name": "ASDA Basil 30g",
+  "size": 30,
+  "price": 0.5
+ },
+ "chicken_burgers|asda|fill": {
+  "name": "ASDA 2 Buttermilk Chicken Thigh Burgers 300g",
+  "size": 2,
+  "price": 2.0
+ },
+ "chilli|asda|fill": {
+  "name": "ASDA Red Chillies (each)",
+  "size": 1,
+  "price": 0.15
+ },
+ "eggs_free_range|asda|fill": {
+  "name": "ASDA 12 Free Range Medium Eggs",
+  "size": 12,
+  "price": 2.85
+ },
+ "flaxseed|asda|fill": {
+  "name": "Linwoods Organic Cold Milled Flaxseed 200g",
+  "size": 200,
+  "price": 3.0
+ },
+ "garlic|asda|fill": {
+  "name": "ASDA Organic 3 Garlic 3 Pack",
+  "size": 3,
+  "price": 1.0
+ },
+ "granola|asda|fill": {
+  "name": "ASDA Simply Granola 750g",
+  "size": 750,
+  "price": 2.0
+ },
+ "kiwi|asda|fill": {
+  "name": "JUST ESSENTIALS by ASDA Kiwis 6 Pack",
+  "size": 6,
+  "price": 1.19
+ },
+ "lime|asda|fill": {
+  "name": "ASDA Limes each",
+  "size": 1,
+  "price": 0.23
+ },
+ "mint|asda|fill": {
+  "name": "ASDA Mint 30g",
+  "size": 30,
+  "price": 0.5
+ },
+ "pineapple|asda|fill": {
+  "name": "ASDA Tangy & Tropical Pineapple each",
+  "size": 1,
+  "price": 0.98
+ },
+ "pizza_base|asda|fill": {
+  "name": "ASDA 2 Pizza Bases 300g",
+  "size": 2,
+  "price": 1.92
+ },
+ "tahini|asda|fill": {
+  "name": "Baracke Tahini 100% Sesame Paste 500g",
+  "size": 500,
+  "price": 4.28
+ },
+ "tea|asda|fill": {
+  "name": "ASDA Extra Strong 80 Tea Bags 232g",
+  "size": 80,
+  "price": 2.09
+ },
+ "tempeh|asda|fill": {
+  "name": "The Tofoo Co. Naked Tempeh 200g",
+  "size": 200,
+  "price": 1.98
+ },
+ "white_potatoes|asda|fill": {
+  "name": "ASDA British White Potatoes 2kg",
+  "size": 2000,
+  "price": 1.32
+ },
+ "frozen_mixed_berries|asda|fill": {
+  "name": "ASDA Summer Fruits 500g (frozen)",
+  "size": 500,
+  "price": 2.96
+ },
+ "onion_powder|asda|fill": {
+  "name": "COOK by ASDA Onion Granules 50g",
+  "size": 50,
+  "price": 1.06
+ },
+ "tomato_ketchup_reduced|asda|fill": {
+  "name": "ASDA 50% Less Sugar & Salt Tomato Ketchup 530g",
+  "size": 530,
+  "price": 1.15
+ },
+ "chilli|aldi|fill": {
+  "name": "Nature's Pick Red Chillies 70g (~7)",
+  "size": 7,
+  "price": 0.39
+ },
+ "feta|aldi|fill": {
+  "name": "Emporium Greek Feta 200g",
+  "size": 200,
+  "price": 1.69
+ },
+ "fish_fingers|aldi|fill": {
+  "name": "Everyday Essentials Fish Fingers 10 Pack",
+  "size": 10,
+  "price": 0.8
+ },
+ "frozen_chips|aldi|fill": {
+  "name": "Four Seasons Straight Cut Chips 1.5kg",
+  "size": 1500,
+  "price": 1.65
+ },
+ "lime|aldi|fill": {
+  "name": "Nature's Pick Limes 5 Pack",
+  "size": 5,
+  "price": 1.15
+ },
+ "mint|aldi|fill": {
+  "name": "Ready, Set…Cook! Cut Mint 30g",
+  "size": 30,
+  "price": 0.5
+ },
+ "puff_pastry|aldi|fill": {
+  "name": "The Pantry Ready Rolled Puff Pastry 320g",
+  "size": 320,
+  "price": 0.99
+ },
+ "rosemary|aldi|fill": {
+  "name": "Ready, Set…Cook! Rosemary 20g",
+  "size": 20,
+  "price": 0.59
+ },
+ "salt|aldi|fill": {
+  "name": "Ready, Set…Cook! British Table Salt 750g",
+  "size": 750,
+  "price": 0.65
+ },
+ "bay_leaves|aldi|fill": {
+  "name": "Ready, Set…Cook! Bay Leaf 2g (~10 leaves)",
+  "size": 10,
+  "price": 0.49
+ },
+ "chilli_flakes|aldi|fill": {
+  "name": "Ready, Set…Cook! Crushed Chillies 29g",
+  "size": 29,
+  "price": 0.79
+ },
+ "jalapenos|aldi|fill": {
+  "name": "The Deli Green Sliced Jalapeños 110g",
+  "size": 110,
+  "price": 0.39
+ },
+ "microwave_rice|aldi|fill": {
+  "name": "Worldwide Foods Basmati Rice Pouch 250g",
+  "size": 250,
+  "price": 0.55
+ },
+ "natural_yoghurt|aldi|fill": {
+  "name": "Everyday Essentials Fat Free Natural Yogurt 500g",
+  "size": 500,
+  "price": 0.55
+ },
+ "onion_powder|aldi|fill": {
+  "name": "Ready, Set…Cook! Onion Granules 36g",
+  "size": 36,
+  "price": 0.65
+ },
+ "salsa|aldi|fill": {
+  "name": "Snackrite Mild Salsa Dip 300g",
+  "size": 300,
+  "price": 0.95
+ },
+ "white_fish_frozen|aldi|fill": {
+  "name": "Everyday Essentials White Fish Fillets 1kg",
+  "size": 1000,
+  "price": 4.29
+ },
+ "coconut_cream|aldi|fill": {
+  "drop": true
+ },
+ "coconut_oil|aldi|fill": {
+  "drop": true
+ },
+ "fish_sauce|aldi|fill": {
+  "drop": true
+ },
+ "pineapple|aldi|fill": {
+  "drop": true
+ },
+ "quinoa|aldi|fill": {
+  "drop": true
+ },
+ "sun_dried_tomatoes|aldi|fill": {
+  "drop": true
+ },
+ "bulgur|aldi|fill": {
+  "drop": true
+ },
+ "capers|aldi|fill": {
+  "drop": true
+ },
+ "corn_tortilla|aldi|fill": {
+  "drop": true
+ },
+ "edamame|aldi|fill": {
+  "drop": true
+ },
+ "egg_whites|aldi|fill": {
+  "drop": true
+ },
+ "filo|aldi|fill": {
+  "drop": true
+ },
+ "garlic_paste|aldi|fill": {
+  "drop": true
+ },
+ "ginger_garlic_paste|aldi|fill": {
+  "drop": true
+ },
+ "gochujang|aldi|fill": {
+  "drop": true
+ },
+ "harissa|aldi|fill": {
+  "drop": true
+ },
+ "italian_seasoning|aldi|fill": {
+  "drop": true
+ },
+ "jasmine_rice|aldi|fill": {
+  "drop": true
+ },
+ "marmite|aldi|fill": {
+  "drop": true
+ },
+ "mirin|aldi|fill": {
+  "drop": true
+ },
+ "miso|aldi|fill": {
+  "drop": true
+ },
+ "nduja|aldi|fill": {
+  "drop": true
+ },
+ "nori|aldi|fill": {
+  "drop": true
+ },
+ "oatcakes|aldi|fill": {
+  "drop": true
+ },
+ "oyster_sauce|aldi|fill": {
+  "drop": true
+ },
+ "paneer|aldi|fill": {
+  "drop": true
+ },
+ "panko|aldi|fill": {
+  "drop": true
+ },
+ "pizza_base|aldi|fill": {
+  "drop": true
+ },
+ "popcorn|aldi|fill": {
+  "drop": true
+ },
+ "protein_powder|aldi|fill": {
+  "drop": true
+ },
+ "rice_vinegar|aldi|fill": {
+  "drop": true
+ },
+ "sesame_oil|aldi|fill": {
+  "drop": true
+ },
+ "sushi_rice|aldi|fill": {
+  "drop": true
+ },
+ "sweet_soy|aldi|fill": {
+  "drop": true
+ },
+ "taco_seasoning|aldi|fill": {
+  "drop": true
+ },
+ "tempeh|aldi|fill": {
+  "drop": true
+ },
+ "green_lentils|aldi|fill": {
+  "drop": true
+ },
+ "nutmeg|aldi|fill": {
+  "drop": true
+ },
+ "crackers_ryvita|aldi|fill": {
+  "drop": true
+ },
+ "oregano|aldi|fill": {
+  "drop": true
+ },
+ "nduja|asda|fill": {
+  "drop": true
+ },
+ "penne|aldi|Everyday Essentials Penne Pasta 500g": {
+  "name": "Everyday Essentials Penne Pasta 500g",
+  "size": 500,
+  "price": 0.41,
+  "checked": "2026-09-07"
+ },
+ "stock_cube|aldi|Bramwells Chicken Stock Cubes ×12": {
+  "name": "Bramwells Chicken Stock Cubes 12 Pack",
+  "size": 12,
+  "price": 0.69
+ },
+ "tuna|aldi|The Fishmonger Tuna Chunks In Spring Water 102g drained": {
+  "name": "The Fishmonger Tuna Chunks In Spring Water 102g",
+  "size": 1,
+  "price": 0.65
+ },
+ "stock_cube|sainsburys|Sainsbury's Stock Cubes Chicken 10x10g": {
+  "drop": true
+ },
+ "tomato_puree|asda|ASDA Double Concentrate Tomato Puree 200g": {
+  "name": "ASDA Double Concentrate Tomato Purée 200g",
+  "size": 200,
+  "price": 0.7
+ },
+ "almond_milk|aldi|fill": {
+  "name": "Actileaf UHT Unsweetened Almond Drink 1l",
+  "size": 1000,
+  "price": 0.99
+ },
+ "mozzarella|aldi|fill": {
+  "name": "Emporium Grated Mozzarella 250g",
+  "size": 250,
+  "price": 1.89
+ },
+ "hummus|aldi|fill": {
+  "name": "The Deli Houmous 200g",
+  "size": 200,
+  "price": 0.95
+ },
+ "ginger|asda|fill": {
+  "name": "ASDA Ginger 85g",
+  "size": 85,
+  "price": 0.97
+ },
+ "oranges|asda|fill": {
+  "name": "JUST ESSENTIALS by ASDA Oranges 5 Pack",
+  "size": 5,
+  "price": 0.99
+ },
+ "jalapenos|asda|fill": {
+  "name": "ASDA Sliced Green Jalapeños 340g",
+  "size": 340,
+  "price": 1.7
+ },
+ "brown_sugar|aldi|fill": {
+  "drop": true
+ },
+ "chicken_burgers|aldi|fill": {
+  "drop": true
+ },
+ "frozen_spinach|aldi|fill": {
+  "drop": true
+ },
+ "hot_sauce|aldi|fill": {
+  "drop": true
+ },
+ "brown_rice|aldi|fill": {
+  "drop": true
+ },
+ "crackers|aldi|fill": {
+  "drop": true
+ },
+ "five_spice|aldi|fill": {
+  "drop": true
+ },
+ "frozen_mixed_berries|aldi|fill": {
+  "drop": true
+ },
+ "gherkins|aldi|fill": {
+  "drop": true
+ },
+ "cannellini|aldi|fill": {
+  "drop": true
+ },
+ "tahini|aldi|fill": {
+  "drop": true
+ },
+ "quark|aldi|fill": {
+  "drop": true
+ },
+ "ground_coriander|aldi|fill": {
+  "drop": true
+ },
+ "worcestershire|aldi|fill": {
+  "drop": true
+ },
+ "sardines_tin|sainsburys|fill": {
+  "drop": true
+ },
+ "cayenne|sainsburys|fill": {
+  "drop": true
+ },
+ "rosemary|asda|fill": {
+  "drop": true
+ },
+ "rosemary|asda|Schwartz Rosemary 18g": {
+  "drop": true
+ },
+ "five_spice|sainsburys|fill": {
+  "name": "Sainsbury's Chinese 5 Spice 33g",
+  "size": 33,
+  "price": 1.15
+ },
+ "quark|asda|fill": {
+  "name": "Lindahls Kvarg Natural 500g",
+  "size": 500,
+  "price": 2.9
+ },
+ "green_lentils_tin|aldi|fill": {
+  "name": "Four Seasons Tinned Lentils 400g",
+  "size": 400,
+  "price": 0.45
+ },
+ "chickpeas|aldi|Four Seasons Chickpeas 400g (270g drained)": {
+  "name": "Four Seasons Chickpeas 400g (270g drained)",
+  "size": 270,
+  "price": 0.41
+ },
+ "tomato_puree|aldi|Cucina Tomato Puree Double Concentrate 200g": {
+  "name": "Cucina Tomato Puree Double Concentrate 200g",
+  "size": 200,
+  "price": 0.59
+ },
+ "skyr|aldi|Brooklea Fat Free Greek Style Yogurt 1kg (Aldi has no natural skyr; ~10g protein/100g)": {
+  "name": "Brooklea Fat Free Greek Style Yogurt 1kg (Aldi has no natural skyr; ~10g protein/100g)",
+  "size": 1000,
+  "price": 1.49
+ },
+ "banana|asda|ASDA Garden Gang 7 Brilliant Bananas 7 Pack": {
+  "drop": true
+ },
+ "beef_mince_5|asda|ASDA 5% Fat Beef Steak Mince 1kg": {
+  "name": "ASDA Beef Mince <5% Fat 1kg",
+  "size": 1000,
+  "price": 9.53
+ },
+ "chilli|asda|ASDA Red Chillies (each)": {
+  "name": "ASDA Red Chillies (each)",
+  "size": 1,
+  "price": 0.15
+ },
+ "pumpkin_seeds|asda|ASDA Pumpkin Seeds 150g": {
+  "name": "ASDA Pumpkin Seeds 150g",
+  "size": 150.0,
+  "price": 1.1
+ },
+ "rtd_protein_shake|asda|FUEL10K High Protein Breakfast Shake Drink 330ml": {
+  "name": "FUEL10K Chocolate High Protein Milk Breakfast Shake Drink 330ml",
+  "size": 1,
+  "price": 1.4
+ },
+ "rtd_protein_shake|sainsburys|FUEL10K On the Go High Protein Milk Shake 330ml": {
+  "name": "FUEL10K 330ml On the Go Ready to Drink Breakfast High Protein Milk Shake",
+  "size": 1,
+  "price": 1.15
+ },
+ "protein_yogurt|aldi|Brooklea Protein Yogurt 200g": {
+  "name": "Brooklea Vanilla Protein Yogurt 200g",
+  "size": 200,
+  "price": 0.79
+ },
+ "bread|asda|The Bakery at ASDA Wholemeal Medium Sliced 800g (~20 slices)": {
+  "name": "The Bakery at ASDA Wholemeal Medium Sliced 800g (~20 slices)",
+  "size": 20,
+  "price": 0.75,
+  "checked": "2026-09-14"
+ },
+ "cherry_tomatoes|asda|ASDA Crunchy & Juicy Cherry Tomatoes 300g": {
+  "name": "ASDA Crunchy & Juicy Cherry Tomatoes 300g",
+  "size": 300,
+  "price": 0.97,
+  "checked": "2026-09-14"
+ },
+ "crackers|asda|ASDA Classic Cream Crackers 300g": {
+  "name": "ASDA Classic Cream Crackers 300g",
+  "size": 42.9,
+  "price": 0.49,
+  "checked": "2026-09-14"
+ },
+ "ginger|asda|ASDA Ginger 85g": {
+  "name": "ASDA Ginger 85g",
+  "size": 85,
+  "price": 0.97,
+  "checked": "2026-09-14"
+ },
+ "quark|asda|Lindahls Kvarg Natural 500g": {
+  "name": "Lindahls Kvarg Natural 500g",
+  "size": 500,
+  "price": 2.9,
+  "checked": "2026-09-14"
+ },
+ "tomato_puree|asda|ASDA Double Concentrate Tomato Purée 200g": {
+  "name": "ASDA Double Concentrate Tomato Purée 200g",
+  "size": 200,
+  "price": 0.7,
+  "checked": "2026-09-14"
+ },
+ "blueberries|aldi|Nature's Pick Blueberries 500g": {
+  "name": "Nature's Pick Blueberries 500g",
+  "size": 500.0,
+  "price": 3.99,
+  "checked": "2026-09-14"
+ },
+ "hummus|aldi|The Deli Houmous 200g": {
+  "name": "The Deli Houmous 200g",
+  "size": 200,
+  "price": 0.95,
+  "checked": "2026-09-14"
+ },
+ "stock_pots|aldi|Bramwells Chicken Stock Pots 4 Pack": {
+  "name": "Bramwells Chicken Stock Pots 4 Pack",
+  "size": 4,
+  "price": 0.99,
+  "checked": "2026-09-14"
+ },
+ "corn_tortilla|sainsburys|Sainsbury's Wheat & Corn Tortilla Wraps x8 320g": {
+  "name": "Sainsbury's Wheat & Corn Tortilla Wraps x8 320g",
+  "size": 8,
+  "price": 1.45,
+  "checked": "2026-09-14"
+ },
+ "five_spice|sainsburys|Sainsbury's Chinese 5 Spice 33g": {
+  "name": "Sainsbury's Chinese 5 Spice 33g",
+  "size": 33,
+  "price": 1.15,
+  "checked": "2026-09-14"
+ },
+ "mozzarella|sainsburys|Sainsbury's Mozzarella Cheese 150g": {
+  "name": "Sainsbury's Mozzarella Cheese 150g",
+  "size": 150.0,
+  "price": 1.55,
+  "checked": "2026-09-14"
+ },
+ "protein_bar|sainsburys|Nature Valley Protein Peanut & Chocolate Cereal Biscuit Snack Bars 4x42g": {
+  "name": "Nature Valley Protein Peanut & Chocolate Cereal Biscuit Snack Bars 4x42g",
+  "size": 4,
+  "price": 2.5,
+  "checked": "2026-09-14"
+ },
+ "_comment_20sep": "20 Sep 2026 (laptop): Aldi + Sainsbury's + ASDA re-read; Tesco blocked after 35 items, untouched. 'keep' entries carry their old checked date: today's search did not surface that own-brand line and the auto-fill would have swapped in a dearer brand.",
+ "beef_jerky|aldi|Snackrite Beef Jerky 35g": {
+  "name": "Snackrite Beef Jerky 35g",
+  "size": 35,
+  "price": 1.35
+ },
+ "stock_cube|sainsburys|Knorr 8 x 10g Chicken Stock Cubes": {
+  "name": "Sainsbury's Stock Cubes, Chicken 10x10g",
+  "size": 10,
+  "price": 1.1
+ },
+ "crumpets|asda|The BAKERY at ASDA The Bakery 6 Toastie Crumpets 6 Pack": {
+  "name": "The BAKERY at ASDA The Bakery 9 Crumpets 9 Pack",
+  "size": 9,
+  "price": 0.69
+ },
+ "baked_beans|asda|Heinz Baked Beans 415g": {
+  "name": "ASDA Baked Beans Reduced Salt & No Added Sugar 410g",
+  "size": 410,
+  "price": 0.42
+ },
+ "peanuts|asda|KP Dry Roasted Peanuts 415g": {
+  "name": "ASDA Dry Roasted Peanuts 500g",
+  "size": 500,
+  "price": 2.28
+ },
+ "brown_rice|asda|ASDA Basmati Brown Rice 1kg": {
+  "name": "ASDA Easy Cook Long Grain Brown Rice 1kg",
+  "size": 1000,
+  "price": 2.64
+ },
+ "fish_fingers|sainsburys|Sainsbury's Omega 3 Fish Fingers x30 900g": {
+  "name": "Sainsbury's 10 Breaded Omega 3 Pollock Fillet Fish Fingers 300g",
+  "size": 10,
+  "price": 1.25
+ },
+ "beef_mince_5|asda|ASDA Beef Mince <5% Fat 1kg": {
+  "name": "ASDA Beef Mince <5% Fat 1kg",
+  "size": 1000,
+  "price": 9.53
+ }
+}

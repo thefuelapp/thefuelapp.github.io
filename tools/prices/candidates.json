@@ -1,0 +1,1937 @@
+[
+ {
+  "id": "turkey_breast",
+  "name": "Turkey breast steaks",
+  "unit": "g",
+  "category": "protein",
+  "protein": 24,
+  "kcal": 105,
+  "term": "turkey breast steaks"
+ },
+ {
+  "id": "bacon",
+  "name": "Bacon rashers",
+  "unit": "g",
+  "category": "protein",
+  "protein": 16,
+  "kcal": 240,
+  "term": "smoked back bacon"
+ },
+ {
+  "id": "sausages",
+  "name": "Pork sausages",
+  "unit": "each",
+  "category": "protein",
+  "protein": 7,
+  "kcal": 130,
+  "term": "pork sausages"
+ },
+ {
+  "id": "ham",
+  "name": "Cooked ham slices",
+  "unit": "g",
+  "category": "protein",
+  "protein": 18,
+  "kcal": 110,
+  "term": "cooked ham slices"
+ },
+ {
+  "id": "steak",
+  "name": "Beef steak (rump/sirloin)",
+  "unit": "g",
+  "category": "protein",
+  "protein": 22,
+  "kcal": 180,
+  "term": "rump steak"
+ },
+ {
+  "id": "lamb_mince",
+  "name": "Lamb mince",
+  "unit": "g",
+  "category": "protein",
+  "protein": 18,
+  "kcal": 240,
+  "term": "lamb mince"
+ },
+ {
+  "id": "diced_beef",
+  "name": "Diced beef",
+  "unit": "g",
+  "category": "protein",
+  "protein": 21,
+  "kcal": 150,
+  "term": "diced beef"
+ },
+ {
+  "id": "chicken_drumsticks",
+  "name": "Chicken drumsticks",
+  "unit": "g",
+  "category": "protein",
+  "protein": 18,
+  "kcal": 170,
+  "term": "chicken drumsticks"
+ },
+ {
+  "id": "whole_chicken",
+  "name": "Whole chicken",
+  "unit": "g",
+  "category": "protein",
+  "protein": 18,
+  "kcal": 190,
+  "term": "whole chicken"
+ },
+ {
+  "id": "cod",
+  "name": "Cod fillets",
+  "unit": "g",
+  "category": "protein",
+  "protein": 18,
+  "kcal": 80,
+  "term": "cod fillets"
+ },
+ {
+  "id": "white_fish_frozen",
+  "name": "Frozen white fish fillets",
+  "unit": "g",
+  "category": "protein",
+  "protein": 17,
+  "kcal": 80,
+  "term": "frozen white fish fillets"
+ },
+ {
+  "id": "smoked_salmon",
+  "name": "Smoked salmon",
+  "unit": "g",
+  "category": "protein",
+  "protein": 21,
+  "kcal": 180,
+  "term": "smoked salmon"
+ },
+ {
+  "id": "mackerel_tin",
+  "name": "Tinned mackerel",
+  "unit": "g",
+  "category": "tin",
+  "protein": 20,
+  "kcal": 200,
+  "term": "mackerel fillets tin"
+ },
+ {
+  "id": "sardines_tin",
+  "name": "Tinned sardines",
+  "unit": "g",
+  "category": "tin",
+  "protein": 22,
+  "kcal": 190,
+  "term": "sardines in tomato sauce"
+ },
+ {
+  "id": "fish_fingers",
+  "name": "Fish fingers",
+  "unit": "each",
+  "category": "protein",
+  "protein": 4,
+  "kcal": 60,
+  "term": "fish fingers"
+ },
+ {
+  "id": "tofu",
+  "name": "Firm tofu",
+  "unit": "g",
+  "category": "protein",
+  "protein": 12,
+  "kcal": 120,
+  "term": "tofu"
+ },
+ {
+  "id": "halloumi",
+  "name": "Halloumi",
+  "unit": "g",
+  "category": "dairy",
+  "protein": 22,
+  "kcal": 320,
+  "term": "halloumi"
+ },
+ {
+  "id": "feta",
+  "name": "Feta cheese",
+  "unit": "g",
+  "category": "dairy",
+  "protein": 16,
+  "kcal": 270,
+  "term": "feta"
+ },
+ {
+  "id": "mozzarella",
+  "name": "Mozzarella",
+  "unit": "g",
+  "category": "dairy",
+  "protein": 18,
+  "kcal": 250,
+  "term": "mozzarella"
+ },
+ {
+  "id": "greek_yoghurt",
+  "name": "Greek yoghurt",
+  "unit": "g",
+  "category": "dairy",
+  "protein": 9,
+  "kcal": 95,
+  "term": "greek yoghurt"
+ },
+ {
+  "id": "natural_yoghurt",
+  "name": "Natural yoghurt",
+  "unit": "g",
+  "category": "dairy",
+  "protein": 5,
+  "kcal": 60,
+  "term": "natural yoghurt"
+ },
+ {
+  "id": "cream_cheese",
+  "name": "Cream cheese",
+  "unit": "g",
+  "category": "dairy",
+  "protein": 6,
+  "kcal": 240,
+  "term": "cream cheese"
+ },
+ {
+  "id": "double_cream",
+  "name": "Double cream",
+  "unit": "ml",
+  "category": "dairy",
+  "protein": 2,
+  "kcal": 450,
+  "term": "double cream"
+ },
+ {
+  "id": "sour_cream",
+  "name": "Soured cream",
+  "unit": "ml",
+  "category": "dairy",
+  "protein": 3,
+  "kcal": 190,
+  "term": "soured cream"
+ },
+ {
+  "id": "quark",
+  "name": "Quark",
+  "unit": "g",
+  "category": "dairy",
+  "protein": 12,
+  "kcal": 65,
+  "term": "quark"
+ },
+ {
+  "id": "egg_whites",
+  "name": "Liquid egg whites",
+  "unit": "ml",
+  "category": "protein",
+  "protein": 11,
+  "kcal": 50,
+  "term": "egg whites"
+ },
+ {
+  "id": "oat_milk",
+  "name": "Oat milk",
+  "unit": "ml",
+  "category": "dairy",
+  "protein": 1,
+  "kcal": 45,
+  "term": "oat milk"
+ },
+ {
+  "id": "almond_milk",
+  "name": "Almond milk",
+  "unit": "ml",
+  "category": "dairy",
+  "protein": 0.5,
+  "kcal": 15,
+  "term": "almond milk"
+ },
+ {
+  "id": "cheese_slices",
+  "name": "Cheese slices",
+  "unit": "each",
+  "category": "dairy",
+  "protein": 4,
+  "kcal": 60,
+  "term": "cheese slices"
+ },
+ {
+  "id": "red_leicester",
+  "name": "Red Leicester",
+  "unit": "g",
+  "category": "dairy",
+  "protein": 24,
+  "kcal": 400,
+  "term": "red leicester"
+ },
+ {
+  "id": "jasmine_rice",
+  "name": "Jasmine rice",
+  "unit": "g",
+  "category": "carb",
+  "protein": 7,
+  "kcal": 350,
+  "term": "jasmine rice"
+ },
+ {
+  "id": "brown_rice",
+  "name": "Brown rice",
+  "unit": "g",
+  "category": "carb",
+  "protein": 8,
+  "kcal": 350,
+  "term": "brown rice"
+ },
+ {
+  "id": "microwave_rice",
+  "name": "Microwave rice pouch",
+  "unit": "g",
+  "category": "carb",
+  "protein": 3,
+  "kcal": 140,
+  "term": "microwave rice"
+ },
+ {
+  "id": "spaghetti",
+  "name": "Spaghetti",
+  "unit": "g",
+  "category": "carb",
+  "protein": 12,
+  "kcal": 350,
+  "term": "spaghetti"
+ },
+ {
+  "id": "fusilli",
+  "name": "Fusilli",
+  "unit": "g",
+  "category": "carb",
+  "protein": 12,
+  "kcal": 350,
+  "term": "fusilli"
+ },
+ {
+  "id": "tagliatelle",
+  "name": "Tagliatelle",
+  "unit": "g",
+  "category": "carb",
+  "protein": 12,
+  "kcal": 350,
+  "term": "tagliatelle"
+ },
+ {
+  "id": "lasagne_sheets",
+  "name": "Lasagne sheets",
+  "unit": "g",
+  "category": "carb",
+  "protein": 12,
+  "kcal": 350,
+  "term": "lasagne sheets"
+ },
+ {
+  "id": "gnocchi",
+  "name": "Gnocchi",
+  "unit": "g",
+  "category": "carb",
+  "protein": 3,
+  "kcal": 150,
+  "term": "gnocchi"
+ },
+ {
+  "id": "egg_noodles",
+  "name": "Egg noodles",
+  "unit": "g",
+  "category": "carb",
+  "protein": 12,
+  "kcal": 340,
+  "term": "egg noodles"
+ },
+ {
+  "id": "couscous",
+  "name": "Couscous",
+  "unit": "g",
+  "category": "carb",
+  "protein": 12,
+  "kcal": 360,
+  "term": "couscous"
+ },
+ {
+  "id": "quinoa",
+  "name": "Quinoa",
+  "unit": "g",
+  "category": "carb",
+  "protein": 14,
+  "kcal": 370,
+  "term": "quinoa"
+ },
+ {
+  "id": "bulgur",
+  "name": "Bulgur wheat",
+  "unit": "g",
+  "category": "carb",
+  "protein": 12,
+  "kcal": 340,
+  "term": "bulgur wheat"
+ },
+ {
+  "id": "white_potatoes",
+  "name": "White potatoes",
+  "unit": "g",
+  "category": "carb",
+  "protein": 2,
+  "kcal": 75,
+  "term": "white potatoes"
+ },
+ {
+  "id": "bagels",
+  "name": "Bagels",
+  "unit": "each",
+  "category": "carb",
+  "protein": 9,
+  "kcal": 230,
+  "term": "bagels"
+ },
+ {
+  "id": "naan",
+  "name": "Naan bread",
+  "unit": "each",
+  "category": "carb",
+  "protein": 8,
+  "kcal": 280,
+  "term": "naan"
+ },
+ {
+  "id": "crumpets",
+  "name": "Crumpets",
+  "unit": "each",
+  "category": "carb",
+  "protein": 3,
+  "kcal": 90,
+  "term": "crumpets"
+ },
+ {
+  "id": "granola",
+  "name": "Granola",
+  "unit": "g",
+  "category": "carb",
+  "protein": 9,
+  "kcal": 440,
+  "term": "granola"
+ },
+ {
+  "id": "weetabix",
+  "name": "Weetabix",
+  "unit": "each",
+  "category": "carb",
+  "protein": 2,
+  "kcal": 70,
+  "term": "weetabix"
+ },
+ {
+  "id": "rice_cakes",
+  "name": "Rice cakes",
+  "unit": "each",
+  "category": "carb",
+  "protein": 1,
+  "kcal": 30,
+  "term": "rice cakes"
+ },
+ {
+  "id": "oatcakes",
+  "name": "Oatcakes",
+  "unit": "each",
+  "category": "carb",
+  "protein": 1,
+  "kcal": 45,
+  "term": "oatcakes"
+ },
+ {
+  "id": "crackers",
+  "name": "Cream crackers",
+  "unit": "each",
+  "category": "carb",
+  "protein": 1,
+  "kcal": 35,
+  "term": "cream crackers"
+ },
+ {
+  "id": "frozen_chips",
+  "name": "Frozen chips",
+  "unit": "g",
+  "category": "carb",
+  "protein": 2,
+  "kcal": 160,
+  "term": "frozen chips"
+ },
+ {
+  "id": "hash_browns",
+  "name": "Hash browns",
+  "unit": "each",
+  "category": "carb",
+  "protein": 2,
+  "kcal": 110,
+  "term": "hash browns"
+ },
+ {
+  "id": "onion",
+  "name": "Onions",
+  "unit": "each",
+  "category": "veg",
+  "protein": 1,
+  "kcal": 45,
+  "term": "onions"
+ },
+ {
+  "id": "red_onion",
+  "name": "Red onions",
+  "unit": "each",
+  "category": "veg",
+  "protein": 1,
+  "kcal": 45,
+  "term": "red onions"
+ },
+ {
+  "id": "spring_onion",
+  "name": "Spring onions",
+  "unit": "each",
+  "category": "veg",
+  "protein": 0.5,
+  "kcal": 5,
+  "term": "spring onions"
+ },
+ {
+  "id": "garlic",
+  "name": "Garlic bulb",
+  "unit": "each",
+  "category": "veg",
+  "protein": 3,
+  "kcal": 60,
+  "term": "garlic"
+ },
+ {
+  "id": "ginger",
+  "name": "Fresh ginger",
+  "unit": "g",
+  "category": "veg",
+  "protein": 2,
+  "kcal": 80,
+  "term": "fresh ginger"
+ },
+ {
+  "id": "chilli",
+  "name": "Fresh chillies",
+  "unit": "each",
+  "category": "veg",
+  "protein": 0.5,
+  "kcal": 5,
+  "term": "red chillies"
+ },
+ {
+  "id": "tomatoes",
+  "name": "Tomatoes",
+  "unit": "each",
+  "category": "veg",
+  "protein": 1,
+  "kcal": 20,
+  "term": "tomatoes"
+ },
+ {
+  "id": "courgette",
+  "name": "Courgette",
+  "unit": "each",
+  "category": "veg",
+  "protein": 2,
+  "kcal": 35,
+  "term": "courgette"
+ },
+ {
+  "id": "aubergine",
+  "name": "Aubergine",
+  "unit": "each",
+  "category": "veg",
+  "protein": 3,
+  "kcal": 70,
+  "term": "aubergine"
+ },
+ {
+  "id": "leek",
+  "name": "Leeks",
+  "unit": "each",
+  "category": "veg",
+  "protein": 2,
+  "kcal": 50,
+  "term": "leeks"
+ },
+ {
+  "id": "celery",
+  "name": "Celery",
+  "unit": "each",
+  "category": "veg",
+  "protein": 0.5,
+  "kcal": 10,
+  "term": "celery"
+ },
+ {
+  "id": "kale",
+  "name": "Kale",
+  "unit": "g",
+  "category": "veg",
+  "protein": 3,
+  "kcal": 35,
+  "term": "kale"
+ },
+ {
+  "id": "lettuce",
+  "name": "Lettuce",
+  "unit": "each",
+  "category": "veg",
+  "protein": 3,
+  "kcal": 40,
+  "term": "iceberg lettuce"
+ },
+ {
+  "id": "rocket",
+  "name": "Rocket",
+  "unit": "g",
+  "category": "veg",
+  "protein": 3,
+  "kcal": 25,
+  "term": "rocket"
+ },
+ {
+  "id": "salad_bag",
+  "name": "Mixed salad bag",
+  "unit": "g",
+  "category": "veg",
+  "protein": 2,
+  "kcal": 20,
+  "term": "mixed salad"
+ },
+ {
+  "id": "cabbage",
+  "name": "Cabbage",
+  "unit": "each",
+  "category": "veg",
+  "protein": 10,
+  "kcal": 200,
+  "term": "cabbage"
+ },
+ {
+  "id": "cauliflower",
+  "name": "Cauliflower",
+  "unit": "each",
+  "category": "veg",
+  "protein": 12,
+  "kcal": 150,
+  "term": "cauliflower"
+ },
+ {
+  "id": "green_beans",
+  "name": "Green beans",
+  "unit": "g",
+  "category": "veg",
+  "protein": 2,
+  "kcal": 30,
+  "term": "green beans"
+ },
+ {
+  "id": "asparagus",
+  "name": "Asparagus",
+  "unit": "g",
+  "category": "veg",
+  "protein": 3,
+  "kcal": 25,
+  "term": "asparagus"
+ },
+ {
+  "id": "beetroot",
+  "name": "Cooked beetroot",
+  "unit": "g",
+  "category": "veg",
+  "protein": 2,
+  "kcal": 45,
+  "term": "cooked beetroot"
+ },
+ {
+  "id": "butternut",
+  "name": "Butternut squash",
+  "unit": "each",
+  "category": "veg",
+  "protein": 10,
+  "kcal": 400,
+  "term": "butternut squash"
+ },
+ {
+  "id": "lime",
+  "name": "Limes",
+  "unit": "each",
+  "category": "fruit",
+  "protein": 0.5,
+  "kcal": 15,
+  "term": "limes"
+ },
+ {
+  "id": "coriander",
+  "name": "Fresh coriander",
+  "unit": "g",
+  "category": "veg",
+  "protein": 2,
+  "kcal": 25,
+  "term": "fresh coriander"
+ },
+ {
+  "id": "basil",
+  "name": "Fresh basil",
+  "unit": "g",
+  "category": "veg",
+  "protein": 3,
+  "kcal": 25,
+  "term": "fresh basil"
+ },
+ {
+  "id": "mint",
+  "name": "Fresh mint",
+  "unit": "g",
+  "category": "veg",
+  "protein": 3,
+  "kcal": 40,
+  "term": "fresh mint"
+ },
+ {
+  "id": "frozen_spinach",
+  "name": "Frozen spinach",
+  "unit": "g",
+  "category": "veg",
+  "protein": 3,
+  "kcal": 25,
+  "term": "frozen spinach"
+ },
+ {
+  "id": "frozen_broccoli",
+  "name": "Frozen broccoli",
+  "unit": "g",
+  "category": "veg",
+  "protein": 3,
+  "kcal": 30,
+  "term": "frozen broccoli"
+ },
+ {
+  "id": "edamame",
+  "name": "Frozen edamame beans",
+  "unit": "g",
+  "category": "veg",
+  "protein": 11,
+  "kcal": 120,
+  "term": "edamame"
+ },
+ {
+  "id": "mushrooms_chestnut",
+  "name": "Chestnut mushrooms",
+  "unit": "g",
+  "category": "veg",
+  "protein": 2,
+  "kcal": 20,
+  "term": "chestnut mushrooms"
+ },
+ {
+  "id": "sweet_potato_fries",
+  "name": "Frozen sweet potato fries",
+  "unit": "g",
+  "category": "carb",
+  "protein": 2,
+  "kcal": 150,
+  "term": "sweet potato fries"
+ },
+ {
+  "id": "apples",
+  "name": "Apples",
+  "unit": "each",
+  "category": "fruit",
+  "protein": 0.3,
+  "kcal": 60,
+  "term": "apples"
+ },
+ {
+  "id": "oranges",
+  "name": "Oranges",
+  "unit": "each",
+  "category": "fruit",
+  "protein": 1,
+  "kcal": 60,
+  "term": "oranges"
+ },
+ {
+  "id": "grapes",
+  "name": "Grapes",
+  "unit": "g",
+  "category": "fruit",
+  "protein": 0.6,
+  "kcal": 65,
+  "term": "grapes"
+ },
+ {
+  "id": "strawberries",
+  "name": "Strawberries",
+  "unit": "g",
+  "category": "fruit",
+  "protein": 0.7,
+  "kcal": 30,
+  "term": "strawberries"
+ },
+ {
+  "id": "blueberries",
+  "name": "Blueberries",
+  "unit": "g",
+  "category": "fruit",
+  "protein": 0.7,
+  "kcal": 55,
+  "term": "blueberries"
+ },
+ {
+  "id": "raspberries",
+  "name": "Raspberries",
+  "unit": "g",
+  "category": "fruit",
+  "protein": 1.2,
+  "kcal": 50,
+  "term": "raspberries"
+ },
+ {
+  "id": "mango",
+  "name": "Mango",
+  "unit": "each",
+  "category": "fruit",
+  "protein": 1,
+  "kcal": 200,
+  "term": "mango"
+ },
+ {
+  "id": "pineapple",
+  "name": "Pineapple",
+  "unit": "each",
+  "category": "fruit",
+  "protein": 2,
+  "kcal": 250,
+  "term": "pineapple"
+ },
+ {
+  "id": "kiwi",
+  "name": "Kiwi fruit",
+  "unit": "each",
+  "category": "fruit",
+  "protein": 1,
+  "kcal": 45,
+  "term": "kiwi"
+ },
+ {
+  "id": "dates",
+  "name": "Medjool dates",
+  "unit": "g",
+  "category": "fruit",
+  "protein": 2,
+  "kcal": 280,
+  "term": "medjool dates"
+ },
+ {
+  "id": "raisins",
+  "name": "Raisins",
+  "unit": "g",
+  "category": "fruit",
+  "protein": 3,
+  "kcal": 300,
+  "term": "raisins"
+ },
+ {
+  "id": "frozen_mixed_berries",
+  "name": "Frozen mixed berries",
+  "unit": "g",
+  "category": "fruit",
+  "protein": 1,
+  "kcal": 45,
+  "term": "frozen mixed berries"
+ },
+ {
+  "id": "baked_beans",
+  "name": "Baked beans",
+  "unit": "g",
+  "category": "tin",
+  "protein": 5,
+  "kcal": 80,
+  "term": "baked beans"
+ },
+ {
+  "id": "passata",
+  "name": "Passata",
+  "unit": "g",
+  "category": "tin",
+  "protein": 1.5,
+  "kcal": 30,
+  "term": "passata"
+ },
+ {
+  "id": "coconut_cream",
+  "name": "Coconut cream",
+  "unit": "ml",
+  "category": "tin",
+  "protein": 2,
+  "kcal": 330,
+  "term": "coconut cream"
+ },
+ {
+  "id": "olives",
+  "name": "Olives",
+  "unit": "g",
+  "category": "tin",
+  "protein": 1,
+  "kcal": 150,
+  "term": "pitted olives"
+ },
+ {
+  "id": "sun_dried_tomatoes",
+  "name": "Sun-dried tomatoes",
+  "unit": "g",
+  "category": "tin",
+  "protein": 5,
+  "kcal": 210,
+  "term": "sun dried tomatoes"
+ },
+ {
+  "id": "jalapenos",
+  "name": "Jalape\u00f1os (jar)",
+  "unit": "g",
+  "category": "tin",
+  "protein": 1,
+  "kcal": 25,
+  "term": "jalapenos"
+ },
+ {
+  "id": "gherkins",
+  "name": "Gherkins",
+  "unit": "g",
+  "category": "tin",
+  "protein": 1,
+  "kcal": 20,
+  "term": "gherkins"
+ },
+ {
+  "id": "capers",
+  "name": "Capers",
+  "unit": "g",
+  "category": "tin",
+  "protein": 2,
+  "kcal": 25,
+  "term": "capers"
+ },
+ {
+  "id": "butter_beans",
+  "name": "Butter beans",
+  "unit": "g",
+  "category": "tin",
+  "protein": 7,
+  "kcal": 95,
+  "term": "butter beans"
+ },
+ {
+  "id": "cannellini",
+  "name": "Cannellini beans",
+  "unit": "g",
+  "category": "tin",
+  "protein": 7,
+  "kcal": 90,
+  "term": "cannellini beans"
+ },
+ {
+  "id": "green_lentils_tin",
+  "name": "Green lentils (tin)",
+  "unit": "g",
+  "category": "tin",
+  "protein": 6,
+  "kcal": 90,
+  "term": "green lentils tin"
+ },
+ {
+  "id": "sweetcorn_tin",
+  "name": "Sweetcorn (tin)",
+  "unit": "g",
+  "category": "tin",
+  "protein": 3,
+  "kcal": 80,
+  "term": "sweetcorn tin"
+ },
+ {
+  "id": "tinned_potatoes",
+  "name": "Tinned potatoes",
+  "unit": "g",
+  "category": "tin",
+  "protein": 1.5,
+  "kcal": 65,
+  "term": "tinned potatoes"
+ },
+ {
+  "id": "ketchup",
+  "name": "Tomato ketchup",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 1,
+  "kcal": 100,
+  "term": "tomato ketchup"
+ },
+ {
+  "id": "bbq_sauce",
+  "name": "BBQ sauce",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 1,
+  "kcal": 150,
+  "term": "bbq sauce"
+ },
+ {
+  "id": "mayo",
+  "name": "Mayonnaise",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 1,
+  "kcal": 700,
+  "term": "mayonnaise"
+ },
+ {
+  "id": "hot_sauce",
+  "name": "Hot sauce",
+  "unit": "ml",
+  "category": "sauce",
+  "protein": 1,
+  "kcal": 30,
+  "term": "hot sauce"
+ },
+ {
+  "id": "worcestershire",
+  "name": "Worcestershire sauce",
+  "unit": "ml",
+  "category": "sauce",
+  "protein": 0,
+  "kcal": 80,
+  "term": "worcestershire sauce"
+ },
+ {
+  "id": "mustard",
+  "name": "Dijon/English mustard",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 5,
+  "kcal": 150,
+  "term": "dijon mustard"
+ },
+ {
+  "id": "wholegrain_mustard",
+  "name": "Wholegrain mustard",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 6,
+  "kcal": 160,
+  "term": "wholegrain mustard"
+ },
+ {
+  "id": "balsamic",
+  "name": "Balsamic vinegar",
+  "unit": "ml",
+  "category": "sauce",
+  "protein": 0,
+  "kcal": 90,
+  "term": "balsamic vinegar"
+ },
+ {
+  "id": "white_wine_vinegar",
+  "name": "White wine vinegar",
+  "unit": "ml",
+  "category": "sauce",
+  "protein": 0,
+  "kcal": 20,
+  "term": "white wine vinegar"
+ },
+ {
+  "id": "fish_sauce",
+  "name": "Fish sauce",
+  "unit": "ml",
+  "category": "sauce",
+  "protein": 10,
+  "kcal": 60,
+  "term": "fish sauce"
+ },
+ {
+  "id": "oyster_sauce",
+  "name": "Oyster sauce",
+  "unit": "ml",
+  "category": "sauce",
+  "protein": 2,
+  "kcal": 110,
+  "term": "oyster sauce"
+ },
+ {
+  "id": "hoisin",
+  "name": "Hoisin sauce",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 3,
+  "kcal": 220,
+  "term": "hoisin sauce"
+ },
+ {
+  "id": "teriyaki",
+  "name": "Teriyaki sauce",
+  "unit": "ml",
+  "category": "sauce",
+  "protein": 3,
+  "kcal": 120,
+  "term": "teriyaki sauce"
+ },
+ {
+  "id": "harissa",
+  "name": "Harissa paste",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 3,
+  "kcal": 120,
+  "term": "harissa"
+ },
+ {
+  "id": "tahini",
+  "name": "Tahini",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 20,
+  "kcal": 600,
+  "term": "tahini"
+ },
+ {
+  "id": "hummus",
+  "name": "Hummus",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 7,
+  "kcal": 300,
+  "term": "hummus"
+ },
+ {
+  "id": "salsa",
+  "name": "Salsa",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 1,
+  "kcal": 45,
+  "term": "salsa"
+ },
+ {
+  "id": "pasta_sauce_jar",
+  "name": "Tomato pasta sauce (jar)",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 1.5,
+  "kcal": 55,
+  "term": "tomato pasta sauce"
+ },
+ {
+  "id": "curry_sauce_jar",
+  "name": "Curry sauce (jar)",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 2,
+  "kcal": 110,
+  "term": "curry sauce jar"
+ },
+ {
+  "id": "gravy_granules",
+  "name": "Gravy granules",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 3,
+  "kcal": 330,
+  "term": "gravy granules"
+ },
+ {
+  "id": "peri_peri",
+  "name": "Peri-peri sauce",
+  "unit": "ml",
+  "category": "sauce",
+  "protein": 1,
+  "kcal": 60,
+  "term": "peri peri sauce"
+ },
+ {
+  "id": "sweet_soy",
+  "name": "Kecap manis / sweet soy",
+  "unit": "ml",
+  "category": "sauce",
+  "protein": 3,
+  "kcal": 200,
+  "term": "kecap manis"
+ },
+ {
+  "id": "rice_vinegar",
+  "name": "Rice vinegar",
+  "unit": "ml",
+  "category": "sauce",
+  "protein": 0,
+  "kcal": 20,
+  "term": "rice vinegar"
+ },
+ {
+  "id": "mirin",
+  "name": "Mirin",
+  "unit": "ml",
+  "category": "sauce",
+  "protein": 0,
+  "kcal": 230,
+  "term": "mirin"
+ },
+ {
+  "id": "tomato_ketchup_reduced",
+  "name": "Reduced sugar ketchup",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 1,
+  "kcal": 60,
+  "term": "reduced sugar ketchup"
+ },
+ {
+  "id": "salt",
+  "name": "Salt",
+  "unit": "g",
+  "category": "spice",
+  "protein": 0,
+  "kcal": 0,
+  "term": "table salt"
+ },
+ {
+  "id": "black_pepper",
+  "name": "Black pepper",
+  "unit": "g",
+  "category": "spice",
+  "protein": 10,
+  "kcal": 250,
+  "term": "ground black pepper"
+ },
+ {
+  "id": "garlic_granules",
+  "name": "Garlic granules",
+  "unit": "g",
+  "category": "spice",
+  "protein": 17,
+  "kcal": 330,
+  "term": "garlic granules"
+ },
+ {
+  "id": "onion_powder",
+  "name": "Onion powder",
+  "unit": "g",
+  "category": "spice",
+  "protein": 10,
+  "kcal": 340,
+  "term": "onion powder"
+ },
+ {
+  "id": "mixed_herbs",
+  "name": "Mixed herbs",
+  "unit": "g",
+  "category": "spice",
+  "protein": 10,
+  "kcal": 280,
+  "term": "mixed herbs"
+ },
+ {
+  "id": "oregano",
+  "name": "Dried oregano",
+  "unit": "g",
+  "category": "spice",
+  "protein": 9,
+  "kcal": 270,
+  "term": "dried oregano"
+ },
+ {
+  "id": "thyme",
+  "name": "Dried thyme",
+  "unit": "g",
+  "category": "spice",
+  "protein": 9,
+  "kcal": 280,
+  "term": "dried thyme"
+ },
+ {
+  "id": "rosemary",
+  "name": "Dried rosemary",
+  "unit": "g",
+  "category": "spice",
+  "protein": 5,
+  "kcal": 330,
+  "term": "dried rosemary"
+ },
+ {
+  "id": "cinnamon",
+  "name": "Ground cinnamon",
+  "unit": "g",
+  "category": "spice",
+  "protein": 4,
+  "kcal": 250,
+  "term": "ground cinnamon"
+ },
+ {
+  "id": "nutmeg",
+  "name": "Ground nutmeg",
+  "unit": "g",
+  "category": "spice",
+  "protein": 6,
+  "kcal": 520,
+  "term": "ground nutmeg"
+ },
+ {
+  "id": "garam_masala",
+  "name": "Garam masala",
+  "unit": "g",
+  "category": "spice",
+  "protein": 12,
+  "kcal": 330,
+  "term": "garam masala"
+ },
+ {
+  "id": "ground_coriander",
+  "name": "Ground coriander",
+  "unit": "g",
+  "category": "spice",
+  "protein": 12,
+  "kcal": 300,
+  "term": "ground coriander"
+ },
+ {
+  "id": "cajun",
+  "name": "Cajun seasoning",
+  "unit": "g",
+  "category": "spice",
+  "protein": 8,
+  "kcal": 280,
+  "term": "cajun seasoning"
+ },
+ {
+  "id": "smoked_paprika",
+  "name": "Smoked paprika",
+  "unit": "g",
+  "category": "spice",
+  "protein": 14,
+  "kcal": 280,
+  "term": "smoked paprika"
+ },
+ {
+  "id": "chilli_flakes",
+  "name": "Chilli flakes",
+  "unit": "g",
+  "category": "spice",
+  "protein": 12,
+  "kcal": 320,
+  "term": "chilli flakes"
+ },
+ {
+  "id": "bay_leaves",
+  "name": "Bay leaves",
+  "unit": "each",
+  "category": "spice",
+  "protein": 0,
+  "kcal": 1,
+  "term": "bay leaves"
+ },
+ {
+  "id": "five_spice",
+  "name": "Chinese five spice",
+  "unit": "g",
+  "category": "spice",
+  "protein": 9,
+  "kcal": 300,
+  "term": "chinese five spice"
+ },
+ {
+  "id": "cayenne",
+  "name": "Cayenne pepper",
+  "unit": "g",
+  "category": "spice",
+  "protein": 12,
+  "kcal": 320,
+  "term": "cayenne pepper"
+ },
+ {
+  "id": "taco_seasoning",
+  "name": "Taco seasoning",
+  "unit": "g",
+  "category": "spice",
+  "protein": 8,
+  "kcal": 300,
+  "term": "taco seasoning"
+ },
+ {
+  "id": "vanilla",
+  "name": "Vanilla extract",
+  "unit": "ml",
+  "category": "spice",
+  "protein": 0,
+  "kcal": 290,
+  "term": "vanilla extract"
+ },
+ {
+  "id": "ground_ginger",
+  "name": "Ground ginger",
+  "unit": "g",
+  "category": "spice",
+  "protein": 9,
+  "kcal": 330,
+  "term": "ground ginger"
+ },
+ {
+  "id": "italian_seasoning",
+  "name": "Italian seasoning",
+  "unit": "g",
+  "category": "spice",
+  "protein": 10,
+  "kcal": 280,
+  "term": "italian seasoning"
+ },
+ {
+  "id": "everything_bagel",
+  "name": "Everything bagel seasoning",
+  "unit": "g",
+  "category": "spice",
+  "protein": 12,
+  "kcal": 350,
+  "term": "everything bagel seasoning"
+ },
+ {
+  "id": "sugar",
+  "name": "Caster sugar",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 400,
+  "term": "caster sugar"
+ },
+ {
+  "id": "brown_sugar",
+  "name": "Brown sugar",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 380,
+  "term": "brown sugar"
+ },
+ {
+  "id": "maple_syrup",
+  "name": "Maple syrup",
+  "unit": "ml",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 260,
+  "term": "maple syrup"
+ },
+ {
+  "id": "cocoa",
+  "name": "Cocoa powder",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 20,
+  "kcal": 330,
+  "term": "cocoa powder"
+ },
+ {
+  "id": "dark_chocolate",
+  "name": "Dark chocolate",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 7,
+  "kcal": 550,
+  "term": "dark chocolate"
+ },
+ {
+  "id": "almonds",
+  "name": "Almonds",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 21,
+  "kcal": 600,
+  "term": "almonds"
+ },
+ {
+  "id": "cashews",
+  "name": "Cashews",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 18,
+  "kcal": 580,
+  "term": "cashews"
+ },
+ {
+  "id": "walnuts",
+  "name": "Walnuts",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 15,
+  "kcal": 690,
+  "term": "walnuts"
+ },
+ {
+  "id": "mixed_nuts",
+  "name": "Mixed nuts",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 18,
+  "kcal": 600,
+  "term": "mixed nuts"
+ },
+ {
+  "id": "chia_seeds",
+  "name": "Chia seeds",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 17,
+  "kcal": 480,
+  "term": "chia seeds"
+ },
+ {
+  "id": "pumpkin_seeds",
+  "name": "Pumpkin seeds",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 30,
+  "kcal": 560,
+  "term": "pumpkin seeds"
+ },
+ {
+  "id": "sesame_seeds",
+  "name": "Sesame seeds",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 18,
+  "kcal": 570,
+  "term": "sesame seeds"
+ },
+ {
+  "id": "flaxseed",
+  "name": "Ground flaxseed",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 18,
+  "kcal": 530,
+  "term": "milled flaxseed"
+ },
+ {
+  "id": "self_raising_flour",
+  "name": "Self-raising flour",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 10,
+  "kcal": 350,
+  "term": "self raising flour"
+ },
+ {
+  "id": "cornflour",
+  "name": "Cornflour",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 350,
+  "term": "cornflour"
+ },
+ {
+  "id": "baking_powder",
+  "name": "Baking powder",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 100,
+  "term": "baking powder"
+ },
+ {
+  "id": "bicarb",
+  "name": "Bicarbonate of soda",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 0,
+  "term": "bicarbonate of soda"
+ },
+ {
+  "id": "panko",
+  "name": "Panko breadcrumbs",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 12,
+  "kcal": 360,
+  "term": "panko breadcrumbs"
+ },
+ {
+  "id": "stock_pots",
+  "name": "Stock pots",
+  "unit": "each",
+  "category": "cupboard",
+  "protein": 1,
+  "kcal": 20,
+  "term": "chicken stock pots"
+ },
+ {
+  "id": "coconut_oil",
+  "name": "Coconut oil",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 900,
+  "term": "coconut oil"
+ },
+ {
+  "id": "vegetable_oil",
+  "name": "Vegetable oil",
+  "unit": "ml",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 820,
+  "term": "vegetable oil"
+ },
+ {
+  "id": "rapeseed_oil",
+  "name": "Rapeseed oil",
+  "unit": "ml",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 820,
+  "term": "rapeseed oil"
+ },
+ {
+  "id": "green_lentils",
+  "name": "Green/puy lentils (dry)",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 24,
+  "kcal": 330,
+  "term": "green lentils"
+ },
+ {
+  "id": "protein_bar",
+  "name": "Protein bars",
+  "unit": "each",
+  "category": "cupboard",
+  "protein": 20,
+  "kcal": 200,
+  "term": "protein bars"
+ },
+ {
+  "id": "peanuts",
+  "name": "Peanuts",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 26,
+  "kcal": 570,
+  "term": "roasted peanuts"
+ },
+ {
+  "id": "nutella",
+  "name": "Chocolate spread",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 6,
+  "kcal": 540,
+  "term": "chocolate spread"
+ },
+ {
+  "id": "jam",
+  "name": "Jam",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 250,
+  "term": "strawberry jam"
+ },
+ {
+  "id": "marmite",
+  "name": "Marmite",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 35,
+  "kcal": 250,
+  "term": "marmite"
+ },
+ {
+  "id": "popcorn",
+  "name": "Popcorn kernels",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 12,
+  "kcal": 380,
+  "term": "popcorn kernels"
+ },
+ {
+  "id": "tortilla_chips",
+  "name": "Tortilla chips",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 7,
+  "kcal": 500,
+  "term": "tortilla chips"
+ },
+ {
+  "id": "crackers_ryvita",
+  "name": "Ryvita / crispbread",
+  "unit": "each",
+  "category": "carb",
+  "protein": 1,
+  "kcal": 35,
+  "term": "ryvita"
+ },
+ {
+  "id": "coffee",
+  "name": "Instant coffee",
+  "unit": "g",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 0,
+  "term": "instant coffee"
+ },
+ {
+  "id": "tea",
+  "name": "Tea bags",
+  "unit": "each",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 0,
+  "term": "tea bags"
+ },
+ {
+  "id": "squash",
+  "name": "Squash (cordial)",
+  "unit": "ml",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 5,
+  "term": "no added sugar squash"
+ },
+ {
+  "id": "sparkling_water",
+  "name": "Sparkling water",
+  "unit": "ml",
+  "category": "cupboard",
+  "protein": 0,
+  "kcal": 0,
+  "term": "sparkling water"
+ },
+ {
+  "id": "pizza_base",
+  "name": "Pizza bases",
+  "unit": "each",
+  "category": "carb",
+  "protein": 8,
+  "kcal": 250,
+  "term": "pizza bases"
+ },
+ {
+  "id": "puff_pastry",
+  "name": "Puff pastry",
+  "unit": "g",
+  "category": "carb",
+  "protein": 6,
+  "kcal": 390,
+  "term": "puff pastry"
+ },
+ {
+  "id": "filo",
+  "name": "Filo pastry",
+  "unit": "g",
+  "category": "carb",
+  "protein": 9,
+  "kcal": 290,
+  "term": "filo pastry"
+ },
+ {
+  "id": "tortilla_wraps_mini",
+  "name": "Mini tortilla wraps",
+  "unit": "each",
+  "category": "carb",
+  "protein": 3,
+  "kcal": 100,
+  "term": "mini tortilla wraps"
+ },
+ {
+  "id": "rice_paper",
+  "name": "Rice paper",
+  "unit": "each",
+  "category": "carb",
+  "protein": 0.5,
+  "kcal": 30,
+  "term": "rice paper"
+ },
+ {
+  "id": "sushi_rice",
+  "name": "Sushi rice",
+  "unit": "g",
+  "category": "carb",
+  "protein": 7,
+  "kcal": 350,
+  "term": "sushi rice"
+ },
+ {
+  "id": "nori",
+  "name": "Nori sheets",
+  "unit": "each",
+  "category": "cupboard",
+  "protein": 1,
+  "kcal": 10,
+  "term": "nori sheets"
+ },
+ {
+  "id": "miso",
+  "name": "Miso paste",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 12,
+  "kcal": 200,
+  "term": "miso paste"
+ },
+ {
+  "id": "gochujang",
+  "name": "Gochujang",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 4,
+  "kcal": 220,
+  "term": "gochujang"
+ },
+ {
+  "id": "sriracha_mayo",
+  "name": "Sriracha mayo",
+  "unit": "g",
+  "category": "sauce",
+  "protein": 1,
+  "kcal": 600,
+  "term": "sriracha mayo"
+ },
+ {
+  "id": "paneer",
+  "name": "Paneer",
+  "unit": "g",
+  "category": "dairy",
+  "protein": 18,
+  "kcal": 300,
+  "term": "paneer"
+ },
+ {
+  "id": "chorizo",
+  "name": "Chorizo",
+  "unit": "g",
+  "category": "protein",
+  "protein": 22,
+  "kcal": 350,
+  "term": "chorizo"
+ },
+ {
+  "id": "pepperoni",
+  "name": "Pepperoni",
+  "unit": "g",
+  "category": "protein",
+  "protein": 20,
+  "kcal": 450,
+  "term": "pepperoni"
+ },
+ {
+  "id": "chicken_wings",
+  "name": "Chicken wings",
+  "unit": "g",
+  "category": "protein",
+  "protein": 18,
+  "kcal": 220,
+  "term": "chicken wings"
+ },
+ {
+  "id": "pork_loin",
+  "name": "Pork loin steaks",
+  "unit": "g",
+  "category": "protein",
+  "protein": 23,
+  "kcal": 140,
+  "term": "pork loin steaks"
+ },
+ {
+  "id": "gammon",
+  "name": "Gammon steaks",
+  "unit": "g",
+  "category": "protein",
+  "protein": 22,
+  "kcal": 150,
+  "term": "gammon steaks"
+ },
+ {
+  "id": "lamb_chops",
+  "name": "Lamb chops",
+  "unit": "g",
+  "category": "protein",
+  "protein": 20,
+  "kcal": 250,
+  "term": "lamb chops"
+ },
+ {
+  "id": "beef_burgers",
+  "name": "Beef burgers",
+  "unit": "each",
+  "category": "protein",
+  "protein": 20,
+  "kcal": 250,
+  "term": "beef burgers"
+ },
+ {
+  "id": "chicken_burgers",
+  "name": "Chicken burgers",
+  "unit": "each",
+  "category": "protein",
+  "protein": 15,
+  "kcal": 200,
+  "term": "chicken burgers"
+ },
+ {
+  "id": "meatballs_ready",
+  "name": "Ready-made meatballs",
+  "unit": "g",
+  "category": "protein",
+  "protein": 16,
+  "kcal": 220,
+  "term": "beef meatballs"
+ },
+ {
+  "id": "quorn_mince",
+  "name": "Quorn mince",
+  "unit": "g",
+  "category": "protein",
+  "protein": 14,
+  "kcal": 100,
+  "term": "quorn mince"
+ },
+ {
+  "id": "quorn_pieces",
+  "name": "Quorn pieces",
+  "unit": "g",
+  "category": "protein",
+  "protein": 13,
+  "kcal": 100,
+  "term": "quorn pieces"
+ },
+ {
+  "id": "tempeh",
+  "name": "Tempeh",
+  "unit": "g",
+  "category": "protein",
+  "protein": 19,
+  "kcal": 190,
+  "term": "tempeh"
+ },
+ {
+  "id": "eggs_free_range",
+  "name": "Free range eggs",
+  "unit": "each",
+  "category": "protein",
+  "protein": 6,
+  "kcal": 70,
+  "term": "free range eggs"
+ }
+]

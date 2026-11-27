@@ -5,6 +5,8 @@
   "description": "Capacitor iOS wrapper for the Fuel web app. The web app itself is app/ and needs none of this to run.",
   "scripts": {
     "test": "node --test app/tests/*.mjs",
+    "check": "sh scripts/check.sh",
+    "serve": "node serve.mjs",
     "build:web": "node scripts/build-ios-web.mjs",
     "sync:ios": "npm run build:web && cap sync ios",
     "open:ios": "cap open ios"

@@ -3,18 +3,22 @@
 Branch `ios-app-store`, written 27 November 2026. Phase 1: the code is ready for an iPhone build. Nothing here has been
 compiled, because the machine it was written on has no Xcode. Nothing on the live site changes until this branch is merged.
 
-## Read this first: this repo is a deploy target
+## Read this first: this repo is now the source of truth
 
-`thefuelapp.github.io` is not where the app's source lives. The private source repo has a `deploy.sh` that builds the site and
-copies it here with `rsync --delete`, then pushes `main`. Two consequences:
+Decided by the owner on 27 November 2026: **`thefuelapp/thefuelapp.github.io` is the canonical source for Fuel.** (Phase 1 found
+that this repo was only a deploy target: a private working copy held the source and its `deploy.sh` copied the site here with
+`rsync --delete` and pushed `main`, which would have undone this branch.) What changed on that date, on this branch:
 
-1. **Merging this pull request is not enough.** The next `./deploy.sh` from the source repo would delete everything this branch
-   adds (`ios/`, `package.json`, `app/native.js`, `app/iap.js`, `app/support.html`, …) and put back the old `app.js`.
-2. **The changes need a home in the source repo.** Either port them there (copy the changed `app/` files, plus `ios/`,
-   `package.json`, `package-lock.json`, `capacitor.config.json`, `scripts/`, `supabase/functions/revenuecat-webhook/`, this file)
-   and teach `deploy.sh` to leave the non-site files out of the deploy, or decide that this repo becomes the source from now on.
+- The backend and tooling that existed only in the private copy were brought in: `supabase/` (all five SQL files, the deployed
+  Stripe `payment-webhook`, the SQL tests, `config.toml`), `tools/` (the setup scripts, the price-refresh tooling, the screenshot
+  scripts), `serve.mjs`, `SETUP-CLOUD.md`, and a `README.md` that maps the repo.
+- `deploy.sh` was **not** brought in. It is disabled in the old folder (`deploy.sh.retired`) and must never be run again. Its
+  safety checks live on as `npm run check` (`scripts/check.sh`), which never touches git.
+- The old folder is archived as `~/Projects/fuel-app-ARCHIVED`. Marketing, brand and planning material stayed there, because this
+  repo is public.
 
-That is a decision for the owner. Phase 1 was told not to touch the source repo, so it has not been made here.
+**The deploy flow now: merging to `main` = the live GitHub Pages deploy.** Work on a branch, bump the versions if the app changed,
+`npm run check`, open a pull request, merge. There is no build step and no script. Details in `README.md`.
 
 ## What is in the branch
 
@@ -30,6 +34,7 @@ That is a decision for the owner. Phase 1 was told not to touch the source repo,
 | `ios/` | The Xcode project Capacitor generated (Swift Package Manager, so **no CocoaPods needed**), with the Fuel icon and launch screen. |
 | `supabase/functions/revenuecat-webhook/index.ts` | Draft server function: an in-app purchase becomes a row in `entitlements`. Not deployed. |
 | `supabase/delete-account.sql` | Reference copy of the account-deletion function. |
+| `supabase/*.sql`, `supabase/functions/payment-webhook/`, `supabase/tests/`, `tools/`, `serve.mjs`, `SETUP-CLOUD.md`, `README.md`, `scripts/check.sh` | Brought in from the retired private copy on 27 November 2026 (see above and `README.md`). |
 
 The web app is still `app/`, served exactly as before. The iPhone app is built from a copy of it (`ios-web/`, git-ignored) made by
 `npm run build:web`. The website loads no Capacitor code: `native.js` only looks for `window.Capacitor`, which exists only inside the app.
@@ -112,9 +117,9 @@ The app already had this in v102: Settings → Delete my account → confirm →
 everything saved to it are deleted, the phone's copy is cleared. No service-role key is involved.
 
 **It does not work on the live project yet.** Checked on 27 November 2026 with the public key: `delete_my_account` and
-`fuel_hardening` do not exist there (the API answers `PGRST202`, function not found). `supabase/hardening.sql` in the source repo
+`fuel_hardening` do not exist there (the API answers `PGRST202`, function not found). `supabase/hardening.sql`
 has not been run. Until it is, the website hides the row, and the iPhone app (which always shows it, because Apple requires it)
-answers "Deleting from inside the app is not switched on yet". Run `tools/hardening-setup.sh` in the source repo before submitting.
+answers "Deleting from inside the app is not switched on yet". Run `./tools/hardening-setup.sh` (from this repo) before submitting.
 
 ### Support and privacy
 
@@ -136,7 +141,7 @@ invented. When there is a real, monitored one: replace the placeholder paragraph
 
 ## How a Stripe purchase reaches `entitlements` today (investigated, nothing changed)
 
-Nothing about it is in this repo. It is in the private source repo, under `supabase/`:
+The code is `supabase/functions/payment-webhook/index.ts` (in this repo since 27 November 2026):
 
 1. The app opens the Stripe Payment Link with `?client_reference_id=<Supabase user id>&prefilled_email=<email>` (`app.js: checkoutUrl`).
 2. Stripe calls a Supabase Edge Function, `payment-webhook`, on `checkout.session.completed`. It checks Stripe's signature
@@ -153,11 +158,11 @@ Evidence the function is live: a plain GET to `https://htdmdthyrehhvzflajuk.supa
 webhook points at it, whether the secret is set, and whether the deployed copy is the latest (the full-refund step was added in
 v102 and is sent up by the same script that installs `hardening.sql`, which has not been run).
 
-Searched: this repo; `~/Projects` (only `fuel-app/supabase/` has it; read, not modified); `~/supabase` (does not exist); `~/fuel-app` (a stale copy with no `supabase/` folder).
+Where it was found during phase 1: only in the private working copy's `supabase/` folder, which is now this repo's `supabase/`.
 
 ## How supermarket prices are updated (documented only; no refresh was run)
 
-Prices live in `app/data/ingredients.json`, each pack with the date it was `checked`. The tooling is in the private source repo
+Prices live in `app/data/ingredients.json`, each pack with the date it was `checked`. The tooling is
 at `tools/prices/` and its `README.md` is the full routine. In short, about an hour:
 
 1. Start the dev server with a drop box: `FUEL_DUMP_DIR=$PWD/tools/prices/dumps node serve.mjs`.
@@ -167,7 +172,7 @@ at `tools/prices/` and its `README.md` is the full routine. In short, about an h
 3. **ASDA**: `python3 asda_algolia.py` reads the public search index the ASDA site uses. No browser.
 4. `python3 refresh.py` matches every pack to its old self and writes `dumps/refresh_report.txt`. Every STALE / AMBIG / FILL / NOFILL
    line is a decision for a person, recorded in `dumps/overrides.json`; re-run until none are left.
-5. `python3 apply.py aldi asda sainsburys tesco "note"` writes the new prices into the app. Bump the version, run the tests, deploy.
+5. `python3 apply.py aldi asda sainsburys tesco "note"` writes the new prices into the app. Bump the version, `npm run check`, pull request, merge.
 
 Shelf prices only (no Clubcard or Nectar prices). Lidl publishes no core-range prices, so it cannot be included. The last full refresh
 noted in that README was 14 September 2026, and the public prices page says its lists were checked around 20 September 2026: the
@@ -179,7 +184,8 @@ prices are about two months old and should be refreshed before launch.
 cd app && node --test tests/*.mjs      # or: npm test, from the repo root
 ```
 
-81 tests, 81 pass (the 66 that were there, plus 15 in `tests/native.test.mjs`).
+81 tests, 81 pass (the 66 that were there, plus 15 in `tests/native.test.mjs`). `npm run check` runs them with the syntax and
+file checks. The database tests in `supabase/tests/` run separately (see `README.md`): 41 and 28 pass.
 
 A browser check was also done by hand (headless Chromium, Supabase calls answered locally so nothing reached the live project):
 the website build loads with no script errors and still shows the Stripe link and the code box; a pretend iPhone build shows
@@ -187,8 +193,9 @@ Apple's price, no Stripe link, no code box, Restore purchases, the reminders swi
 
 ## Still to do, by a person
 
-1. Decide where the source lives (top of this file) before merging anything.
-2. Run `hardening.sql` on the live Supabase project, so account deletion works.
+1. ~~Decide where the source lives.~~ Done 27 November 2026: this repo. Merging this pull request puts v103 live.
+2. Run `./tools/growth-2-setup.sh`, then `./tools/hardening-setup.sh`, so `growth-2.sql` and `hardening.sql` are on the live
+   Supabase project and account deletion works. (Checked 27 November 2026: `code_kind` and `fuel_hardening` both answer 404, so neither file has been run.)
 3. Join the Apple Developer Program (a yearly fee; about £79 at the time of writing, check Apple's page).
 4. Install Xcode on a Mac, open the project, fix whatever the first compile and the first run on a phone turn up.
 5. Decide: the name on the App Store, the price tier, whether the mates unlock stays in the iPhone app, a real support email.
