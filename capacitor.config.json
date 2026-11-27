@@ -1,0 +1,14 @@
+{
+  "appId": "com.thefuelapp.fuel",
+  "appName": "Fuel",
+  "webDir": "ios-web",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#1b1a2e"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "presentationOptions": ["banner", "sound"]
+    }
+  }
+}

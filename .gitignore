@@ -1,0 +1,5 @@
+node_modules/
+ios-web/
+.DS_Store
+.env
+.env.*

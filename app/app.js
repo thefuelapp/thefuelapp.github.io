@@ -3,12 +3,15 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, updatePassword, redeemCode, signOut, deleteAccount, hasAccess, refreshAccess, pullState, pushState, pushStateSoon, setReferral, claimMates } from './cloud.js';
 import { anonId, captureAttribution, carryCodeToHomeScreen, attribution, track, setOptOut, mateCode, savedMateCode, mateStatus, growthReady, codeKind } from './growth.js';
 import { planWeek } from './autoplan.js';
+import { isNative, nativeHaptic, nativeShare, setReminders, setTimerNote } from './native.js';
+import { iapWanted, iapReady, iapPrice, iapSync, iapBuy, iapRestore, codesHidden } from './iap.js';
 import { trialEndFor, loanBudget, cheapestProtein, mealCost, weightTrend, adjustSuggestion, learnFromMeals, checkinDue } from './insights.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v102';
+const APP_VERSION = 'v103';
 // One line per update, newest first: shown once on Home after an update and under More → What's new.
 const WHATS_NEW = [
+  ['v103', '27 Nov 2026', 'Help and contact has its own page, under More and in Settings. Getting ready for the iPhone app: a proper share sheet, a tap you can feel, a cooking timer that still goes off when the phone is locked, and reminders to shop and cook.'],
   ['v102', '26 Nov 2026', 'A safety pass. A paid plan now opens with no signal. Forgot password lets you set a new one. Signing in as someone else on the same phone never shows or mixes the last person\'s plan, and Sign out can clear the phone. Two phones on one account pick up each other\'s changes. You can delete your account in Settings. Fields have sensible limits and the keyboard no longer covers a sheet.'],
   ['v101', '26 Nov 2026', 'Cook is rebuilt: how long is left, the next recipe as one big photo with Start cooking on it, and a page for each recipe where you tick ingredients off as you get them out. Finish a recipe and it is marked cooked. Settings now looks like your phone settings: tap a row and it opens from the bottom. Shop is tidier underneath the list. And it feels more like an app: swipe right to go back, flick a sheet down to close it, a small tap you can feel on buttons, the right keyboard for numbers and email, and tap the tab you are on to jump to the top.'],
   ['v100', '26 Nov 2026', 'A whole new look. Home shows your week at a glance, with photos of the meals you are eating: tap one and it opens on Cook. Choosing meals is now a wall of photos. Every recipe has a Start cooking button that shows one step at a time, with a timer and what that step needs, and keeps the screen awake. Fourteen colour themes under Settings, Look. Everything else works the way it did.'],
@@ -120,9 +123,12 @@ function freeWeekCard() {
   const left = trialLeft(), soon = left <= 2;
   const head = soon ? (left === 1 ? 'Last free day' : '2 free days left') : `Free week · ${left} day${left === 1 ? '' : 's'} left`;
   return `<div class="freeweek ${soon ? 'soon' : ''}" id="freeweek"><div class="fw-top"><span class="fw-eyebrow">${ic('gift', 15)}${head}</span><button class="fw-more" data-action="trial">How it works</button></div>${trialSegs()}
-    <button class="btn block fw-upgrade" data-action="buy-open">Upgrade · ${esc(CONFIG.PRICE_LABEL || '£4.99')} once<span>Yours for life. No subscription.</span></button></div>`;
+    <button class="btn block fw-upgrade" data-action="buy-open">Upgrade · ${priceTxt()} once<span>Yours for life. No subscription.</span></button></div>`;
 }
 const matesUnlocked = () => !!S.mate?.unlocked;
+// What it costs, and whether there is a way to pay. In the iPhone app that is Apple's price and Apple's sheet (iap.js), never Stripe.
+const priceTxt = () => esc((iapWanted() && iapPrice()) || CONFIG.PRICE_LABEL || '£4.99');
+const canSell = () => iapWanted() || !!CONFIG.CHECKOUT_URL;
 const paidUp = () => cloud.enabled && hasAccess(); // an account with access: bought, a code, or claimed mates
 function canUse() { return !cloud.enabled || hasAccess() || trialActive() || matesUnlocked(); }
 // v87: someone who has never put a meal in any week is still "new". New people open on Plan (not Home) and see one clear first step.
@@ -383,7 +389,7 @@ async function boot() {
   captureAttribution(); carryCodeToHomeScreen(); setOptOut(() => S.settings?.countSteps === false); trialStart();
   { const a = attribution(); if (a.code && !S.trial?.codeAsked) codeKind(a.code).then((k) => { S.trial = { ...(S.trial || {}), codeAsked: true }; if (k?.kind === 'creator') { S.trial.days = 14; S.trial.codeName = k.name || ''; } save(); refreshTrialPill(); }).catch(() => {}); } // a creator's code: 14 free days, and the set-up screen says whose
   { const m = savedMateCode(); if (m && !S.mate) S.mate = { ...m }; else if (S.mate?.code && !m) try { localStorage.setItem('fuel:mate', JSON.stringify({ code: S.mate.code, secret: S.mate.secret })); } catch {} }
-  track('open'); if (isStandalone()) track('home');
+  track('open'); if (isStandalone() && !isNative()) track('home');
   try {
     const [i, r] = await Promise.all([fetch('data/ingredients.json').then((x) => x.json()), fetch('data/recipes.json').then((x) => x.json())]);
     DATA.ingredients = i.items; DATA.recipes = r.items; bustCaches(); DATA.priceNote = i.checkedNote; DATA.priceDates = i.items.flatMap((x) => x.packs || []).filter((p) => P.SHOPS.includes(p.shop)).map((p) => p.checked).filter(Boolean); DATA.priceDate = [...DATA.priceDates].sort().pop() || '';
@@ -412,6 +418,7 @@ async function boot() {
     const gated = gateScreen();
     if (cloud.user && document.querySelector('#sheet-inner #signin-form') && !document.getElementById('sheet').hidden) closeSheet(); // signed in from a sheet
     if (cloud.user && cloud.user.id !== syncedFor) { syncedFor = cloud.user.id; lastPull = Date.now(); await syncOnSignIn(); afterSignIn(); hardeningReady().then((ok) => { HARD_OK = ok; if (ok && S.tab === 'settings') render(); }); }
+    if (iapWanted()) iapSyncSoon();
     if (!cloud.user) syncedFor = null; // signing out and back in (or in as someone else) runs the sync again
     if (cloud.recovery && cloud.user) { cloud.recovery = false; newPassSheet(); } // arrived from a "reset my password" email
     if (cloud.user && !gated) noteOpen();
@@ -426,10 +433,31 @@ async function boot() {
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { recheckAccess(false); rollWeeks(); syncOnFocus(); } });
   window.addEventListener('focus', () => recheckAccess(false));
   setInterval(() => { if (S.buyStarted && Date.now() - S.buyStarted < 90000 && !hasAccess()) recheckAccess(false); }, 4000);
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (isNative()) applyReminders(false);
+  if ('serviceWorker' in navigator && !isNative()) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 // A new Monday: next week becomes this week and a fresh next week appears. Runs at boot (setupWeeks) and whenever the app is brought back.
 function rollWeeks() { const before = S.thisMon; setupWeeks(); if (S.thisMon !== before) { if (!S.weeks[S.activeWeek]) S.activeWeek = S.thisMon; planAdd = null; save(); render({ top: true }); toast('New week: your plan has moved along.'); } }
+// The iPhone app: tell the App Store who is signed in, fetch Apple's price, and check what this account has bought. Once per account.
+let iapFor = null;
+function iapSyncSoon() {
+  const k = cloud.user?.id || ''; if (k === iapFor) return; iapFor = k;
+  iapSync().then(() => { const g = document.getElementById('gate'); if (!g.hidden) { g.dataset.key = ''; gateScreen(); } if (S.tab === 'settings') render(); });
+}
+function iapDone(r, el, none) {
+  if (el) el.disabled = false;
+  if (r.ok) { S.buyStarted = 0; save(); track('paid'); closeSheet(); gateScreen(); haptic('save'); toast('Thank you. FU£L is yours for life.', 4000); if (!S.settings.onboarded) ensureIntro(); else render({ top: true }); }
+  else if (r.cancelled) hideHint();
+  else toast(r.error || none, 5000);
+}
+// Shop and cook reminders (the iPhone app only). Set again whenever the switch or the cook day changes.
+async function applyReminders(say) {
+  if (!isNative()) return;
+  const on = !!S.settings.remind; const w = S.weeks?.[S.thisMon];
+  const ok = await setReminders(on, w?.cookDay ?? 6);
+  if (on && !ok) { S.settings.remind = false; save(); if (S.tab === 'settings') render(); if (say) toast('Notifications are off for FU£L. Turn them on in your iPhone Settings.', 5000); }
+  else if (say) toast(on ? 'Reminders on: the evening before cook day, and that morning.' : 'Reminders off', 3500);
+}
 let recheckBusy = false;
 async function recheckAccess(manual) {
   if (!cloud.enabled || !cloud.user || hasAccess() || recheckBusy) return;
@@ -598,7 +626,7 @@ function renderMore() {
   return `<h1>More</h1>
   ${gl('', gr('Recipes', `${REC().filter((r) => inLibrary(r.id)).length} in your list`, 'data-action="go-tab" data-to="recipes"', { icon: 'book' }) + gr('Pantry', 'What you have', 'data-action="go-tab" data-to="pantry"', { icon: 'tub' }) + gr('Settings', '', 'data-action="go-tab" data-to="settings"', { icon: 'cog' }))}
   ${gl('Sunday check-in', due.map((k) => gr(`Check in on ${k === S.thisMon ? 'this week' : `the week of ${fmtDate(k)}`}`, 'Due', `data-action="checkin-start" data-week="${k}"`, { icon: 'check', cls: 'due' })).join('') + (due.includes(S.thisMon) ? '' : gr(done ? 'Check in on this week again' : 'Check in on this week early', done ? 'Done' : '', `data-action="checkin-start" data-week="${S.thisMon}"`, { icon: 'check' })), 'Three taps: what got eaten, the till, the portions. Next week plans itself from it.')}
-  ${gl('About', gr('What is new', APP_VERSION, 'data-action="set-sheet" data-sheet="whatsnew"') + grLink('Terms', 'terms.html') + grLink('Privacy', 'privacy.html'))}
+  ${gl('About', gr('What is new', APP_VERSION, 'data-action="set-sheet" data-sheet="whatsnew"') + grLink('Help and contact', 'support.html') + grLink('Terms', 'terms.html') + grLink('Privacy', 'privacy.html'))}
   <p class="gl-foot" style="text-align:center;margin-top:18px">${esc(CONFIG.APP_NAME)} ${APP_VERSION}<br>Meal photos show a similar dish, from Unsplash photographers.</p>`;
 }
 
@@ -929,9 +957,10 @@ function cmRender() {
 }
 async function cmOpen(id) { CM.id = id; CM.step = 0; cmRender(); try { CM.lock = await navigator.wakeLock?.request('screen'); } catch {} }
 function cmClose() { const el = document.getElementById('cookmode'); if (el) { el.hidden = true; el.innerHTML = ''; } cmTimerStop(); CM.id = null; try { CM.lock?.release(); } catch {} CM.lock = null; }
-function cmTimerStop() { clearInterval(CM.tick); CM.tick = null; CM.timer = null; }
+function cmTimerStop() { clearInterval(CM.tick); CM.tick = null; if (CM.timer) setTimerNote(0); CM.timer = null; }
 function cmTimerStart(mins) {
   cmTimerStop(); const r = recById(CM.id); CM.timer = { end: Date.now() + mins * 60000, what: `Step ${CM.step + 1}`, done: false };
+  setTimerNote(CM.timer.end, r ? r.name : ''); // the iPhone app: it still goes off with the phone locked
   CM.tick = setInterval(() => {
     const t = CM.timer; if (!t) return; const leftMs = t.end - Date.now(); const c = document.getElementById('cm-clock');
     if (leftMs <= 0 && !t.done) { t.done = true; clearInterval(CM.tick); CM.tick = null; haptic('warn'); navigator.vibrate?.([300, 150, 300, 150, 300]); cmBeep(); if (CM.id) cmRender(); else toast(`${r ? r.name : 'Timer'}: time is up`, 5000); return; }
@@ -1099,6 +1128,7 @@ async function drawShareCard(w) {
 async function shareWeek() {
   const card = await drawShareCard(W()); if (!card) { toast('Plan some meals first'); return; }
   const { blob, url, text } = card; const file = new File([blob], 'my-fuel-week.png', { type: 'image/png' });
+  const ns = await nativeShare({ text, url, blob, fileName: 'my-fuel-week.png' }); if (ns) { if (ns === 'shared') track('shared'); return; }
   try { if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], text, url }); track('shared'); return; } } catch (e) { if (e?.name === 'AbortError') return; }
   const src = URL.createObjectURL(blob);
   openSheet(`<h3>Your week, ready to post</h3><p class="small muted">Press and hold the picture to save it, then add it to your Story with your link.</p><img src="${src}" alt="My week in FU£L" style="width:100%;border-radius:14px;margin:8px 0;box-shadow:0 4px 18px rgba(27,26,46,.15)"><button class="btn block" data-action="copy-link" data-url="${esc(url)}">Copy my link</button><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Done</button>`);
@@ -1567,7 +1597,7 @@ function matesHtml(dark) {
 function gateScreen() {
   const el = document.getElementById('gate');
   if (canUse()) { el.hidden = true; el.innerHTML = ''; el.dataset.key = ''; return false; }
-  const key = [cloud.status, cloud.user?.id || '', S.authMode || 'signup', cloud.error || '', S.mate?.planned || 0].join('|');
+  const key = [cloud.status, cloud.user?.id || '', S.authMode || 'signup', cloud.error || '', S.mate?.planned || 0, iapPrice()].join('|');
   if (!el.hidden && el.dataset.key === key) return true;
   el.dataset.key = key;
   const name = esc(CONFIG.APP_NAME);
@@ -1575,32 +1605,36 @@ function gateScreen() {
   if (cloud.status === 'off' || cloud.status === 'loading') { el.innerHTML = `<div class="wrap"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>One moment…</h1></div>`; el.hidden = false; return true; }
   const weeks = Object.values(S.weeks).filter((w) => Object.keys(w.portions || {}).length).length;
   const url = checkoutUrl();
-  const price = esc(CONFIG.PRICE_LABEL || '£4.99');
-  const buy = !CONFIG.CHECKOUT_URL ? '' : cloud.user
+  const price = priceTxt();
+  const buy = !canSell() ? '' : cloud.user && iapWanted()
+    ? `<div class="gcard price"><div><b>${price} once</b><small>Pay once, keep it forever. No subscription.</small></div><button class="go" data-action="iap-buy">Keep my plan</button></div>
+       <p class="gfoot"><button class="back" data-action="iap-restore">Restore purchases</button><span>·</span><button class="back" data-action="signout">Sign out</button></p>`
+    : cloud.user
     ? `<div class="gcard price"><div><b>${price} once</b><small>Pay once, keep it forever. No subscription.</small></div><a class="go" href="${esc(url)}" target="_blank" rel="noopener" data-action="buy">Keep my plan</a></div>
        <p class="gfoot"><button class="back" data-action="gate-refresh">I've paid, refresh</button><span>·</span><button class="back" data-action="signout">Sign out</button></p>`
     : (S.authMode || 'signup') === 'signup' ? `<div class="gcard"><b>Make an account to keep it</b><small>Then pay ${price} once. Your plan comes with you.</small>${authFormHtml('signup', true)}</div>`
     : `<div class="gcard"><b>Sign in to keep it</b><small>Already bought FU£L or used a code? Sign in and it opens.</small>${authFormHtml('signin', true)}</div>`;
-  const code = cloud.user ? `<form id="code-form" class="gcard codecard"><label for="gate-code"><b>Have a code?</b><small>From a friend, a club, or the founder.</small></label><div class="row"><input id="gate-code" class="big grow" name="code" required maxlength="40" placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go"><button class="go" type="submit">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>` : '';
+  const code = cloud.user && !codesHidden() ? `<form id="code-form" class="gcard codecard"><label for="gate-code"><b>Have a code?</b><small>From a friend, a club, or the founder.</small></label><div class="row"><input id="gate-code" class="big grow" name="code" required maxlength="40" placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go"><button class="go" type="submit">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>` : '';
   el.innerHTML = `<div class="wrap gate-access"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>Your free week's up.</h1>
     <p>${weeks ? `Your ${weeks > 1 ? `${weeks} weeks` : 'week'}, your recipes and your shop lists are all still here.` : 'Everything you set up is still here.'} Keep them for ${price}, once.</p>
     ${buy}${matesHtml(true)}${code}
-    <p class="small" style="margin-top:16px"><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></p></div>`;
+    <p class="small" style="margin-top:16px"><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="support.html">Help</a></p></div>`;
   el.hidden = false; return true;
 }
 // Small sheets used from anywhere in the app: the account form, the way to buy, and the free-week explainer.
 function accountSheet(mode = 'signup', why = '') {
   S.authMode = mode;
-  if (!why && S.pendingBuy) why = `Your purchase is saved to your account, so it works on any phone. Then you pay ${esc(CONFIG.PRICE_LABEL || '£4.99')} once.`;
+  if (!why && S.pendingBuy) why = `Your purchase is saved to your account, so it works on any phone. Then you pay ${priceTxt()} once.`;
   openSheet(`<h3>${mode === 'signup' ? 'Save your plan to an account' : 'Sign in'}</h3><p class="small muted" style="margin:0 0 12px">${why || 'Then it syncs to any phone or laptop, and nothing is lost if this phone is.'}</p>${authFormHtml(mode, false)}<button class="btn ghost block" data-action="close-sheet" style="margin-top:6px">Not now</button>`);
 }
 function buySheet() {
-  if (!CONFIG.CHECKOUT_URL) { toast('Buying opens soon. For now, access is by code.'); return; }
-  if (!cloud.user) { S.pendingBuy = true; save(); accountSheet('signup', `Make an account first, so your purchase is saved to it and works on any phone. Then you pay ${esc(CONFIG.PRICE_LABEL || '£4.99')} once.`); return; }
-  openSheet(`<h3>Keep FU£L for life</h3><p class="small muted" style="margin:0 0 12px">${esc(CONFIG.PRICE_LABEL || '£4.99')} once. No subscription, nothing to cancel. Paying opens Stripe; come back here when it's done.</p><a class="btn block" href="${esc(checkoutUrl())}" target="_blank" rel="noopener" data-action="buy">Pay ${esc(CONFIG.PRICE_LABEL || '£4.99')}</a><button class="btn ghost block" data-action="gate-refresh" style="margin-top:8px">I've paid, refresh</button><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Not now</button>`);
+  if (!canSell()) { toast('Buying opens soon. For now, access is by code.'); return; }
+  if (!cloud.user) { S.pendingBuy = true; save(); accountSheet('signup', `Make an account first, so your purchase is saved to it and works on any phone. Then you pay ${priceTxt()} once.`); return; }
+  if (iapWanted()) { openSheet(`<h3>Keep FU£L for life</h3><p class="small muted" style="margin:0 0 12px">${priceTxt()} once. No subscription, nothing to cancel. Paid with your Apple ID.</p><button class="btn block" data-action="iap-buy">Buy · ${priceTxt()}</button><button class="btn ghost block" data-action="iap-restore" style="margin-top:8px">Restore purchases</button><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Not now</button>`); return; }
+  openSheet(`<h3>Keep FU£L for life</h3><p class="small muted" style="margin:0 0 12px">${priceTxt()} once. No subscription, nothing to cancel. Paying opens Stripe; come back here when it's done.</p><a class="btn block" href="${esc(checkoutUrl())}" target="_blank" rel="noopener" data-action="buy">Pay ${priceTxt()}</a><button class="btn ghost block" data-action="gate-refresh" style="margin-top:8px">I've paid, refresh</button><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Not now</button>`);
 }
 function trialSheet() {
-  const price = esc(CONFIG.PRICE_LABEL || '£4.99');
+  const price = priceTxt();
   if (paidUp() || matesUnlocked()) { openSheet(`<h3>FU£L is yours for life</h3><p class="small muted">${paidUp() ? esc(cloud.user?.email || '') : 'Three mates planned a week with your link.'}</p><button class="btn ghost block" data-action="close-sheet" style="margin-top:8px">Close</button>`); return; }
   const left = trialLeft();
   const e = trialEnd(), days = S.trial?.days || TRIAL_DAYS;
@@ -1644,6 +1678,7 @@ async function shareMates() {
   S.mate = { ...(S.mate || {}), ...m }; save();
   const url = `${shareBase()}?c=${m.code}`;
   const text = `I plan my week of food with FU£L: high-protein meals, the cheapest shop, all cooked on Sunday. Your first week's free. If you plan a week with my link it helps me get it free:`;
+  const ns = await nativeShare({ title: 'FU£L', text, url }); if (ns) { if (ns === 'shared') track('shared'); return; }
   try { if (navigator.share) { await navigator.share({ title: 'FU£L', text, url }); track('shared'); return; } } catch (e) { if (e?.name === 'AbortError') return; }
   try { await navigator.clipboard.writeText(`${text} ${url}`); toast('Link copied. Paste it to your mates.'); track('shared'); } catch { showText('Send this to your mates', `${text} ${url}`); }
 }
@@ -1740,8 +1775,9 @@ function renderSettings() {
   const account = !cloud.enabled ? prof(ic('user', 22), 'This phone only', 'Everything is saved here.')
     : (cloud.status === 'error' ? `<div class="bad-box" style="margin:10px 14px">Cloud problem: ${esc(cloud.error || 'unknown')}. The app keeps working on this phone.</div>` : '')
       + (!cloud.user ? prof(ic('user', 22), 'Your plan lives on this phone', access) + gr('Save to an account', '', 'data-action="account" data-mode="signup"') + gr('Sign in', '', 'data-action="account" data-mode="signin"')
-        : prof(esc((cloud.user.email || '?')[0].toUpperCase()), esc(cloud.user.email), `${access}${cloud.lastSync ? ` · synced ${new Date(cloud.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}`) + (paidUp() ? '' : gr('Have a code?', '', 'data-action="code-sheet"')) + gr('Sign out', '', 'data-action="signout"', { plain: true }) + (HARD_OK ? gr('Delete my account', '', 'data-action="delete-account"', { plain: true, cls: 'warnrow' }) : ''))
-      + (canBuy && CONFIG.CHECKOUT_URL ? gr('Upgrade', `${esc(CONFIG.PRICE_LABEL || '£4.99')} once, for life`, 'data-action="buy-open"', { cls: 'accent' }) : '')
+        : prof(esc((cloud.user.email || '?')[0].toUpperCase()), esc(cloud.user.email), `${access}${cloud.lastSync ? ` · synced ${new Date(cloud.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}`) + (paidUp() || codesHidden() ? '' : gr('Have a code?', '', 'data-action="code-sheet"')) + gr('Sign out', '', 'data-action="signout"', { plain: true }) + (HARD_OK || isNative() ? gr('Delete my account', '', 'data-action="delete-account"', { plain: true, cls: 'warnrow' }) : ''))
+      + (canBuy && canSell() ? gr('Upgrade', `${priceTxt()} once, for life`, 'data-action="buy-open"', { cls: 'accent' }) : '')
+      + (canBuy && iapWanted() && cloud.user ? gr('Restore purchases', '', 'data-action="iap-restore"', { plain: true }) : '')
       + (canBuy && GROWTH_OK ? gr('Or free for life: bring 3 mates', `${Math.min(3, S.mate?.planned || 0)} of 3`, open('mates')) : '');
   const L = LOOKS[lookKey()]; const avoidN = st.avoid.length + (st.avoidText || []).length;
   const log = Object.values(S.spendLog || {}); const avg = log.length ? log.reduce((t, v) => t + v.total, 0) / log.length : 0;
@@ -1753,8 +1789,8 @@ function renderSettings() {
   ${gl('Food', gr('Things you do not eat', avoidN ? `${avoidN} hidden` : 'None', open('avoid')) + gr('Milk', (MILKS.find(([k]) => k === (st.milk || 'milk')) || MILKS[0])[1], open('milk')) + gsw('Thigh fillets instead of breast', 'preferThigh', !!st.preferThigh, 'Swaps every breast line. Breast is cheaper per kilo right now.'))}
   ${gl('Weigh-ins', gr('Add a weigh-in', wt ? `${wt.latest} kg · ${fmtDate(wt.points[wt.points.length - 1].date)}` : 'None yet', 'data-action="weigh-add"') + gsw('Suggest target changes', 'adjustTargets', st.adjustTargets !== false, 'Offers +200 or −200 kcal from your weigh-ins. Never automatic.'))}
   ${gl('Money', gr('Spending by week', avg ? `${P.gbp(avg)} average` : 'Nothing logged yet', open('money')))}
-  ${gl('App', (isStandalone() ? '' : gr('Put FU£L on your home screen', '', open('install'))) + (cloud.enabled ? gsw('Count my visits, anonymously', 'countSteps', st.countSteps !== false, 'Which steps people get stuck on. A random number for this phone, never your name, email or plan.') : '') + gr('Show the intro again', '', 'data-action="intro"', { plain: true }) + gr('Show the tips again', '', 'data-action="tips-again"', { plain: true }) + gr('Copy a backup', '', 'data-action="export"', { plain: true }) + gr('Paste a backup', '', 'data-action="import"', { plain: true }))}
-  ${gl('About', gr('What is new', APP_VERSION, open('whatsnew')) + grLink('Terms', 'terms.html') + grLink('Privacy', 'privacy.html'))}
+  ${gl('App', (isStandalone() ? '' : gr('Put FU£L on your home screen', '', open('install'))) + (isNative() ? gsw('Shop and cook reminders', 'remind', !!st.remind, 'The evening before your cook day, and that morning.') : '') + (cloud.enabled ? gsw('Count my visits, anonymously', 'countSteps', st.countSteps !== false, 'Which steps people get stuck on. A random number for this phone, never your name, email or plan.') : '') + gr('Show the intro again', '', 'data-action="intro"', { plain: true }) + gr('Show the tips again', '', 'data-action="tips-again"', { plain: true }) + gr('Copy a backup', '', 'data-action="export"', { plain: true }) + gr('Paste a backup', '', 'data-action="import"', { plain: true }))}
+  ${gl('About', gr('What is new', APP_VERSION, open('whatsnew')) + grLink('Help and contact', 'support.html') + grLink('Terms', 'terms.html') + grLink('Privacy', 'privacy.html'))}
   ${gl('', `<button class="gr danger" data-action="reset"><span class="gr-l">Reset everything</span></button>`)}
   <p class="gl-foot" style="text-align:center;margin-top:18px">${esc(CONFIG.APP_NAME)} ${APP_VERSION} · prices checked ${dateRange(DATA.priceDates || [])}</p>
   ${new URLSearchParams(location.search).has('debug') ? `<p class="small muted screenfacts" style="text-align:center;font-size:12px;opacity:.7;margin-top:-6px">${esc(screenFacts())}</p>` : ''}`;
@@ -1790,7 +1826,7 @@ function refreshSet() { if (!setSheet || document.getElementById('sheet').hidden
 let installEvt = null;
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; const c = document.getElementById('install-card'); if (c) c.hidden = false; });
 window.addEventListener('appinstalled', () => { installEvt = null; S.tips ||= {}; S.tips.install = true; save(); render(); toast('Fuel is on your home screen'); });
-const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isStandalone = () => isNative() || window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 // One line that tells us, from a screenshot of Settings, how this phone really lays the app out (the iPhone tab bar was guessed at five times without it).
 const screenFacts = () => { try { const p = document.createElement('div'); p.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)'; document.body.appendChild(p); const cs = getComputedStyle(p), t = Math.round(parseFloat(cs.paddingTop) || 0), b = Math.round(parseFloat(cs.paddingBottom) || 0); p.remove(); const c = document.documentElement.classList, r = document.getElementById('tabs').getBoundingClientRect(); return `screen ${screen.width}×${screen.height} · view ${innerWidth}×${innerHeight} · safe ${t}/${b} · tabs ${Math.round(r.top)} to ${Math.round(r.bottom)} · ${isStandalone() ? 'home-screen' : 'browser'}${c.contains('is-ios-app') ? (c.contains('ios-under') ? ' · under' : ' · default') : ''}${c.contains('ios-short') ? ' · short' : ''}`; } catch (e) { return ''; } };
 const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -1903,6 +1939,7 @@ document.getElementById('sheet').addEventListener('click', (e) => { if (e.target
 const HAPTIC = { tick: [8], tap: [12], save: [14, 70, 22], warn: [40, 70, 40, 70, 40] };
 function haptic(kind = 'tap') {
   try {
+    if (nativeHaptic(kind)) return; // the iPhone app: the real Taptic Engine
     if (navigator.vibrate) { if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return; navigator.vibrate(HAPTIC[kind] || HAPTIC.tap); return; }
     if (!matchMedia('(pointer: coarse)').matches) return;
     const once = () => { const l = document.createElement('label'); l.setAttribute('aria-hidden', 'true'); l.style.display = 'none'; const i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); l.appendChild(i); document.head.appendChild(l); l.click(); document.head.removeChild(l); };
@@ -2067,7 +2104,7 @@ function onAction(e) {
     if (!w.portions[id]) delete w.portions[id];
     relayout(); refreshPlan(rowSel(id));
   } else if (a === 'week') { S.activeWeek = el.dataset.week; planAdd = null; save(); render(); }
-  else if (a === 'cookday') { closeSheet(); w.cookDay = +el.dataset.day; haptic('save'); relayout(); if (S.tab === 'plan') refreshPlan(); else render(); }
+  else if (a === 'cookday') { closeSheet(); w.cookDay = +el.dataset.day; haptic('save'); relayout(); if (S.tab === 'plan') refreshPlan(); else render(); applyReminders(false); }
   else if (a === 'quick-pick') { const r = recById(id); const room = P.roomFor(r, P.freeSlots(w.grid, w.days)); if (r && w.portions[r.id]) { toast('Already in the week. Change the count in the list below.'); return; } if (r && room > 0) { if (S.library && !S.library.includes(r.id)) S.library.push(r.id); w.portions[r.id] = Math.min(defaultPortions(r), room); relayout(); holdPlace(el.closest('#useup-card') ? '#useup-card' : '#pick-head', () => render()); } else toast('No room left in the week for that'); }
   else if (a === 'relayout') { relayout(); refreshPlan(); }
   else if (a === 'dayx') { closeSheet(); const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); refreshPlan(); }
@@ -2125,6 +2162,7 @@ function onAction(e) {
   }
   else if (a === 'share-list' || a === 'copy-list') {
     const txt = shopListText();
+    if (a === 'share-list' && isNative()) { nativeShare({ title: 'Fuel shopping list', text: txt }); return; }
     if (a === 'share-list' && navigator.share) { navigator.share({ title: 'Fuel shopping list', text: txt }).catch(() => {}); return; }
     (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => toast('List copied. Paste it anywhere.'), () => askText('Copy this list', txt));
   }
@@ -2185,10 +2223,12 @@ function onAction(e) {
     ask('Delete your account? Your saved plan and your access are removed for good. This cannot be undone.', 'Delete my account', true).then(async (ok) => {
       if (!ok) return; toast('Deleting…', 8000);
       try { await deleteAccount(); try { localStorage.removeItem(KEY); localStorage.removeItem('fuel:mate'); } catch {} location.reload(); }
-      catch (err) { toast('Could not delete the account just now. Check your signal and try again.', 4500); }
+      catch (err) { toast(err?.notInstalled ? 'Deleting from inside the app is not switched on yet. Message us (More → Help and contact) and we will delete your account for you.' : 'Could not delete the account just now. Check your signal and try again.', err?.notInstalled ? 8000 : 4500); }
     });
   }
   else if (a === 'gate-refresh') { recheckAccess(true); }
+  else if (a === 'iap-buy') { if (!iapReady()) { toast('Buying is not switched on in this build yet.', 4000); return; } el.disabled = true; toast('Opening the App Store…', 8000); iapBuy().then((r) => iapDone(r, el, 'The purchase did not go through.')); }
+  else if (a === 'iap-restore') { if (!iapReady()) { toast('Buying is not switched on in this build yet.', 4000); return; } el.disabled = true; toast('Checking with the App Store…', 8000); iapRestore().then((r) => iapDone(r, el, 'No purchase found for this Apple ID.')); }
   else if (a === 'buy') { S.buyStarted = Date.now(); save(); el.style.pointerEvents = 'none'; el.style.opacity = '.6'; setTimeout(() => { el.style.pointerEvents = ''; el.style.opacity = ''; }, 4000); } // one checkout page per tap, however fast you tap
   else if (a === 'auth-mode') { e.preventDefault(); S.authMode = el.dataset.mode; if (el.closest('#sheet')) accountSheet(el.dataset.mode); else gateScreen(); }
   else if (a === 'auth-forgot') {
@@ -2306,7 +2346,7 @@ function onChange(e) {
   else if (t.dataset.snackPick) { const r = recById(t.dataset.snackPick); if (t.checked) w.snacks[r.id] = 7; else delete w.snacks[r.id]; save(); refreshPlan(rowSel(r.id)); }
   else if (t.dataset.tick) { const k = t.dataset.tick, on = t.checked, what = t.dataset.what || 'Item', was = !!w.done; w.ticks[k] = on; shopDone(w); save(); haptic(!was && w.done ? 'save' : 'tap'); render(); if (on) showUndo(`In the trolley: ${what}`, () => { w.ticks[k] = false; shopDone(w); save(); render(); }); else hideUndo(); } // redraw only when the shop becomes done or stops being done (green box, tick on the Shop tab); the old test compared after the change, so it never fired
   else if (t.dataset.cookgot) { if (t.checked) cookGot.add(t.dataset.cookgot); else cookGot.delete(t.dataset.cookgot); t.closest('label')?.classList.toggle('done', t.checked); haptic('tick'); }
-  else if (t.dataset.settingBool) { S.settings[t.dataset.settingBool] = t.checked; bustCaches(); save(); haptic('tick'); }
+  else if (t.dataset.settingBool) { S.settings[t.dataset.settingBool] = t.checked; bustCaches(); save(); haptic('tick'); if (t.dataset.settingBool === 'remind') applyReminders(true); }
   else if (t.dataset.settingStr) {
     // Goal moves the calorie and protein targets (and so the portions) in place; milk and the rest just redraw.
     const k = t.dataset.settingStr, oldGoal = S.settings.goal; S.settings[k] = t.value; bustCaches(); save();
